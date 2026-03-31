@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebuild the SLAHEALTH Social Distribution tab using Ava's personal-brand-launch methodology — one article generates a full Content Kit (all 6 platforms, HOOK/BODY/CTA scripts, AI images via OpenRouter, 10s video via FAL.ai), reviewed and approved in the UI, then auto-scheduled and posted via real platform APIs.
+**Goal:** Rebuild the IBD Health Hub Social Distribution tab using Ava's personal-brand-launch methodology — one article generates a full Content Kit (all 6 platforms, HOOK/BODY/CTA scripts, AI images via OpenRouter, 10s video via FAL.ai), reviewed and approved in the UI, then auto-scheduled and posted via real platform APIs.
 
 **Architecture:** Single Vercel catch-all `api/social/[...slug].js` routes to handlers in `lib/social/handlers/`. Platform adapters in `lib/social/platforms/` each wrap one posting API. The UI in `index.html` replaces the existing social pane with a Kit Builder accordion + Queue + Posted sub-tabs. A 5-minute cron drains the KV sorted-set queue.
 
@@ -60,7 +60,7 @@ export function pickArchetype(platformIndex) {
 }
 
 export const CTA_TEMPLATES = {
-  grow:    'Follow @slahealth for weekly clinical insights',
+  grow:    'Follow @ibdhealthhub for weekly clinical insights',
   engage:  'Comment YES below if this changed how you think about this',
   convert: 'DM us or click the link in bio to learn more',
   save:    'Save this for later and share with a colleague who needs it',
@@ -126,7 +126,7 @@ export function buildPlatformPrompt(platform, pillar, ctaGoal, archetype, articl
   const isThread = platform === 'twitter';
   const hasReelScript = cfg.generateReelScript;
 
-  let prompt = `You are a social media expert applying the Ava personal brand methodology for SLAHEALTH, a UK clinical intelligence platform.
+  let prompt = `You are a social media expert applying the Ava personal brand methodology for IBD Health Hub, a UK clinical intelligence platform.
 
 CONTENT PILLAR: ${pillar.toUpperCase()}
 ${pillarInstruction}
@@ -514,7 +514,7 @@ const FAL_STATUS_BASE = 'https://fal.run/fal-ai/kling-video/v2.1/standard/text-t
 async function craftImagePrompt(articleTitle, articleExcerpt, platform) {
   const instruction = `Write a detailed image generation prompt (max 120 words) for a ${platform} social post about: "${articleTitle}".
 Context: ${articleExcerpt.slice(0, 400)}
-Style: clean, modern, medical/clinical aesthetic, SLAHEALTH brand (navy and teal), professional photography or medical illustration style.
+Style: clean, modern, medical/clinical aesthetic, IBD Health Hub brand (navy and teal), professional photography or medical illustration style.
 Output ONLY the image prompt — no preamble, no explanation.`;
 
   const res = await fetch(OPENROUTER_BASE, {
@@ -522,8 +522,8 @@ Output ONLY the image prompt — no preamble, no explanation.`;
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'HTTP-Referer': 'https://sla-health-content-generator.vercel.app',
-      'X-Title': 'SLAHEALTH Content Generator',
+      'HTTP-Referer': 'https://ibdhealthhub-content-generator.vercel.app',
+      'X-Title': 'IBD Health Hub Content Generator',
     },
     body: JSON.stringify({
       model: 'deepseek/deepseek-chat-v3-0324:free',
@@ -555,8 +555,8 @@ export async function generateImage(articleTitle, articleExcerpt, platform, aspe
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'HTTP-Referer': 'https://sla-health-content-generator.vercel.app',
-      'X-Title': 'SLAHEALTH Content Generator',
+      'HTTP-Referer': 'https://ibdhealthhub-content-generator.vercel.app',
+      'X-Title': 'IBD Health Hub Content Generator',
     },
     body: JSON.stringify({
       model,
@@ -591,8 +591,8 @@ Output ONLY the scene description.`;
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'HTTP-Referer': 'https://sla-health-content-generator.vercel.app',
-      'X-Title': 'SLAHEALTH Content Generator',
+      'HTTP-Referer': 'https://ibdhealthhub-content-generator.vercel.app',
+      'X-Title': 'IBD Health Hub Content Generator',
     },
     body: JSON.stringify({
       model: 'deepseek/deepseek-chat-v3-0324:free',
@@ -673,8 +673,8 @@ async function callOpenRouter(prompt) {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'HTTP-Referer': 'https://sla-health-content-generator.vercel.app',
-      'X-Title': 'SLAHEALTH Content Generator',
+      'HTTP-Referer': 'https://ibdhealthhub-content-generator.vercel.app',
+      'X-Title': 'IBD Health Hub Content Generator',
     },
     body: JSON.stringify({
       model: process.env.DEFAULT_LLM_MODEL || 'google/gemma-3-27b-it:free',
@@ -2303,7 +2303,7 @@ FACEBOOK_PAGE_ID=
 
 - [ ] **Step 3: Smoke test — Kit Builder generation**
 
-1. Open https://sla-health-content-generator.vercel.app
+1. Open https://ibdhealthhub-content-generator.vercel.app
 2. Navigate to Social → Kit Builder
 3. Select a published article, choose Educate pillar, Grow CTA
 4. Click "⚡ Generate Kit"
@@ -2321,10 +2321,10 @@ FACEBOOK_PAGE_ID=
 
 ```bash
 # Check kits list
-curl https://sla-health-content-generator.vercel.app/api/social/kits
+curl https://ibdhealthhub-content-generator.vercel.app/api/social/kits
 
 # Check schedule queue
-curl https://sla-health-content-generator.vercel.app/api/social/schedule
+curl https://ibdhealthhub-content-generator.vercel.app/api/social/schedule
 ```
 
 - [ ] **Step 6: Fix any issues found during smoke test, commit**

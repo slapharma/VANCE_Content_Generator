@@ -34,7 +34,7 @@ async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader) {
     // Fetch the image binary from the external URL
     const imgResp = await fetch(imageUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; SLAHealthBot/1.0; +https://slahealth.co.uk)',
+        'User-Agent': 'Mozilla/5.0 (compatible; IBDHealthHubBot/1.0; +https://ibdhealthhub.com)',
         'Accept': 'image/*',
       },
       redirect: 'follow',

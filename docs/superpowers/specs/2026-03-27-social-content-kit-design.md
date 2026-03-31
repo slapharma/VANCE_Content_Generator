@@ -7,7 +7,7 @@
 
 ## Overview
 
-Rebuild the SLAHEALTH Social Distribution tab to apply Ava's personal brand methodology end-to-end: structured generation using HOOK/BODY/CTA, content pillar tagging, Ava's hook archetypes and CTA system, AI-generated images and video, and real API posting to all six platforms with auto-scheduling across the week.
+Rebuild the IBD Health Hub Social Distribution tab to apply Ava's personal brand methodology end-to-end: structured generation using HOOK/BODY/CTA, content pillar tagging, Ava's hook archetypes and CTA system, AI-generated images and video, and real API posting to all six platforms with auto-scheduling across the week.
 
 **Core concept — Content Kit:** One article generates one "Content Kit" in a single batch — all platform captions, Reel scripts, images, and videos. The kit is reviewed, approved platform-by-platform, then deployed. On deploy, all approved posts are written to a schedule queue and auto-distributed across the next 7 days at Ava's optimal posting times. A 5-minute cron fires each post when its scheduled time arrives.
 
@@ -45,7 +45,7 @@ Ava's ratio: **70% Educate + Entertain combined, 30% Sell**. The Queue tab shows
 ### CTA System (one per post, matched to goal)
 | Goal | CTA Template |
 |---|---|
-| **Grow** | "Follow @slahealth for weekly clinical insights" |
+| **Grow** | "Follow @ibdhealthhub for weekly clinical insights" |
 | **Engage** | "Comment [word] below if this helped" |
 | **Convert** | "DM us or link in bio" |
 | **Save** | "Save this for later / share with a colleague" |

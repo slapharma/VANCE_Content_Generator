@@ -34,13 +34,13 @@ export async function parseApprovalToken(token) {
 
 function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
   return {
-    from: process.env.RESEND_FROM_EMAIL ?? 'noreply@mail.slahealth.co.uk',
+    from: process.env.RESEND_FROM_EMAIL ?? 'noreply@mail.ibdhealthhub.com',
     to: reviewer.email,
     subject: `Review requested: ${content.title}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
         <div style="background:#1e2d40;padding:20px 24px;border-bottom:3px solid #F47920;">
-          <span style="color:#fff;font-size:20px;font-weight:800;letter-spacing:1px;">SLA Health</span>
+          <span style="color:#fff;font-size:20px;font-weight:800;letter-spacing:1px;">IBD Health Hub</span>
           <span style="color:#F47920;font-size:20px;font-weight:800;"> ■</span>
         </div>
         <div style="padding:28px 24px;">
@@ -98,7 +98,7 @@ function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
           <p style="color:#9aa5b4;font-size:12px;">This link expires in 7 days.</p>
         </div>
         <div style="background:#f0f2f5;padding:16px 24px;border-top:1px solid #dde3ea;">
-          <p style="color:#9aa5b4;font-size:12px;margin:0;">SLA Health Content Platform — slahealth.co.uk</p>
+          <p style="color:#9aa5b4;font-size:12px;margin:0;">IBD Health Hub Content Platform — ibdhealthhub.com</p>
         </div>
       </div>
     `,

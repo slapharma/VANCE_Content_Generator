@@ -25,7 +25,7 @@ The app has **two distinct structural patterns** and several pages that fall out
 ### view-dashboard
 **Lines 2514–2600**
 
-- **Header:** ✅ Has a clear `h1` inside `.dashboard-welcome`. Text: "Welcome to SLA Health Content Generator" + a subtitle `<p>`. Structure is semantically correct.
+- **Header:** ✅ Has a clear `h1` inside `.dashboard-welcome`. Text: "Welcome to IBD Health Hub Content Generator" + a subtitle `<p>`. Structure is semantically correct.
 - **Padding:** ❌ Uses `.dashboard-view { padding: 2rem; }` — **2rem**, which is inconsistent with the `1.5rem` used by most other pages.
 - **Header spacing:** The `.dashboard-welcome` block has `margin-bottom: 2rem` before the metrics strip. This is the largest top-to-content gap in the app.
 - **Issues:**

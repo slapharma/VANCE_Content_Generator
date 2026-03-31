@@ -67,7 +67,7 @@ test('validateRule throws on invalid trigger type', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd "C:/Users/clift/.Claude/projects/C--Users-clift--Claude-SLA-Content Generator/SLAHEALTH_ClinicalReview_Generator"
+cd "C:/Users/clift/.Claude/projects/C--Users-clift--Claude-SLA-Content Generator/IBD Health Hub_ClinicalReview_Generator"
 npx jest api/automation/rule-schema.test.js --no-coverage
 ```
 Expected: FAIL — "Cannot find module './rule-schema.js'"
@@ -1166,7 +1166,7 @@ export function buildApprovalEmailHtml({ title, category, approveUrl, rejectUrl 
   return `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
       <div style="background:#1e2d40;padding:20px 24px;border-bottom:3px solid #F47920;">
-        <span style="color:#fff;font-size:20px;font-weight:800;">SLA Health</span>
+        <span style="color:#fff;font-size:20px;font-weight:800;">IBD Health Hub</span>
         <span style="color:#F47920;font-size:20px;font-weight:800;"> ■</span>
       </div>
       <div style="padding:28px 24px;">
@@ -1188,7 +1188,7 @@ export function buildApprovalEmailHtml({ title, category, approveUrl, rejectUrl 
             <a href="${rejectUrl}" style="display:block;text-align:center;background:#e53e3e;color:#fff;padding:14px;border-radius:6px;text-decoration:none;font-weight:bold;">❌ Reject</a>
           </td>
         </tr></table>
-        <p style="color:#999;font-size:12px;margin-top:24px;">These links expire after ${48}h. Log in to the SLA Health dashboard to review manually.</p>
+        <p style="color:#999;font-size:12px;margin-top:24px;">These links expire after ${48}h. Log in to the IBD Health Hub dashboard to review manually.</p>
       </div>
     </div>`;
 }
@@ -1227,7 +1227,7 @@ export async function sendNotifications({ rule, job, content }) {
       const html = buildApprovalEmailHtml({ title: content.title, category: content.category, approveUrl, rejectUrl });
 
       await getResend().emails.send({
-        from: process.env.RESEND_FROM_EMAIL ?? 'noreply@mail.slahealth.co.uk',
+        from: process.env.RESEND_FROM_EMAIL ?? 'noreply@mail.ibdhealthhub.com',
         to: notifications.email.to,
         subject: `[Review Required] ${content.title}`,
         html,
@@ -2019,7 +2019,7 @@ The wizard is a fullscreen modal with 5 steps. This task builds Steps 1–3 and 
         <div id="wEmailOptions" style="display:none">
           <div id="wEmailRecipients" class="email-recipients"></div>
           <div class="form-row">
-            <input id="wEmailNew" type="email" class="form-input" placeholder="editor@slahealth.co.uk">
+            <input id="wEmailNew" type="email" class="form-input" placeholder="editor@ibdhealthhub.com">
             <button class="btn-secondary" onclick="addEmailRecipient()">+ Add</button>
           </div>
           <label class="checkbox-label"><input type="checkbox" id="wEmailAllowApproval" checked> Allow approval via email link</label>
@@ -2320,7 +2320,7 @@ export default async function handler(req, res) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       chat_id: chatId,
-      text: '✅ SLA Health Automation is connected! Your Telegram notifications are working.',
+      text: '✅ IBD Health Hub Automation is connected! Your Telegram notifications are working.',
     }),
   });
   if (!r.ok) return res.status(502).json({ error: 'Telegram API error' });

@@ -11,7 +11,7 @@
 - **Resend.com** — transactional email (approval requests, status notifications)
 - **JSON Web Tokens (jose library)** — stateless signed approval tokens in email links
 - **Google Calendar API** — OAuth 2.0 sync of scheduled posts as calendar events
-- **WordPress REST API** — authenticated post creation on slahealth.co.uk
+- **WordPress REST API** — authenticated post creation on ibdhealthhub.com
 - **Vercel Cron** — scheduled publishing (every 5 min, defined in vercel.json)
 - **Node.js 18** — runtime for all serverless functions
 
@@ -28,7 +28,7 @@ KV_REST_API_TOKEN=
 
 # Resend
 RESEND_API_KEY=
-RESEND_FROM_EMAIL=noreply@slahealth.co.uk
+RESEND_FROM_EMAIL=noreply@ibdhealthhub.com
 
 # JWT signing secret (generate with: openssl rand -hex 32)
 JWT_SECRET=
@@ -36,15 +36,15 @@ JWT_SECRET=
 # Google Calendar OAuth
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=https://sla-health-content-generator.vercel.app/api/calendar/callback
+GOOGLE_REDIRECT_URI=https://ibdhealthhub-content-generator.vercel.app/api/calendar/callback
 
 # WordPress
-WP_SITE_URL=https://slahealth.co.uk
+WP_SITE_URL=https://ibdhealthhub.com
 WP_USERNAME=
 WP_APP_PASSWORD=
 
 # App
-NEXT_PUBLIC_APP_URL=https://sla-health-content-generator.vercel.app
+NEXT_PUBLIC_APP_URL=https://ibdhealthhub-content-generator.vercel.app
 ```
 
 ---
@@ -52,7 +52,7 @@ NEXT_PUBLIC_APP_URL=https://sla-health-content-generator.vercel.app
 ## File Map
 
 ```
-SLAHEALTH_ClinicalReview_Generator/
+IBD Health Hub_ClinicalReview_Generator/
 ├── index.html                          # MODIFY: add Pipeline & Schedule tabs, migrate state to API
 ├── logo.png
 ├── vercel.json                         # MODIFY: add cron job config
@@ -130,7 +130,7 @@ SLAHEALTH_ClinicalReview_Generator/
 - [ ] **Step 1.3: Install dependencies locally**
 
   ```bash
-  cd SLAHEALTH_ClinicalReview_Generator
+  cd IBD Health Hub_ClinicalReview_Generator
   npm install
   ```
   Expected: `node_modules/` created, `package-lock.json` generated.
@@ -501,9 +501,9 @@ Reviewers are stored as a list in KV under key `reviewers`. Each reviewer: `{ id
   import { buildReviewer, validateReviewer } from './index.js';
 
   test('buildReviewer creates reviewer with id', () => {
-    const r = buildReviewer({ name: 'Alice', email: 'alice@slahealth.co.uk' });
+    const r = buildReviewer({ name: 'Alice', email: 'alice@ibdhealthhub.com' });
     assert.ok(r.id);
-    assert.equal(r.email, 'alice@slahealth.co.uk');
+    assert.equal(r.email, 'alice@ibdhealthhub.com');
   });
 
   test('validateReviewer rejects missing email', () => {
@@ -589,7 +589,7 @@ Reviewers are stored as a list in KV under key `reviewers`. Each reviewer: `{ id
 - [ ] **Step 6.1: Set up Resend**
 
   1. Sign up at https://resend.com
-  2. Add your domain `slahealth.co.uk` → verify DNS records
+  2. Add your domain `ibdhealthhub.com` → verify DNS records
   3. Generate an API key → add to Vercel env vars as `RESEND_API_KEY`
 
 - [ ] **Step 6.2: Write the failing test**
@@ -668,7 +668,7 @@ Reviewers are stored as a list in KV under key `reviewers`. Each reviewer: `{ id
       subject: `Review requested: ${content.title}`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-          <img src="${APP_URL}/logo.png" alt="SLA Health" style="height:48px;margin-bottom:24px" />
+          <img src="${APP_URL}/logo.png" alt="IBD Health Hub" style="height:48px;margin-bottom:24px" />
           <h2 style="color:#E05C00">Content Review Request</h2>
           <p>Hi ${reviewer.name},</p>
           <p><strong>${content.title}</strong> has been submitted for your review.</p>
@@ -825,7 +825,7 @@ When a reviewer clicks the link in the email, this function:
   const page = (emoji, title, message) => `
     <!DOCTYPE html><html><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>${title} — SLA Health</title>
+    <title>${title} — IBD Health Hub</title>
     <style>
       body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;
            min-height:100vh;margin:0;background:#fafafa}
@@ -1105,7 +1105,7 @@ The Pipeline tab shows content in columns by status: **Draft | In Review | Appro
   1. Go to https://console.cloud.google.com
   2. Create project → Enable **Google Calendar API**
   3. **Credentials** → Create OAuth 2.0 Client ID (Web application)
-  4. Add authorised redirect URI: `https://sla-health-content-generator.vercel.app/api/calendar/callback`
+  4. Add authorised redirect URI: `https://ibdhealthhub-content-generator.vercel.app/api/calendar/callback`
   5. Copy Client ID + Secret → add to Vercel env vars
 
 - [ ] **Step 11.2: Install googleapis**
@@ -1189,7 +1189,7 @@ The Pipeline tab shows content in columns by status: **Draft | In Review | Appro
       description: `Category: ${item.category}\n\nExcerpt: ${item.excerpt}\n\nManage: ${process.env.NEXT_PUBLIC_APP_URL}`,
       start: { dateTime: start.toISOString() },
       end:   { dateTime: end.toISOString() },
-      colorId: '6', // Tangerine — matches SLA Health orange
+      colorId: '6', // Tangerine — matches IBD Health Hub orange
     };
 
     let result;
@@ -1489,7 +1489,7 @@ The cron job runs every 5 minutes. It scans all content items for those with `st
   | 2 | Click "Send for Review" | Reviewers receive email within 30 seconds |
   | 3 | Reviewer clicks Approve | Browser shows confirmation page, card moves to Approved |
   | 4 | Click "Schedule Post", pick future date | Card moves to Scheduled, Google Calendar event created |
-  | 5 | Click "Publish Now" | Card moves to Published, post appears on slahealth.co.uk |
+  | 5 | Click "Publish Now" | Card moves to Published, post appears on ibdhealthhub.com |
   | 6 | Click "View on WordPress" | Opens correct post on live site |
 
 - [ ] **Step 14.3: Verify cron works (Pro plan only)**

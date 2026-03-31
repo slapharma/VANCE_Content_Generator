@@ -462,7 +462,7 @@ async function generateSocialForArticle(articleId) {
         'Summarise in one striking sentence then expand.',
       ];
       const angle = anglePrompts[i] || anglePrompts[0];
-      const prompt = `You are a social media copywriter for SLA Health, a UK medical content platform.
+      const prompt = `You are a social media copywriter for IBD Health Hub, a UK medical content platform.
 Write post ${i + 1} of ${plat.postCount} for ${plat.label}.
 Tone: ${plat.tone}
 Maximum characters: ${plat.maxChars}

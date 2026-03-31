@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   try {
     const response = await fetch(parsed.href, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; SLAHealthBot/1.0; +https://slahealth.co.uk)',
+        'User-Agent': 'Mozilla/5.0 (compatible; IBDHealthHubBot/1.0; +https://ibdhealthhub.com)',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-GB,en;q=0.9',
       },
