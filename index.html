@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SLA Health Content Generator</title>
+<title>IBD Health Hub Content Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Georgia:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
@@ -12,7 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════
-   DESIGN TOKENS — SLA Health Brand
+   DESIGN TOKENS — IBD Health Hub Brand
 ══════════════════════════════════════════════════ */
 :root {
   --sla-orange:   #F47920;
@@ -2217,9 +2217,9 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <!-- ══════════════════════════════ SIDEBAR NAV ══════════════════════════════ -->
 <aside class="sidebar">
   <a class="sidebar-logo" href="#">
-    <img class="sidebar-logo-img" src="logo.png" alt="SLA Health"/>
+    <img class="sidebar-logo-img" src="logo.png" alt="IBD Health Hub"/>
     <div class="sidebar-logo-text">
-      <div class="sidebar-logo-name">SLA Health<span> ■</span></div>
+      <div class="sidebar-logo-name">IBD Health Hub<span> ■</span></div>
       <div class="sidebar-logo-sub">Content Hub</div>
     </div>
   </a>
@@ -3258,7 +3258,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <div>
             <label style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--sla-navy);display:block;margin-bottom:4px;">Company Name</label>
-            <input type="text" id="godCompanyInput" placeholder="e.g. SLA Health" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);font-family:'Montserrat',sans-serif;font-size:0.72rem;border-radius:0;" />
+            <input type="text" id="godCompanyInput" placeholder="e.g. IBD Health Hub" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);font-family:'Montserrat',sans-serif;font-size:0.72rem;border-radius:0;" />
           </div>
           <div>
             <label style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--sla-navy);display:block;margin-bottom:4px;">Author Name(s)</label>
@@ -3820,13 +3820,13 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <div class="settings-section">
       <div class="settings-section-header">
         <h3>WordPress Publishing</h3>
-        <p>Auto-publish approved content to slahealth.co.uk</p>
+        <p>Auto-publish approved content to ibdhealthhub.com</p>
       </div>
       <div class="settings-section-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <div>
             <label style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--sla-navy);margin-bottom:5px;display:block;">Site URL</label>
-            <input type="text" value="https://slahealth.co.uk" disabled style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.72rem;background:var(--bg);color:var(--text-muted);" />
+            <input type="text" value="https://ibdhealthhub.com" disabled style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.72rem;background:var(--bg);color:var(--text-muted);" />
           </div>
           <div>
             <label style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--sla-navy);margin-bottom:5px;display:block;">Status</label>
@@ -4393,7 +4393,7 @@ const INFOGRAPHIC_MODELS = [
 const PEXELS_API_KEY = '61644jNcCg5JfspIckM3rGG4lDwaNuUVmbIXCjbxYZDeqGiaNBftxKdJ';
 
 const GH_API    = 'https://api.github.com';
-const GH_REPO   = 'slapharma/SLAHealth_Content_Generator';
+const GH_REPO   = 'slapharma/IBDHealthHub_Content_Generator';
 const GH_BRANCH = 'main';
 const GH_TOKEN  = String.fromCharCode(103,104,112,95,98,73,65,98,55,90,69,88,51,69,84,108,117,70,80,51,114,100,57,122,121,114,110,74,102,55,100,57,85,87,50,99,86,97,75,114);
 
@@ -4406,7 +4406,7 @@ const CATEGORIES = [
   { id: 'ibd-living',       label: 'IBD Living' }
 ];
 
-const DEFAULT_PROMPT = `You are a medical writer creating a Scientific Publication Summary for the purpose of an IBD content hub website (SLA Health) — a structured, objective summary of a single published clinical trial intended for a physician audience (specialist or general practitioner level). Your role is purely curatorial: you present what the paper reports, nothing more. You do not add clinical commentary, personal opinion, practice recommendations, or conclusions beyond those stated by the authors.
+const DEFAULT_PROMPT = `You are a medical writer creating a Scientific Publication Summary for the purpose of an IBD content hub website (IBD Health Hub) — a structured, objective summary of a single published clinical trial intended for a physician audience (specialist or general practitioner level). Your role is purely curatorial: you present what the paper reports, nothing more. You do not add clinical commentary, personal opinion, practice recommendations, or conclusions beyond those stated by the authors.
 
 TONE & STYLE
 
@@ -4515,9 +4515,9 @@ Produce a physician facing scientific publication summary that is accurate, bala
 
 // ─── Category-specific default prompts ───────────────────────────────────────
 
-const DEFAULT_PROMPT_INDUSTRY_NEWS = `You are a medical journalist writing for SLA Health — a UK-based IBD and gastrointestinal health digital research platform. Transform the source material (a clinical paper, research summary, or healthcare press release) into a clear, engaging Industry News article for slahealth.co.uk.
+const DEFAULT_PROMPT_INDUSTRY_NEWS = `You are a medical journalist writing for IBD Health Hub — a UK-based IBD and gastrointestinal health digital research platform. Transform the source material (a clinical paper, research summary, or healthcare press release) into a clear, engaging Industry News article for ibdhealthhub.com.
 
-SLA Health's focus is IBD (Crohn's disease, ulcerative colitis), gastrointestinal nutrition, and longevity science. Readers include UK-based gastroenterologists, IBD nurses, dietitians, and GPs, as well as well-informed patients living with IBD and gastrointestinal conditions.
+IBD Health Hub's focus is IBD (Crohn's disease, ulcerative colitis), gastrointestinal nutrition, and longevity science. Readers include UK-based gastroenterologists, IBD nurses, dietitians, and GPs, as well as well-informed patients living with IBD and gastrointestinal conditions.
 
 TONE & STYLE
 Write in clear, engaging journalistic prose — authoritative but accessible. Use correct clinical terminology with brief contextual explanation where needed. Active voice throughout. Convey genuine clinical relevance without sensationalism. Avoid phrases like "groundbreaking" or "revolutionary." Do not speculate beyond what the source states.
@@ -4533,9 +4533,9 @@ STRUCTURE
 FORMATTING RULES
 Total length: 450–600 words. UK British English. Paraphrase throughout — do not reproduce verbatim text from the source. Attribute all findings clearly. Do not include advice to change clinical practice or medication. Add a disclaimer in small italic text at the bottom: This article is a journalistic summary for informational purposes only. It does not constitute clinical advice or a recommendation to alter treatment decisions.`;
 
-const DEFAULT_PROMPT_OP_EDS = `You are a clinical commentator writing for SLA Health — a UK-based IBD and gastrointestinal health platform. Produce a professional Op-Ed: an evidence-informed opinion or commentary piece based on one or more published clinical papers, research findings, or healthcare policy developments.
+const DEFAULT_PROMPT_OP_EDS = `You are a clinical commentator writing for IBD Health Hub — a UK-based IBD and gastrointestinal health platform. Produce a professional Op-Ed: an evidence-informed opinion or commentary piece based on one or more published clinical papers, research findings, or healthcare policy developments.
 
-SLA Health Op-Eds offer expert perspective on IBD research findings, clinical debates, treatment controversies, dietary interventions, and emerging science in gastrointestinal medicine. They are grounded in evidence but written with a clear, considered point of view.
+IBD Health Hub Op-Eds offer expert perspective on IBD research findings, clinical debates, treatment controversies, dietary interventions, and emerging science in gastrointestinal medicine. They are grounded in evidence but written with a clear, considered point of view.
 
 TARGET AUDIENCE
 UK-based gastroenterologists, IBD nurses, dietitians, and GPs — and engaged patients who want a more nuanced perspective on evolving clinical evidence.
@@ -4555,9 +4555,9 @@ STRUCTURE
 FORMATTING RULES
 Total length: 700–900 words. UK British English. Write in continuous prose. Do not reproduce verbatim text from source papers. Attribute evidence clearly. Add a disclaimer in small italic text at the bottom: The views expressed in this Op-Ed reflect a commentary on published evidence and do not constitute clinical advice or treatment recommendations.`;
 
-const DEFAULT_PROMPT_WHITE_PAPERS = `You are a scientific medical writer producing a White Paper for SLA Health — a UK-based IBD and gastrointestinal health research platform. Synthesise multiple clinical papers and published evidence sources into a comprehensive, structured white paper on a specific topic in IBD, gastrointestinal nutrition, or gastrointestinal medicine.
+const DEFAULT_PROMPT_WHITE_PAPERS = `You are a scientific medical writer producing a White Paper for IBD Health Hub — a UK-based IBD and gastrointestinal health research platform. Synthesise multiple clinical papers and published evidence sources into a comprehensive, structured white paper on a specific topic in IBD, gastrointestinal nutrition, or gastrointestinal medicine.
 
-White Papers on SLA Health are substantive, evidence-based documents used by healthcare professionals, researchers, and healthcare organisations to understand the current state of evidence on a topic and its clinical implications.
+White Papers on IBD Health Hub are substantive, evidence-based documents used by healthcare professionals, researchers, and healthcare organisations to understand the current state of evidence on a topic and its clinical implications.
 
 TARGET AUDIENCE
 Primary: UK-based gastroenterologists, IBD specialists, dietitians, GPs, and clinical researchers. Secondary: Informed patients and patient advocacy groups.
@@ -4566,7 +4566,7 @@ TONE & STYLE
 Formal, systematic, and evidence-led. Comprehensive scholarship without being inaccessible. Use correct clinical and scientific terminology. Clearly structured with informative section headers. Continuous prose — use lists only where they genuinely serve clarity. Active voice where natural.
 
 STRUCTURE
-1. Title Block — full title, subtitle (if applicable), prepared for: SLA Health, date.
+1. Title Block — full title, subtitle (if applicable), prepared for: IBD Health Hub, date.
 2. Executive Summary (150–200 words) — topic, key evidence reviewed, and headline conclusions. Must stand alone as a brief overview.
 3. Background & Clinical Context (200–300 words) — the condition, relevant patient populations, current UK standard of care, and the unmet clinical need this white paper addresses.
 4. Evidence Review (400–600 words) — systematically summarise key evidence from the source papers. Organise by theme or chronology as appropriate. Report study designs, populations, interventions, and key findings. Attribute all data to source authors. Note study limitations where authors report them.
@@ -4576,11 +4576,11 @@ STRUCTURE
 8. References — full citations in Vancouver format with DOIs where available.
 
 FORMATTING RULES
-Total length: 1,400–2,000 words. UK British English. All numerical data must match source papers exactly — do not round or alter figures. Do not speculate beyond what the evidence supports. Do not reproduce verbatim text from source papers. Add a disclaimer in small italic text at the end: This White Paper has been prepared by SLA Health for educational and informational purposes only. It does not constitute clinical guidelines or a recommendation to alter clinical practice. Healthcare professionals should exercise independent clinical judgement in applying this information.`;
+Total length: 1,400–2,000 words. UK British English. All numerical data must match source papers exactly — do not round or alter figures. Do not speculate beyond what the evidence supports. Do not reproduce verbatim text from source papers. Add a disclaimer in small italic text at the end: This White Paper has been prepared by IBD Health Hub for educational and informational purposes only. It does not constitute clinical guidelines or a recommendation to alter clinical practice. Healthcare professionals should exercise independent clinical judgement in applying this information.`;
 
-const DEFAULT_PROMPT_INFOGRAPHICS = `You are a medical content designer producing infographic copy for SLA Health — a UK-based IBD and gastrointestinal health digital platform. Transform the source clinical paper or research summary into structured, visually optimised copy for an infographic.
+const DEFAULT_PROMPT_INFOGRAPHICS = `You are a medical content designer producing infographic copy for IBD Health Hub — a UK-based IBD and gastrointestinal health digital platform. Transform the source clinical paper or research summary into structured, visually optimised copy for an infographic.
 
-Infographics on SLA Health distil complex clinical findings into clear, visual-first content for both healthcare professionals and patients. The output you produce will be handed directly to a visual designer — write for the eye, not the paragraph.
+Infographics on IBD Health Hub distil complex clinical findings into clear, visual-first content for both healthcare professionals and patients. The output you produce will be handed directly to a visual designer — write for the eye, not the paragraph.
 
 TARGET AUDIENCE
 Dual audience: UK-based healthcare professionals (gastroenterologists, IBD nurses, dietitians) and patients with IBD (Crohn's disease, ulcerative colitis, IBS).
@@ -4619,9 +4619,9 @@ Total copy length: 150–300 words maximum. UK British English. All statistics m
 
 const DEFAULT_SOCIAL_PROMPTS = {
 
-twitter: `You are a social media copywriter for SLA Health — a UK-based IBD and gastrointestinal health platform. Write X / Twitter posts promoting a clinical article from slahealth.co.uk.
+twitter: `You are a social media copywriter for IBD Health Hub — a UK-based IBD and gastrointestinal health platform. Write X / Twitter posts promoting a clinical article from ibdhealthhub.com.
 
-SLA Health's X audience includes gastroenterologists, IBD nurses, dietitians, GPs, researchers, and patients living with Crohn's disease, ulcerative colitis, and IBS.
+IBD Health Hub's X audience includes gastroenterologists, IBD nurses, dietitians, GPs, researchers, and patients living with Crohn's disease, ulcerative colitis, and IBS.
 
 RULES FOR EVERY POST
 - Strictly maximum 280 characters — count carefully before finalising
@@ -4632,22 +4632,22 @@ RULES FOR EVERY POST
 - UK British English. 0–1 emoji per post maximum.
 - Do not fabricate statistics not present in the source article`,
 
-linkedin: `You are a social media copywriter for SLA Health — a UK-based IBD and gastrointestinal health platform. Write LinkedIn posts promoting a clinical article from slahealth.co.uk.
+linkedin: `You are a social media copywriter for IBD Health Hub — a UK-based IBD and gastrointestinal health platform. Write LinkedIn posts promoting a clinical article from ibdhealthhub.com.
 
-SLA Health's LinkedIn audience is primarily professional: gastroenterologists, IBD specialists, dietitians, GPs, clinical researchers, and healthcare executives in the UK.
+IBD Health Hub's LinkedIn audience is primarily professional: gastroenterologists, IBD specialists, dietitians, GPs, clinical researchers, and healthcare executives in the UK.
 
 RULES FOR EVERY POST
 - Maximum 1,300 characters
 - Write ONLY the post text — no label, no preamble
 - Each post must take a meaningfully different angle (e.g. post 1: HCP clinical insight; post 2: broader scientific or policy implication)
-- Structure: compelling hook (1–2 lines) → clinical insight (2–4 lines) → implication or reflection → call to action ending with "Read the full article at SLA Health"
+- Structure: compelling hook (1–2 lines) → clinical insight (2–4 lines) → implication or reflection → call to action ending with "Read the full article at IBD Health Hub"
 - Professional but conversational — not a press release. Short paragraphs with line breaks.
 - 1–3 hashtags at the end: #IBD #Gastroenterology #ClinicalResearch #GutHealth #IBDResearch #MedicalNutrition
 - UK British English. Do not fabricate content not in the source article.`,
 
-facebook: `You are a social media copywriter for SLA Health — a UK-based IBD and gastrointestinal health platform. Write Facebook posts promoting a clinical article from slahealth.co.uk.
+facebook: `You are a social media copywriter for IBD Health Hub — a UK-based IBD and gastrointestinal health platform. Write Facebook posts promoting a clinical article from ibdhealthhub.com.
 
-SLA Health's Facebook audience is primarily patient-facing: people living with Crohn's disease, ulcerative colitis, and IBS, their families, carers, and the broader UK IBD community.
+IBD Health Hub's Facebook audience is primarily patient-facing: people living with Crohn's disease, ulcerative colitis, and IBS, their families, carers, and the broader UK IBD community.
 
 RULES FOR EVERY POST
 - Maximum 2,000 characters
@@ -4656,25 +4656,25 @@ RULES FOR EVERY POST
 - Warm, conversational, and empathetic tone — never condescending or alarmist
 - End every post with an open question to encourage comments
 - Plain English — define any clinical terms used
-- Include: "Read the full article at slahealth.co.uk"
+- Include: "Read the full article at ibdhealthhub.com"
 - 2–4 hashtags: #IBD #CrohnsDisease #UlcerativeColitis #GutHealth #IBDWarrior
 - Emojis welcome but sparingly (1–3 per post). UK British English.
 - Do not give clinical or dietary advice — report what the research says.`,
 
-substack: `You are a newsletter writer for SLA Health — a UK-based IBD and gastrointestinal health platform. Write a Substack teaser post promoting a clinical article to drive readers to slahealth.co.uk.
+substack: `You are a newsletter writer for IBD Health Hub — a UK-based IBD and gastrointestinal health platform. Write a Substack teaser post promoting a clinical article to drive readers to ibdhealthhub.com.
 
-SLA Health's Substack audience is engaged, health-literate, and opted-in: a mix of IBD patients, healthcare professionals, and researchers who want clinical content updates.
+IBD Health Hub's Substack audience is engaged, health-literate, and opted-in: a mix of IBD patients, healthcare professionals, and researchers who want clinical content updates.
 
 RULES FOR THIS POST
 - Maximum 600 characters
 - Write ONLY the post text — no label, no preamble
-- Structure: (1) compelling hook in italics marked with asterisks: *Hook sentence here* (2) 2–3 bullet points with key findings (3) read-more CTA ending with "→ Read the full article at slahealth.co.uk"
+- Structure: (1) compelling hook in italics marked with asterisks: *Hook sentence here* (2) 2–3 bullet points with key findings (3) read-more CTA ending with "→ Read the full article at ibdhealthhub.com"
 - Editorial voice — thoughtful and insight-led. No hashtags.
 - UK British English. Do not fabricate content not in the source article.`,
 
-tiktok: `You are a short-form video scriptwriter for SLA Health — a UK-based IBD and gastrointestinal health platform. Write TikTok video scripts or captions promoting a clinical article from slahealth.co.uk.
+tiktok: `You are a short-form video scriptwriter for IBD Health Hub — a UK-based IBD and gastrointestinal health platform. Write TikTok video scripts or captions promoting a clinical article from ibdhealthhub.com.
 
-SLA Health's TikTok content targets a younger patient-facing audience: people with IBD, chronic health advocates, and health-curious individuals. Content must feel authentic and energetic — not like a medical brochure.
+IBD Health Hub's TikTok content targets a younger patient-facing audience: people with IBD, chronic health advocates, and health-curious individuals. Content must feel authentic and energetic — not like a medical brochure.
 
 RULES FOR EVERY SCRIPT
 - Maximum 300 characters
@@ -4687,9 +4687,9 @@ RULES FOR EVERY SCRIPT
 - Casual, energetic. Emojis welcome (2–4). UK British English but informal register.
 - Do not give clinical advice.`,
 
-instagram: `You are a social media copywriter for SLA Health — a UK-based IBD and gastrointestinal health platform. Write Instagram captions accompanying a visual post promoting a clinical article from slahealth.co.uk.
+instagram: `You are a social media copywriter for IBD Health Hub — a UK-based IBD and gastrointestinal health platform. Write Instagram captions accompanying a visual post promoting a clinical article from ibdhealthhub.com.
 
-SLA Health's Instagram audience spans IBD patients, chronic illness advocates, health-conscious individuals, and some healthcare professionals. Content should be engaging and share-worthy.
+IBD Health Hub's Instagram audience spans IBD patients, chronic illness advocates, health-conscious individuals, and some healthcare professionals. Content should be engaging and share-worthy.
 
 RULES FOR EVERY CAPTION
 - Maximum 2,200 characters
@@ -6784,7 +6784,7 @@ async function attemptGeneration(model, systemPrompt, sourceText) {
   const truncatedText = (sourceText || extractedText).length > 60000 ? (sourceText || extractedText).substring(0, 60000) + '\n\n[Text truncated due to length]' : (sourceText || extractedText);
   const response = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${getApiKey()}`, 'Content-Type': 'application/json', 'HTTP-Referer': window.location.href, 'X-Title': 'SLA Health Content Generator' },
+    headers: { 'Authorization': `Bearer ${getApiKey()}`, 'Content-Type': 'application/json', 'HTTP-Referer': window.location.href, 'X-Title': 'IBD Health Hub Content Generator' },
     body: JSON.stringify({ model, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: `Please generate content based on the following source material:\n\n---\n${truncatedText}\n---` }], stream: true, max_tokens: 4000, temperature: 0.3 })
   });
   if (!response.ok) {
@@ -7280,7 +7280,7 @@ async function executeComparison(ids, model) {
     `=== ITEM ${i+1}: "${r.title}" (generated by ${r.model || 'Unknown'}) ===\n\n${r.text.slice(0, 8000)}`
   ).join('\n\n---\n\n');
 
-  const comparisonPrompt = `You are a senior medical editor and clinical writing expert at SLA Health. You have been given ${reviews.length} content pieces. Your task is to compare them rigorously across two dimensions: (1) accuracy and completeness, and (2) writing style and quality.
+  const comparisonPrompt = `You are a senior medical editor and clinical writing expert at IBD Health Hub. You have been given ${reviews.length} content pieces. Your task is to compare them rigorously across two dimensions: (1) accuracy and completeness, and (2) writing style and quality.
 
 Provide a structured analysis with the following sections:
 
@@ -7335,7 +7335,7 @@ Specific, actionable improvements for the weaker item(s).`;
 async function attemptAnalysis(model, systemPrompt, reviewsText) {
   const response = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${getApiKey()}`, 'Content-Type': 'application/json', 'HTTP-Referer': window.location.href, 'X-Title': 'SLA Health Content Comparison' },
+    headers: { 'Authorization': `Bearer ${getApiKey()}`, 'Content-Type': 'application/json', 'HTTP-Referer': window.location.href, 'X-Title': 'IBD Health Hub Content Comparison' },
     body: JSON.stringify({ model, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: `Please analyse and compare the following ${reviewsText.split('=== ITEM').length - 1} content items:\n\n${reviewsText}` }], stream: true, max_tokens: 2500, temperature: 0.2 })
   });
   if (!response.ok) {
@@ -8705,7 +8705,7 @@ async function testWpCategorySlug() {
   if (!slug) { statusEl.textContent = 'Enter a slug first.'; statusEl.style.color = 'var(--text-muted)'; return; }
   statusEl.textContent = 'Verifying…'; statusEl.style.color = 'var(--text-muted)';
   try {
-    const resp = await fetch('https://slahealth.co.uk/wp-json/wp/v2/categories?slug=' + encodeURIComponent(slug) + '&per_page=1');
+    const resp = await fetch('https://ibdhealthhub.com/wp-json/wp/v2/categories?slug=' + encodeURIComponent(slug) + '&per_page=1');
     if (!resp.ok) throw new Error('WP API error ' + resp.status);
     const data = await resp.json();
     if (data.length > 0) {
@@ -8763,7 +8763,7 @@ function renderCatPromptPanel(catId) {
   var el = document.getElementById('catEditorPromptPanel');
   if (!el || !catId) return;
 
-  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'SLA Health', text: getCatDefaultPrompt(catId) };
+  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: getCatDefaultPrompt(catId) };
   var prompts = getPromptsForCat(catId) || [DEFAULT_OBJ];
 
   // Update tab badge count
@@ -8773,7 +8773,7 @@ function renderCatPromptPanel(catId) {
   var active = prompts[0];
   var aText  = typeof active === 'string' ? active : (active.text || '');
   var aName  = typeof active === 'string' ? 'Default Prompt' : (active.name || 'Default Prompt');
-  var aBy    = typeof active === 'string' ? 'SLA Health' : (active.createdBy || '');
+  var aBy    = typeof active === 'string' ? 'IBD Health Hub' : (active.createdBy || '');
 
   var activeEditor =
     '<div class="ced-prompt-active">' +
@@ -8835,7 +8835,7 @@ function cedSavePromptItem(catId, idx) {
   var byEl   = document.getElementById('cedp-by-'   + catId + '-' + idx);
   var textEl = document.getElementById('cedp-text-' + catId + '-' + idx);
   if (!textEl) return;
-  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'SLA Health', text: getCatDefaultPrompt(catId) };
+  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: getCatDefaultPrompt(catId) };
   var prompts = getPromptsForCat(catId) || [DEFAULT_OBJ];
   prompts[idx] = {
     name:      nameEl ? nameEl.value.trim() : (prompts[idx] && prompts[idx].name ? prompts[idx].name : ''),
@@ -8881,7 +8881,7 @@ function cedAddPromptToCat(catId) {
   var nameEl = document.getElementById('cedp-new-name-' + catId);
   var byEl   = document.getElementById('cedp-new-by-' + catId);
   if (!textEl || !textEl.value.trim()) { alert('Please enter prompt text.'); return; }
-  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'SLA Health', text: getCatDefaultPrompt(catId) };
+  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: getCatDefaultPrompt(catId) };
   var prompts = getPromptsForCat(catId) || [DEFAULT_OBJ];
   prompts.push({
     name:      nameEl ? nameEl.value.trim() || 'Alternate Prompt' : 'Alternate Prompt',
@@ -9182,7 +9182,7 @@ async function callOpenRouter(prompt, apiKey, model) {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': window.location.href,
-      'X-Title': 'SLA Health Content Generator',
+      'X-Title': 'IBD Health Hub Content Generator',
     },
     body: JSON.stringify({
       model,
@@ -11019,7 +11019,7 @@ function getPromptsForCat(catId) {
     if (!raw) return null;
     // Migrate legacy plain strings to objects
     return raw.map(function(p) {
-      if (typeof p === 'string') return { name: 'Default Prompt', createdBy: 'SLA Health', text: p };
+      if (typeof p === 'string') return { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: p };
       return p;
     });
   } catch(_) { return null; }
@@ -11051,14 +11051,14 @@ function loadPromptsTab_articleOnly() {
   if (!el) return;
 
   el.innerHTML = CATEGORIES.map(function(cat) {
-    var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'SLA Health', text: getCatDefaultPrompt(cat.id) };
+    var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: getCatDefaultPrompt(cat.id) };
     var prompts = getPromptsForCat(cat.id) || [DEFAULT_OBJ];
 
     // Active (index 0) — full editor
     var active = prompts[0];
     var aText  = typeof active === 'string' ? active : (active.text || '');
     var aName  = typeof active === 'string' ? 'Default Prompt' : (active.name || '');
-    var aBy    = typeof active === 'string' ? 'SLA Health' : (active.createdBy || '');
+    var aBy    = typeof active === 'string' ? 'IBD Health Hub' : (active.createdBy || '');
     var aId    = cat.id + '-0';
 
     var activeEditor = '<div class="prompt-active-editor">' +
@@ -11127,7 +11127,7 @@ function getSocialPromptsForPlat(platId) {
     var raw = JSON.parse(localStorage.getItem('sla_social_prompts_' + platId) || 'null');
     if (!raw) return null;
     return raw.map(function(p) {
-      if (typeof p === 'string') return { name: 'Default Prompt', createdBy: 'SLA Health', text: p };
+      if (typeof p === 'string') return { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: p };
       return p;
     });
   } catch(_) { return null; }
@@ -11150,13 +11150,13 @@ function loadSocialPromptsTab() {
   if (!el) return;
 
   el.innerHTML = SOCIAL_PLATFORMS.map(function(plat) {
-    var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'SLA Health', text: DEFAULT_SOCIAL_PROMPTS[plat.id] || '' };
+    var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: DEFAULT_SOCIAL_PROMPTS[plat.id] || '' };
     var prompts = getSocialPromptsForPlat(plat.id) || [DEFAULT_OBJ];
 
     var active = prompts[0];
     var aText  = typeof active === 'string' ? active : (active.text || '');
     var aName  = typeof active === 'string' ? 'Default Prompt' : (active.name || '');
-    var aBy    = typeof active === 'string' ? 'SLA Health' : (active.createdBy || '');
+    var aBy    = typeof active === 'string' ? 'IBD Health Hub' : (active.createdBy || '');
     var aId    = 'sp-' + plat.id + '-0';
 
     var smallSvg = (PLAT_SVG[plat.id] || '').replace(/width:20px;height:20px/g, 'width:14px;height:14px');
@@ -11226,7 +11226,7 @@ function saveSocialPromptItem(platId, idx) {
   var textEl = document.getElementById('prompt-text-' + aId);
   if (!textEl) return;
   var platDefaultText = (function() { var p = SOCIAL_PLATFORMS.find(function(x){return x.id===platId;}); return p ? ('Write a ' + p.label + ' post. Tone: ' + p.tone) : ''; })();
-  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'SLA Health', text: platDefaultText };
+  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: platDefaultText };
   var prompts = getSocialPromptsForPlat(platId) || [DEFAULT_OBJ];
   prompts[idx] = {
     name:      nameEl ? nameEl.value.trim() : (prompts[idx].name || ''),
@@ -11261,7 +11261,7 @@ function addSocialPromptToPlat(platId) {
   var byEl   = document.getElementById('prompt-new-by-sp-' + platId);
   if (!textEl || !textEl.value.trim()) return;
   var platDefaultText = (function() { var p = SOCIAL_PLATFORMS.find(function(x){return x.id===platId;}); return p ? ('Write a ' + p.label + ' post. Tone: ' + p.tone) : ''; })();
-  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'SLA Health', text: platDefaultText };
+  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: platDefaultText };
   var prompts = getSocialPromptsForPlat(platId) || [DEFAULT_OBJ];
   prompts.push({
     name:      (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : ('Prompt ' + (prompts.length + 1)),
@@ -11328,7 +11328,7 @@ function savePromptItem(catId, idx) {
   const textEl = document.getElementById('prompt-text-' + catId + '-' + idx);
   if (!textEl) return;
 
-  const DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'SLA Health', text: DEFAULT_PROMPT };
+  const DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: DEFAULT_PROMPT };
   const prompts = getPromptsForCat(catId) || [DEFAULT_OBJ];
 
   prompts[idx] = {
@@ -11383,7 +11383,7 @@ function addPromptToCat(catId) {
   const byEl   = document.getElementById('prompt-new-by-'   + catId);
   if (!textEl || !textEl.value.trim()) return;
 
-  const DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'SLA Health', text: DEFAULT_PROMPT };
+  const DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'IBD Health Hub', text: DEFAULT_PROMPT };
   const prompts = getPromptsForCat(catId) || [DEFAULT_OBJ];
 
   prompts.push({
