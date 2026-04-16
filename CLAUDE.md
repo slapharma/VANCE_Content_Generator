@@ -1,4 +1,4 @@
-# SLAHEALTH ClinicalReview Generator — Claude Context
+# VANCE Content Generator — Claude Context
 
 ## Architecture
 - **Single-file app**: entire UI lives in `index.html` (inline JS/CSS). No build step.
@@ -6,11 +6,15 @@
 - **ES Modules**: `"type": "module"` in package.json; all imports must use `.js` extension.
 - **KV persistence**: `@vercel/kv` for all data. Env vars: `KV_REST_API_URL`, `KV_REST_API_TOKEN`.
 
+## Branding
+- This project is **Vance Medical Foods** (vancemedicalfoods.com)
+- Production URL: `https://vance-content-generator.vercel.app`
+- All prompts, emails, headers, and UI must reference "Vance Medical Foods" / "vancemedicalfoods.com".
+
 ## Deployment
 - GitHub auto-deploy is **disabled** (`"github": {"enabled": false}` in vercel.json).
-- Always deploy manually: `vercel --prod --yes` from repo root.
+- Deploy: `vercel --prod --yes` from the repo directory (re-link Vercel project to `vance-content-generator` first if needed).
 - Vercel Hobby plan: **12 serverless function limit** — do not add new files under `api/`.
-- Production URL: https://sla-health-content-generator.vercel.app
 
 ## Vercel Routing (Critical)
 - All automation routes handled by `api/automation/[...slug].js` (single catch-all).

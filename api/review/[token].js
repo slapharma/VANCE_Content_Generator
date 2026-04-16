@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { kv } from '../../lib/kv.js';
 import { parseApprovalToken } from '../review/send.js';
 
 export function computeNewStatus(item) {
@@ -12,16 +12,16 @@ export function computeNewStatus(item) {
 // ── Shared HTML shell ────────────────────────────────────────────────────────
 const shell = (title, body) => `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${title} — IBD Health Hub</title>
+<title>${title} — Vance Medical Foods</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:Arial,sans-serif;background:#f0f2f5;min-height:100vh;padding:24px 16px;}
   .brand{display:flex;align-items:center;gap:8px;margin-bottom:24px;justify-content:center;}
   .brand-name{color:#1e2d40;font-weight:800;font-size:18px;letter-spacing:1px;}
-  .brand-name span{color:#F47920;}
+  .brand-name span{color:#006868;}
   .card{max-width:640px;margin:0 auto;background:#fff;border-radius:12px;
         box-shadow:0 2px 20px rgba(30,45,64,.1);overflow:hidden;}
-  .card-head{background:#1e2d40;border-bottom:3px solid #F47920;padding:20px 24px;}
+  .card-head{background:#1e2d40;border-bottom:3px solid #006868;padding:20px 24px;}
   .card-head h1{color:#fff;font-size:1.1rem;line-height:1.4;}
   .card-head .cat{color:rgba(255,255,255,0.55);font-size:0.75rem;margin-top:4px;}
   .card-body{padding:24px;}
@@ -32,10 +32,10 @@ const shell = (title, body) => `<!DOCTYPE html><html lang="en"><head>
   textarea{width:100%;padding:12px;border:1px solid #dde3ea;border-radius:8px;
            font-family:Arial,sans-serif;font-size:0.875rem;resize:vertical;
            min-height:120px;color:#333;line-height:1.6;}
-  textarea:focus{outline:none;border-color:#F47920;box-shadow:0 0 0 3px rgba(244,121,32,.12);}
+  textarea:focus{outline:none;border-color:#006868;box-shadow:0 0 0 3px rgba(244,121,32,.12);}
   .hint{font-size:0.72rem;color:#9aa5b4;margin-top:4px;}
   .actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
-  .btn-submit{background:#F47920;color:#fff;border:none;padding:12px 28px;
+  .btn-submit{background:#006868;color:#fff;border:none;padding:12px 28px;
               border-radius:8px;font-size:0.875rem;font-weight:700;cursor:pointer;}
   .btn-submit:hover{background:#d96a18;}
   .btn-approve{background:#f0f2f5;color:#1e2d40;border:1px solid #dde3ea;
@@ -45,9 +45,9 @@ const shell = (title, body) => `<!DOCTYPE html><html lang="en"><head>
   .confirm-msg{text-align:center;padding:32px 24px;}
   .confirm-msg h2{color:#1e2d40;font-size:1.2rem;margin:8px 0 12px;}
   .confirm-msg p{color:#555;line-height:1.6;margin-bottom:16px;}
-  .back{color:#F47920;font-weight:bold;text-decoration:none;font-size:0.875rem;}
+  .back{color:#006868;font-weight:bold;text-decoration:none;font-size:0.875rem;}
 </style></head><body>
-<div class="brand"><span class="brand-name"><span>IBD Health Hub</span> ■</span></span></div>
+<div class="brand"><span class="brand-name"><span>Vance Medical Foods</span> ■</span></span></div>
 ${body}
 </body></html>`;
 

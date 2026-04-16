@@ -3,9 +3,17 @@
     "enabled": false,
     "silent": true
   },
+  "functions": {
+    "api/automation/[...slug].js": { "maxDuration": 60 },
+    "api/social/[...slug].js":    { "maxDuration": 60 }
+  },
+  "rewrites": [
+    { "source": "/api/automation/:slug*", "destination": "/api/automation/[...slug]" },
+    { "source": "/api/social/:slug*",     "destination": "/api/social/[...slug]" }
+  ],
   "crons": [
-    { "path": "/api/cron/publish",     "schedule": "0 8 * * *"   },
-    { "path": "/api/automation/run",   "schedule": "0 7 * * *"    },
-    { "path": "/api/social/cron",      "schedule": "0 9 * * *"    }
+    { "path": "/api/cron/publish",     "schedule": "0 8 * * *" },
+    { "path": "/api/automation/run",   "schedule": "0 7 * * *" },
+    { "path": "/api/social/cron",      "schedule": "0 9 * * *" }
   ]
 }

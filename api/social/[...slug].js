@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   // Single-segment paths arrive as a plain string ('generate').
   // Multi-segment paths arrive as a slash-joined string ('kits/kit_abc').
   // Split on '/' to normalise both cases into an array.
-  const rawSlug = req.query['...slug'] || '';
+  const rawSlug = req.query['...slug'] || req.query.slug || '';
   const slug = Array.isArray(rawSlug)
     ? rawSlug
     : String(rawSlug).split('/').filter(Boolean);

@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { kv } from '../../lib/kv.js';
 import { randomUUID } from 'crypto';
 
 export function validateReviewer(data) {

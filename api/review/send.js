@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { kv } from '../../lib/kv.js';
 import { SignJWT, jwtVerify } from 'jose';
 import { Resend } from 'resend';
 
@@ -34,14 +34,14 @@ export async function parseApprovalToken(token) {
 
 function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
   return {
-    from: process.env.RESEND_FROM_EMAIL ?? 'noreply@mail.ibdhealthhub.com',
+    from: process.env.RESEND_FROM_EMAIL ?? 'noreply@mail.vancemedicalfoods.com',
     to: reviewer.email,
     subject: `Review requested: ${content.title}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
-        <div style="background:#1e2d40;padding:20px 24px;border-bottom:3px solid #F47920;">
-          <span style="color:#fff;font-size:20px;font-weight:800;letter-spacing:1px;">IBD Health Hub</span>
-          <span style="color:#F47920;font-size:20px;font-weight:800;"> ■</span>
+        <div style="background:#1e2d40;padding:20px 24px;border-bottom:3px solid #006868;">
+          <span style="color:#fff;font-size:20px;font-weight:800;letter-spacing:1px;">Vance Medical Foods</span>
+          <span style="color:#006868;font-size:20px;font-weight:800;"> ■</span>
         </div>
         <div style="padding:28px 24px;">
           <h2 style="color:#1e2d40;font-size:18px;margin:0 0 12px;">Content Review Request</h2>
@@ -50,7 +50,7 @@ function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
             The following content has been submitted for your review:
           </p>
           <table cellpadding="12" cellspacing="0" border="0" width="100%"
-                 style="background:#f0f2f5;border-radius:8px;border-left:3px solid #F47920;margin-bottom:24px;">
+                 style="background:#f0f2f5;border-radius:8px;border-left:3px solid #006868;margin-bottom:24px;">
             <tr>
               <td>
                 <p style="font-size:11px;color:#6b7a8d;text-transform:uppercase;letter-spacing:1px;margin:0 0 4px;">Article for Review</p>
@@ -78,7 +78,7 @@ function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
               <td style="padding-right:12px;">
                 <table cellpadding="0" cellspacing="0" border="0">
                   <tr>
-                    <td align="center" bgcolor="#F47920" style="border-radius:6px;">
+                    <td align="center" bgcolor="#006868" style="border-radius:6px;">
                       <a href="${approveUrl}" style="display:inline-block;padding:13px 28px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:6px;">✓ Approve</a>
                     </td>
                   </tr>
@@ -98,7 +98,7 @@ function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
           <p style="color:#9aa5b4;font-size:12px;">This link expires in 7 days.</p>
         </div>
         <div style="background:#f0f2f5;padding:16px 24px;border-top:1px solid #dde3ea;">
-          <p style="color:#9aa5b4;font-size:12px;margin:0;">IBD Health Hub Content Platform — ibdhealthhub.com</p>
+          <p style="color:#9aa5b4;font-size:12px;margin:0;">Vance Medical Foods Content Platform — vancemedicalfoods.com</p>
         </div>
       </div>
     `,

@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { kv } from '../../lib/kv.js';
 
 // Map app category IDs → WordPress category slugs
 const CATEGORY_SLUG_MAP = {
@@ -34,7 +34,7 @@ async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader) {
     // Fetch the image binary from the external URL
     const imgResp = await fetch(imageUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; IBDHealthHubBot/1.0; +https://ibdhealthhub.com)',
+        'User-Agent': 'Mozilla/5.0 (compatible; VanceBot/1.0; +https://vancemedicalfoods.com)',
         'Accept': 'image/*',
       },
       redirect: 'follow',
@@ -79,10 +79,51 @@ async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader) {
   }
 }
 
+// Convert raw markdown/LLM output to clean WordPress HTML
+function markdownToWpHtml(text) {
+  if (!text) return '';
+  const lines = text.split('\n');
+  const html = [];
+  let subtitleDone = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) { html.push(''); continue; }
+
+    // Strip ** wrappers from standalone heading lines (e.g. "**Background & Rationale**")
+    const boldOnly = trimmed.match(/^\*\*(.+?)\*\*$/);
+
+    // Markdown headings → <h2>; first body "# " is the subtitle and becomes <h1>
+    if (trimmed.startsWith('### '))     { html.push(`<h2>${trimmed.slice(4).replace(/\*\*/g, '')}</h2>`); continue; }
+    if (trimmed.startsWith('## '))      { html.push(`<h2>${trimmed.slice(3).replace(/\*\*/g, '')}</h2>`); continue; }
+    if (trimmed.startsWith('# '))       {
+      const txt = trimmed.slice(2).replace(/\*\*/g, '');
+      if (!subtitleDone) { subtitleDone = true; html.push(`<h1>${txt}</h1>`); continue; }
+      html.push(`<h2>${txt}</h2>`); continue;
+    }
+
+    // Bold-only lines that look like section headers → <h2>
+    if (boldOnly) {
+      const inner = boldOnly[1].trim();
+      const isHeader = /^(Background|Study Design|Patient Population|Key Findings|Discussion|Safety|Authors|Reference|Clinical Relevance|Conclusions|Disclaimer)/i.test(inner);
+      if (isHeader) { html.push(`<h2>${inner}</h2>`); continue; }
+    }
+
+    // Inline bold: **text** → <strong>text</strong>
+    let p = trimmed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Inline italic: *text* → <em>text</em> (but not inside tags)
+    p = p.replace(/(?<!\w)\*([^*]+?)\*(?!\w)/g, '<em>$1</em>');
+
+    html.push(`<p>${p}</p>`);
+  }
+
+  return html.filter(l => l !== '').join('\n');
+}
+
 export function buildWpPayload(item, categoryIds, featuredMediaId = null) {
   return {
     title:      item.title,
-    content:    item.body,
+    content:    markdownToWpHtml(item.body),
     excerpt:    item.excerpt ?? '',
     status:     'publish',
     categories: Array.isArray(categoryIds) && categoryIds.length > 0 ? categoryIds : [],

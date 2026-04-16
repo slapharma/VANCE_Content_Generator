@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { kv } from '../../lib/kv.js';
 
 const VALID_TRANSITIONS = {
   draft:      ['in_review', 'approved', 'draft', 'trash'],

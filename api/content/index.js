@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { kv } from '../../lib/kv.js';
 import { randomUUID } from 'crypto';
 
 // ── Pure helpers (exported for testing) ─────────────────────────────────────
@@ -12,6 +12,7 @@ export function buildContentItem(data) {
     excerpt: data.excerpt ?? '',
     category: data.category ?? 'uncategorised',
     template: data.template ?? 'standard',
+    model: data.model ?? null,
     status: 'draft',
     sourceId: data.sourceId ?? null,      // links back to archive item id
     heroImageUrl: data.heroImageUrl ?? null,   // stored for WP featured image upload

@@ -12,6 +12,9 @@ import rulesIndexHandler from '../../lib/automation/handlers/rules-index.js';
 import rulesIdHandler from '../../lib/automation/handlers/rules-id.js';
 import jobsIndexHandler from '../../lib/automation/handlers/jobs-index.js';
 import jobsIdHandler from '../../lib/automation/handlers/jobs-id.js';
+import authHandler from '../../lib/automation/handlers/auth.js';
+import logsHandler from '../../lib/automation/handlers/logs.js';
+import sourcesListHandler from '../../lib/automation/handlers/sources-list.js';
 
 export default async function handler(req, res) {
   // In non-Next.js Vercel serverless, [...slug].js exposes matched segments as
@@ -19,7 +22,9 @@ export default async function handler(req, res) {
   // Single-segment paths arrive as a plain string ('telegram-test').
   // Multi-segment paths arrive as a slash-joined string ('rules/rule_abc').
   // Split on '/' to normalise both cases into an array.
-  const rawSlug = req.query['...slug'] || '';
+  // When requests come via the vercel.json rewrite (:slug* capture), the
+  // segments arrive as req.query.slug instead of req.query['...slug'].
+  const rawSlug = req.query['...slug'] || req.query.slug || '';
   const slug = Array.isArray(rawSlug)
     ? rawSlug
     : String(rawSlug).split('/').filter(Boolean);
@@ -27,8 +32,13 @@ export default async function handler(req, res) {
 
   if (first === 'approve') return approveHandler(req, res);
   if (first === 'run') return runHandler(req, res);
+  if (first === 'logs') return logsHandler(req, res);
+  if (first === 'sources-list') return sourcesListHandler(req, res);
   if (first === 'telegram-test') return telegramTestHandler(req, res);
   if (first === 'telegram') return telegramHandler(req, res);
+
+  // Cloud storage OAuth + config — slug[0]='auth', slug[1]=service, slug[2]=callback?
+  if (first === 'auth') return authHandler(req, res, slug);
 
   if (first === 'rules' && !second) return rulesIndexHandler(req, res);
   if (first === 'rules' && second) {

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 65" width="220" height="65">
+  <rect width="220" height="65" fill="#ffffff" rx="0"/>
+  <!-- V icon: left diagonal stroke -->
+  <polygon points="0,6 12,6 29,44 17,44" fill="#006868"/>
+  <!-- V icon: right diagonal stroke -->
+  <polygon points="29,44 41,44 53,8 41,8" fill="#006868"/>
+  <!-- Arrow shaft extending above right stroke -->
+  <rect x="44" y="2" width="9" height="23" fill="#006868"/>
+  <!-- Arrow head -->
+  <polygon points="38,17 48.5,2 59,17" fill="#006868"/>
+  <!-- VANCE text: V in dark teal, ANCE in light teal -->
+  <text x="70" y="40" font-family="'Arial Black',Arial,Helvetica,sans-serif" font-size="27" font-weight="900" fill="#006868">V</text>
+  <text x="92" y="40" font-family="'Arial Black',Arial,Helvetica,sans-serif" font-size="27" font-weight="900" fill="#4DBDBD">ANCE</text>
+  <!-- Rule -->
+  <line x1="70" y1="46" x2="218" y2="46" stroke="#006868" stroke-width="0.7" opacity="0.25"/>
+  <!-- MEDICAL FOODS -->
+  <text x="70" y="59" font-family="Arial,Helvetica,sans-serif" font-size="8.5" font-weight="700" fill="#006868" letter-spacing="2.8">MEDICAL FOODS</text>
+</svg>
