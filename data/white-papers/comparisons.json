@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "id": "comp_1773908700443",
+    "category": "white-papers",
+    "title": "Comparison: Technical Deep-Dive: Enteric-Coated Fish vs Technical Deep-Dive: Enteric-Coated Fish",
+    "analysisText": "OVERALL SUMMARY\nBoth items are identical in content, representing a comprehensive technical deep-dive into enteric-coated fish oil for Crohn's disease management. The analysis covers formulation technology, mechanism of action, and clinical evidence from the landmark Belluzzi et al. 1996 study. The document appears to be cut off mid-sentence in the biomarker section, suggesting incomplete generation.\n\nACCURACY & COMPLETENESS\nScore: 8/10 for both items\n\nThe content demonstrates strong technical accuracy in describing enteric coating technologies, pharmaceutical manufacturing processes, and the anti-inflammatory mechanisms of n-3 fatty acids. The clinical data from the Belluzzi study is accurately represented with correct statistics (59% vs 26% remission rates, P=0.003). However, the document is incomplete - it cuts off mid-sentence in the biomarker section and lacks a conclusion or discussion of limitations. The analysis would benefit from additional context about current clinical guidelines and whether this approach remains standard of care.\n\nWRITING STYLE & QUALITY\nScore: 9/10 for both items\n\nThe writing is clear, professional, and well-structured with appropriate technical depth. The document uses effective hierarchical organization with clear section headers and subheaders. The tone is appropriately academic while remaining accessible. Technical terminology is used correctly and explained where necessary. The executive summary provides a useful overview. The only weakness is the incomplete ending, which disrupts the flow and leaves the analysis feeling unfinished.\n\nCOMPARATIVE VERDICT\nSince both items are identical, there is no basis for comparison. They represent the same document with the same strengths (technical accuracy, clear structure, comprehensive coverage) and the same weakness (incomplete ending).\n\nRECOMMENDATIONS\nTo improve this document:\n\n1. Complete the biomarker section and add a conclusion discussing the clinical implications and current relevance of the findings\n2. Include a limitations section addressing the single-study basis and potential publication bias\n3. Add context about whether enteric-coated fish oil remains a recommended therapy in current Crohn's disease guidelines\n4. Consider adding a cost-effectiveness analysis or comparison with other maintenance therapies\n5. Include a discussion of potential adverse effects beyond gastrointestinal tolerability\n6. Add references or citations to support the technical claims made throughout the document",
+    "reviewIds": [
+      "r_1773418727153",
+      "r_1773418252081"
+    ],
+    "reviewTitles": [
+      "Technical Deep-Dive: Enteric-Coated Fish",
+      "Technical Deep-Dive: Enteric-Coated Fish"
+    ],
+    "model": "arcee-ai/trinity-large-preview",
+    "createdAt": "2026-03-19T08:25:00.443Z"
+  }
+]
