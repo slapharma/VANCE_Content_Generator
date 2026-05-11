@@ -2287,6 +2287,11 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <span>Notifications</span>
       <span class="nav-badge" id="automationInboxBadge" style="display:none;">0</span>
     </button>
+    <div class="nav-section-label">Research</div>
+    <button class="nav-item" onclick="switchTab('bibliography')" id="tab-bibliography">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>Bibliography</span>
+    </button>
     <div class="nav-section-label">System</div>
     <button class="nav-item" onclick="switchTab('categories')" id="tab-categories">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -2312,6 +2317,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;flex-shrink:0;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       <span id="syncText">Loading…</span>
     </div>
+          <button onclick="wizAddSource('google_sheets')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ Google Sheets</button>
+          <button onclick="wizAddSource('bibliography')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ Bibliography</button>
   </div>
 </aside>
 
@@ -4210,6 +4217,180 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     </div>
   </div>
 </div><!-- /view-automation-inbox -->
+<!-- ══════════════════════════════ TAB: BIBLIOGRAPHY ══════════════════════════════ -->
+<div class="tab-view" id="view-bibliography">
+  <div class="social-view">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-header-title">Bibliography</h1>
+        <p class="page-header-subtitle">Curate research papers from PubMed and Semantic Scholar, then generate content automatically.</p>
+      </div>
+      <div class="page-header-actions">
+        <div style="display:flex;gap:20px;align-items:center;margin-right:12px;">
+          <div style="text-align:center;"><span style="display:block;font-size:1.2rem;font-weight:800;color:var(--vance-dark);line-height:1;" id="bibStatTotal">—</span><span style="font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Collections</span></div>
+          <div style="text-align:center;"><span style="display:block;font-size:1.2rem;font-weight:800;color:var(--vance-dark);line-height:1;" id="bibStatPapers">—</span><span style="font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Papers</span></div>
+        </div>
+        <button class="btn btn-orange" onclick="openBibWizard()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Bibliography
+        </button>
+      </div>
+    </div>
+    <div id="bibliographyList" style="display:flex;flex-direction:column;gap:10px;"></div>
+    <div id="bibliographyEmpty" style="display:none;text-align:center;padding:64px 20px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="width:56px;height:56px;margin:0 auto 16px;opacity:0.3;display:block;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <p style="font-size:0.9rem;font-weight:700;margin-bottom:6px;">No bibliographies yet</p>
+      <p style="font-size:0.78rem;max-width:320px;margin:0 auto;">Create your first bibliography to start organising research papers and generating content.</p>
+    </div>
+  </div>
+  <!-- Publications modal -->
+  <div id="bibPubsModal" onclick="if(event.target===this)closeBibPubsModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:900;align-items:center;justify-content:center;">
+    <div style="background:var(--card);width:90%;max-width:860px;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--vance-dark);color:#fff;flex-shrink:0;">
+        <span id="bibPubsTitle" style="font-size:0.82rem;font-weight:800;">Publications</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button onclick="bibDownloadCSV()" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.3);font-size:0.68rem;padding:4px 12px;">CSV</button>
+          <button onclick="bibDownloadPDF()" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.3);font-size:0.68rem;padding:4px 12px;">PDF</button>
+          <button onclick="closeBibPubsModal()" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:1.1rem;cursor:pointer;padding:0 4px;">&times;</button>
+        </div>
+      </div>
+      <div id="bibPubsBody" style="flex:1;overflow-y:auto;padding:16px 20px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Bibliography Wizard ── -->
+<div class="tab-view" id="view-bibliography-new">
+  <div style="border:1px solid var(--border);background:var(--card);box-shadow:var(--shadow);overflow:hidden;">
+    <div class="wiz-hero">
+      <div>
+        <h2 id="bibWizTitle">New Bibliography</h2>
+        <p>Build a collection of research papers</p>
+      </div>
+      <button class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.3);font-size:0.72rem;" onclick="closeBibWizard()">Cancel</button>
+    </div>
+    <div class="wiz-steps-bar" id="bibWizardSteps">
+      <div class="wiz-step active" id="bibStep1">&#9312; Details</div>
+      <div class="wiz-step" id="bibStep2">&#9313; Add Papers</div>
+      <div class="wiz-step" id="bibStep3">&#9314; Review</div>
+    </div>
+    <div style="padding:24px 28px;">
+      <!-- Step 1: Details -->
+      <div id="bibPanel1">
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Bibliography Name *</label>
+          <input id="bibName" type="text" maxlength="80" placeholder="e.g. IBD Treatment Guidelines 2026" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Description</label>
+          <textarea id="bibDesc" rows="3" placeholder="Brief description of this bibliography collection..." style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;resize:vertical;"></textarea>
+        </div>
+        <div style="display:flex;gap:16px;">
+          <div style="flex:1;">
+            <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Indication</label>
+            <select id="bibIndication" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+              <option value="IBD">IBD (General)</option>
+              <option value="Crohn's Disease">Crohn's Disease</option>
+              <option value="Ulcerative Colitis">Ulcerative Colitis</option>
+              <option value="Microscopic Colitis">Microscopic Colitis</option>
+              <option value="Paediatric IBD">Paediatric IBD</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Bibliography Type</label>
+            <select id="bibType" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+              <option value="clinical">Clinical</option>
+              <option value="guidelines">Guidelines</option>
+              <option value="health-economics">Health Economics</option>
+              <option value="prevalence">Prevalence</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- Step 2: Add Papers -->
+      <div id="bibPanel2" style="display:none;">
+        <div style="margin-bottom:16px;padding:14px;background:var(--bg);border:1px solid var(--border);">
+          <label style="display:block;font-size:0.8rem;font-weight:700;margin-bottom:8px;color:var(--text);">Search Literature</label>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:4px;align-items:center;">
+            <label style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;">Search Query</label>
+            <label style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;">Database</label>
+            <span></span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:10px;align-items:center;">
+            <input id="bibSearchQuery" type="text" placeholder="e.g. IBD biologic therapy 2025" style="padding:8px 12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.82rem;" onkeydown="if(event.key==='Enter')bibRunSearch()">
+            <select id="bibSearchSource" style="padding:8px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.78rem;min-width:140px;">
+              <option value="pubmed">PubMed</option>
+              <option value="semantic_scholar">Semantic Scholar</option>
+            </select>
+            <button class="btn btn-orange" onclick="bibRunSearch()" id="bibSearchBtn" style="white-space:nowrap;">Search</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:4px;align-items:center;">
+            <label style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;">Narrow by Keywords <span style="font-weight:400;text-transform:none;letter-spacing:0;">(comma-separated, ANDed into search)</span></label>
+            <label style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;">Filter by Country</label>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px;align-items:center;">
+            <input id="bibSearchKeywords" type="text" placeholder="e.g. remission, mucosal healing, biologic" style="padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.78rem;" onkeydown="if(event.key==='Enter')bibRunSearch()">
+            <select id="bibSearchCountry" style="padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.78rem;min-width:160px;">
+              <option value="">Any country</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="United States">United States</option>
+              <option value="Australia">Australia</option>
+              <option value="Canada">Canada</option>
+              <option value="Netherlands">Netherlands</option>
+              <option value="Germany">Germany</option>
+              <option value="France">France</option>
+              <option value="Italy">Italy</option>
+              <option value="Spain">Spain</option>
+              <option value="Sweden">Sweden</option>
+              <option value="Denmark">Denmark</option>
+              <option value="Norway">Norway</option>
+              <option value="Belgium">Belgium</option>
+              <option value="Switzerland">Switzerland</option>
+              <option value="Israel">Israel</option>
+              <option value="Japan">Japan</option>
+              <option value="China">China</option>
+              <option value="India">India</option>
+            </select>
+          </div>
+          <div style="font-size:0.68rem;color:var(--text-muted);">PubMed: biomedical focus (36M+ articles) &middot; Semantic Scholar: broader academic coverage (214M+ papers) &middot; Country filters by author affiliation</div>
+          <div id="bibSearchResults" style="margin-top:10px;max-height:320px;overflow-y:auto;"></div>
+        </div>
+        <div style="margin-bottom:16px;padding:14px;background:var(--bg);border:1px solid var(--border);">
+          <label style="display:block;font-size:0.8rem;font-weight:700;margin-bottom:8px;color:var(--text);">Add Manually</label>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <input id="bibManTitle" placeholder="Paper title *" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.82rem;">
+            <div style="display:flex;gap:6px;">
+              <input id="bibManAuthors" placeholder="Authors (comma-separated)" style="flex:2;padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.82rem;">
+              <input id="bibManYear" type="number" placeholder="Year" min="1900" max="2099" style="width:80px;padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.82rem;">
+            </div>
+            <div style="display:flex;gap:6px;">
+              <input id="bibManJournal" placeholder="Journal" style="flex:1;padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.82rem;">
+              <input id="bibManDoi" placeholder="DOI" style="flex:1;padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.82rem;">
+            </div>
+            <input id="bibManUrl" placeholder="URL" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.82rem;">
+            <textarea id="bibManAbstract" rows="2" placeholder="Abstract (optional)" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.82rem;resize:vertical;"></textarea>
+            <button class="btn btn-outline" onclick="bibAddManual()" style="align-self:flex-start;">+ Add Paper</button>
+          </div>
+        </div>
+        <div style="margin-bottom:8px;font-size:0.8rem;font-weight:700;color:var(--text);">Papers Added (<span id="bibPaperCount">0</span>)</div>
+        <div id="bibPapersList" style="max-height:200px;overflow-y:auto;"></div>
+      </div>
+      <!-- Step 3: Review -->
+      <div id="bibPanel3" style="display:none;">
+        <div id="bibReviewSummary" style="margin-bottom:16px;"></div>
+        <div id="bibReviewTable" style="max-height:400px;overflow-y:auto;"></div>
+      </div>
+      <!-- Nav buttons -->
+      <div style="display:flex;justify-content:space-between;margin-top:20px;">
+        <button class="btn btn-outline" id="bibBtnBack" onclick="bibBack()" style="display:none;">&larr; Back</button>
+        <div style="flex:1;"></div>
+        <button class="btn btn-orange" id="bibBtnNext" onclick="bibNext()">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════ TAB: CATEGORIES ══════════════════════════════ -->
 <div class="tab-view" id="view-categories">
   <div class="cats-page">
@@ -4789,6 +4970,29 @@ function updateArticleHeroPreview() {
     img.src = heroImageUrl;
     wrap.style.display = '';
   } else {
+    } else if (s.type === 'google_sheets') {
+      inputHtml = '<div style="display:flex;flex-direction:column;gap:4px;flex:1;">'
+        + '<input placeholder="Sheet ID or full Google Sheets URL" oninput="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src){var v=el.value.trim();var m=v.match(/\\/spreadsheets\\/d\\/([a-zA-Z0-9_-]+)/);src.sheetId=m?m[1]:v;}})(this)" value="' + escHtml(s.sheetId||'') + '" style="width:100%;box-sizing:border-box;padding:5px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;" title="Paste the Sheet ID or the full URL — the ID will be extracted automatically">'
+        + '<div style="display:flex;gap:6px;">'
+        + '<input placeholder="Sheet/tab name (default: Sheet1)" oninput="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src)src.sheetName=el.value.trim()||\'Sheet1\';})(this)" value="' + escHtml(s.sheetName||'') + '" style="flex:1;padding:5px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;" title="Name of the tab (leave blank for Sheet1)">'
+        + '<input placeholder="URL col (e.g. A)" oninput="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src)src.urlColumn=el.value.trim().toUpperCase();})(this)" value="' + escHtml(s.urlColumn||'') + '" style="width:68px;padding:5px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;" title="Column letter containing the source URL (auto-detected from header if blank)">'
+        + '</div>'
+        + '<div style="display:flex;gap:6px;">'
+        + '<input placeholder="Notes col (e.g. E — generation date)" oninput="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src)src.notesColumn=el.value.trim().toUpperCase();})(this)" value="' + escHtml(s.notesColumn||'') + '" style="flex:1;padding:5px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;" title="Column where generation date/link will be written (auto-detected or appended)">'
+        + '<input placeholder="WP link col (e.g. F)" oninput="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src)src.wpLinkColumn=el.value.trim().toUpperCase();})(this)" value="' + escHtml(s.wpLinkColumn||'') + '" style="flex:1;padding:5px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;" title="Column where published WordPress URL will be written">'
+        + '</div></div>';
+    } else if (s.type === 'bibliography') {
+      var bibOpts = (_wizBibCache || []).map(function(b) {
+        return '<option value="' + escHtml(b.id) + '"' + (s.bibId === b.id ? ' selected' : '') + '>' + escHtml(b.name) + ' (' + (b.paperCount||0) + ' papers)</option>';
+      }).join('');
+      inputHtml = '<div style="display:flex;flex-direction:column;gap:4px;flex:1;">'
+        + '<select onchange="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src)src.bibId=el.value;})(this)" style="width:100%;box-sizing:border-box;padding:5px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;">'
+        + '<option value="">-- Select bibliography --</option>' + bibOpts + '</select>'
+        + '<div style="display:flex;gap:10px;font-size:0.75rem;color:var(--text-muted);padding:2px 0;">'
+        + '<label style="cursor:pointer;"><input type="radio" name="bibMode_' + s.id + '" value="daily"' + (s.mode === 'daily' ? ' checked' : '') + ' onchange="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src)src.mode=\'daily\';})(this)"> One per day</label>'
+        + '<label style="cursor:pointer;"><input type="radio" name="bibMode_' + s.id + '" value="all"' + (s.mode === 'all' ? ' checked' : '') + ' onchange="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src)src.mode=\'all\';})(this)"> All at once</label>'
+        + '<label style="cursor:pointer;"><input type="radio" name="bibMode_' + s.id + '" value="on_new"' + (s.mode === 'on_new' ? ' checked' : '') + ' onchange="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src)src.mode=\'on_new\';})(this)"> On new addition</label>'
+        + '</div></div>';
     wrap.style.display = 'none';
     img.src = '';
   }
@@ -5278,6 +5482,8 @@ const TAB_TITLES = {
   'automation-rules': 'Automations',
   'automation-inbox': 'Notifications',
   categories:         'Content Categories',
+  bibliography:       'Bibliography',
+  'bibliography-new': 'Bibliography Wizard',
   trash:              'Trash',
 };
 
@@ -5730,6 +5936,7 @@ function switchTab(tab) {
     return;
   }
   // automation-new: show flat form, populate category dropdown
+  var allTabs = ['dashboard','generator','archive','comparison','reports','pipeline','distribution','calendar','monitoring','settings','llm','automation','automation-new','automation-rules','automation-inbox','bibliography','bibliography-new','categories','trash'];
   var allTabs = ['dashboard','generator','archive','comparison','reports','pipeline','distribution','calendar','monitoring','settings','llm','automation','automation-new','automation-rules','automation-inbox','categories','trash'];
   allTabs.forEach(t => {
     const v = document.getElementById('view-' + t);
@@ -5749,6 +5956,7 @@ function switchTab(tab) {
   if (tab === 'automation')        loadAutomation();
   if (tab === 'automation-rules')  loadAutoRules();
   if (tab === 'automation-inbox')  loadAutoInbox();
+  if (tab === 'bibliography')       loadBibliographies();
   if (tab === 'categories')        renderCategoriesPage();
   if (tab === 'trash')             loadTrash();
 
@@ -5758,6 +5966,7 @@ function switchTab(tab) {
 
   // Hide category header on non-content tabs
   const catHdr = document.getElementById('categoryHeader');
+  const hideCat = ['dashboard','calendar','pipeline','monitoring','distribution','reports','settings','prompts','llm','automation','automation-new','automation-rules','automation-inbox','bibliography','bibliography-new','categories','trash'].includes(tab);
   const hideCat = ['dashboard','calendar','pipeline','monitoring','distribution','reports','settings','prompts','llm','automation','automation-new','automation-rules','automation-inbox','categories','trash'].includes(tab);
   if (catHdr) catHdr.style.display = hideCat ? 'none' : '';
 }
@@ -6116,12 +6325,20 @@ function deleteAutoRuleConfirm(id, name) {
 
 // ── Sources files modal (Task 6) ────────────────────────────────────────────
 async function openSourcesFilesModal(ruleId, ruleName) {
+  // First fetch the rule to check for bibliography sources
+  var rule = null;
+  try {
+    rule = await apiFetch('/api/automation/rules/' + ruleId);
+  } catch (e) { /* continue with standard modal */ }
+  var bibSources = rule ? (rule.sources || []).filter(function(s) { return s.type === 'bibliography'; }) : [];
+
   var existing = document.getElementById('sourcesFilesModal');
   if (existing) existing.remove();
   var el = document.createElement('div');
   el.id = 'sourcesFilesModal';
   el.style.cssText = 'position:fixed;inset:0;background:rgba(10,20,35,0.6);backdrop-filter:blur(3px);z-index:1000;display:flex;align-items:center;justify-content:center;';
   el.innerHTML =
+    '<div style="background:var(--card);width:720px;max-width:96vw;max-height:84vh;display:flex;flex-direction:column;font-family:\'Montserrat\',sans-serif;box-shadow:0 8px 40px rgba(10,20,35,0.3);">' +
     '<div style="background:var(--card);width:640px;max-width:96vw;max-height:84vh;display:flex;flex-direction:column;font-family:\'Montserrat\',sans-serif;box-shadow:0 8px 40px rgba(10,20,35,0.3);">' +
       '<div style="background:var(--vance-dark);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">' +
         '<div>' +
@@ -6131,31 +6348,101 @@ async function openSourcesFilesModal(ruleId, ruleName) {
         '<button onclick="document.getElementById(\'sourcesFilesModal\').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:1rem;cursor:pointer;padding:4px 10px;">&times;</button>' +
       '</div>' +
       '<div id="sourcesFilesBody" style="overflow-y:auto;flex:1;padding:16px 18px;font-size:0.78rem;">' +
+        '<div style="color:var(--text-muted);">Loading…</div>' +
         '<div style="color:var(--text-muted);">Loading files…</div>' +
       '</div>' +
       '<div style="padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--border);flex-shrink:0;">' +
         '<span id="sourcesFilesSelCount" style="font-size:0.7rem;color:var(--text-muted);">0 selected</span>' +
         '<div style="display:flex;gap:8px;">' +
           '<button class="btn btn-outline btn-sm" onclick="document.getElementById(\'sourcesFilesModal\').remove()">Close</button>' +
+          '<button class="btn btn-orange btn-sm" id="sourcesFilesRunBtn" onclick="runRuleWithSelectedFiles(\'' + ruleId + '\')">&#9654; Re-process selected</button>' +
           '<button class="btn btn-orange btn-sm" id="sourcesFilesRunBtn" onclick="runRuleWithSelectedFiles(\'' + ruleId + '\')">▶ Re-process selected</button>' +
         '</div>' +
       '</div>' +
     '</div>';
   document.body.appendChild(el);
   el.addEventListener('click', function(e) { if (e.target === el) el.remove(); });
+
+  var body = document.getElementById('sourcesFilesBody');
+
+  // Fetch bibliography papers alongside normal sources
   // Fetch file groups
   try {
     var data = await apiFetch('/api/automation/sources-list', { method: 'POST', body: JSON.stringify({ ruleId: ruleId }) });
+    var bibHtml = '';
+    for (var bi = 0; bi < bibSources.length; bi++) {
+      var bs = bibSources[bi];
+      if (!bs.bibId) continue;
+      try {
+        var bib = await apiFetch('/api/automation/bibliography/' + bs.bibId);
+        var papers = bib.papers || [];
+        var modeLabels = { all: 'All at once', daily: 'One per day', on_new: 'On new addition' };
+        bibHtml += '<div style="margin-bottom:18px;">'
+          + '<div style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--vance-dark);margin-bottom:6px;">Bibliography &middot; ' + escHtml(bib.name) + '</div>'
+          + '<div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:8px;">Mode: ' + escHtml(modeLabels[bs.mode] || bs.mode) + ' &middot; ' + papers.length + ' papers (' + papers.filter(function(p) { return !p.processed; }).length + ' unprocessed)</div>';
+        if (!papers.length) {
+          bibHtml += '<div style="color:var(--text-muted);font-size:0.72rem;padding:6px 0;">No papers in this bibliography.</div>';
+        } else {
+          var bibTableId = 'bibTable_' + bs.bibId;
+          bibHtml += '<table id="' + bibTableId + '" style="width:100%;border-collapse:collapse;font-size:0.72rem;">'
+            + '<thead><tr style="background:var(--bg);">'
+            + '<th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);width:28px;"><input type="checkbox" title="Select all" onchange="(function(cb){var t=document.getElementById(\'' + bibTableId + '\');t.querySelectorAll(\'.src-file-cb\').forEach(function(c){c.checked=cb.checked});updateSourceFilesSelCount()})(this)" /></th>'
+            + '<th style="padding:6px 8px;text-align:left;font-weight:700;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border);color:var(--text-muted);">Title</th>'
+            + '<th style="padding:6px 8px;text-align:left;font-weight:700;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border);color:var(--text-muted);">Authors</th>'
+            + '<th style="padding:6px 8px;text-align:left;font-weight:700;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border);color:var(--text-muted);">Year</th>'
+            + '<th style="padding:6px 8px;text-align:left;font-weight:700;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border);color:var(--text-muted);">Status</th>'
+            + '<th style="padding:6px 8px;text-align:left;font-weight:700;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border);color:var(--text-muted);">Link</th>'
+            + '</tr></thead><tbody>';
+          papers.forEach(function(p, pi) {
+            var link = p.url || (p.doi ? 'https://doi.org/' + p.doi : '');
+            var statusBadge = p.processed
+              ? '<span style="background:rgba(94,234,212,0.15);color:#0a7a62;padding:1px 6px;font-size:0.6rem;font-weight:700;">Done</span>'
+              : '<span style="background:rgba(243,156,18,0.12);color:#b45309;padding:1px 6px;font-size:0.6rem;font-weight:700;">Pending</span>';
+            var safeName = escHtml(p.title || ('Paper ' + (pi + 1)));
+            var safeId   = escHtml(p.id || '');
+            bibHtml += '<tr style="border-bottom:1px solid var(--border);">'
+              + '<td style="padding:5px 8px;text-align:center;">'
+              +   '<input type="checkbox" class="src-file-cb" data-name="' + safeName + '" data-paper-id="' + safeId + '" onchange="updateSourceFilesSelCount()"' + (!p.processed ? ' checked' : '') + ' />'
+              + '</td>'
+              + '<td style="padding:5px 8px;font-weight:600;color:var(--text);max-width:240px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + safeName + '">' + safeName + '</div></td>'
+              + '<td style="padding:5px 8px;color:var(--text-muted);max-width:140px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml((p.authors || []).slice(0, 2).join(', ')) + (p.authors && p.authors.length > 2 ? ' et al.' : '') + '</div></td>'
+              + '<td style="padding:5px 8px;color:var(--text-muted);">' + (p.year || '—') + '</td>'
+              + '<td style="padding:5px 8px;">' + statusBadge + '</td>'
+              + '<td style="padding:5px 8px;">' + (link ? '<a href="' + escHtml(link) + '" target="_blank" rel="noopener" style="color:var(--vance-primary);font-weight:600;text-decoration:none;font-size:0.68rem;">View &rarr;</a>' : '—') + '</td>'
+              + '</tr>';
+          });
+          bibHtml += '</tbody></table>';
+        }
+        bibHtml += '</div>';
+      } catch (bibErr) {
+        bibHtml += '<div style="margin-bottom:18px;"><div style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--vance-dark);margin-bottom:6px;">Bibliography &middot; ' + escHtml(bs.bibId) + '</div><div style="color:#ef4444;font-size:0.72rem;">' + escHtml(bibErr.message) + '</div></div>';
+      }
+    }
+
+    // Fetch non-bibliography sources (Drive/Dropbox) via the normal endpoint
+
+    // Combine: bibliography papers first, then regular file sources
+    if (bibHtml) {
+      body.innerHTML = bibHtml;
+      renderSourcesFilesBody(data, true); // append mode
+    } else {
+      renderSourcesFilesBody(data);
+    }
     renderSourcesFilesBody(data);
   } catch (err) {
+    body.innerHTML = (body.innerHTML || '') + '<div style="color:#ef4444;">Failed to load sources: ' + escHtml(err.message) + '</div>';
     document.getElementById('sourcesFilesBody').innerHTML = '<div style="color:#ef4444;">Failed to load: ' + escHtml(err.message) + '</div>';
   }
 }
 
 function renderSourcesFilesBody(data) {
   var body = document.getElementById('sourcesFilesBody');
+function renderSourcesFilesBody(data, append) {
   if (!body) return;
   var groups = (data && data.groups) || [];
+  // Filter out bibliography groups — those are handled separately
+  groups = groups.filter(function(g) { return g.source.type !== 'bibliography'; });
+  if (!groups.length && !append) { body.innerHTML = '<div style="color:var(--text-muted);">No sources configured for this rule.</div>'; return; }
   if (!groups.length) { body.innerHTML = '<div style="color:var(--text-muted);">No sources configured for this rule.</div>'; return; }
   var html = '';
   groups.forEach(function(g, gi) {
@@ -6190,12 +6477,35 @@ function updateSourceFilesSelCount() {
 async function runRuleWithSelectedFiles(ruleId) {
   var checked = Array.prototype.slice.call(document.querySelectorAll('#sourcesFilesBody .src-file-cb:checked'));
   var names = checked.map(function(cb) { return cb.dataset.name; });
+  if (!names.length) { showAutoMessage('Pick at least one item to re-process.', 'warn'); return; }
+
+  // For bibliography papers: mark as unprocessed so fetchBibliographyPapers returns them
+  var bibPaperIds = checked
+    .map(function(cb) { return cb.dataset.paperId; })
+    .filter(Boolean);
+  if (bibPaperIds.length) {
+    try {
+      await Promise.all(bibPaperIds.map(function(pid) {
+        return apiFetch('/api/automation/bibliography/_/papers/' + pid, {
+          method: 'PATCH',
+          body: JSON.stringify({ processed: false })
+        });
+      }));
+    } catch (e) {
+      showAutoMessage('Failed to reset paper status: ' + e.message, 'error');
+      return;
+    }
+  }
+
   if (!names.length) { showAutoMessage('Pick at least one file to re-process.', 'warn'); return; }
   document.getElementById('sourcesFilesModal').remove();
+  showAutoMessage('Re-processing ' + names.length + ' item(s)…', 'info');
   showAutoMessage('Re-processing ' + names.length + ' file(s)…', 'info');
   try {
     var result = await apiFetch('/api/automation/run', { method:'POST', body: JSON.stringify({ ruleId: ruleId, forceFiles: names }) });
     var msg = result && result.processed > 0
+      ? 'Re-processed ' + result.processed + ' item(s).'
+      : 'No matching items were re-processed.';
       ? 'Re-processed ' + result.processed + ' file(s).'
       : 'No matching files were re-processed.';
     showAutoMessage(msg, result && result.processed > 0 ? 'success' : 'warn');
@@ -6458,6 +6768,15 @@ async function openRuleWizard(editId) {
           return { id: 'src_' + Date.now() + '_' + i, type: s.type || 'rss', url: s.url || '', repo: s.repo || '', path: s.path || '', branch: s.branch || 'main', folderId: s.folderId || '', folderPath: s.folderPath || '' };
         });
         _wizRenderSources();
+            // Google Sheets-specific fields
+            sheetId: s.sheetId || '', sheetName: s.sheetName || '',
+            urlColumn: s.urlColumn || '', notesColumn: s.notesColumn || '', wpLinkColumn: s.wpLinkColumn || '',
+            // Bibliography-specific fields
+            bibId: s.bibId || '', mode: s.mode || 'daily',
+        // Pre-load bibliography cache if any source is bibliography
+        if (_wizSources.some(function(s) { return s.type === 'bibliography'; })) {
+          apiFetch('/api/automation/bibliography').then(function(bibs) { _wizBibCache = bibs || []; _wizRenderSources(); });
+        }
       }
 
       // Trigger
@@ -6581,7 +6900,14 @@ function _wizValidateStep(step) {
 }
 
 function wizAddSource(type) {
+var _wizBibCache = null;
   var id = 'src_' + Date.now();
+  var src = { id: id, type: type || 'rss', url: '', repo: '', path: '', branch: 'main' };
+  if (type === 'bibliography') { src.bibId = ''; src.mode = 'daily'; }
+  _wizSources.push(src);
+  if (type === 'bibliography' && !_wizBibCache) {
+    apiFetch('/api/automation/bibliography').then(function(bibs) { _wizBibCache = bibs || []; _wizRenderSources(); });
+  }
   _wizSources.push({ id: id, type: type || 'rss', url: '', repo: '', path: '', branch: 'main' });
   _wizRenderSources();
 }
@@ -6594,6 +6920,7 @@ function wizRemoveSource(id) {
 function _wizRenderSources() {
   var list = document.getElementById('wizSourcesList');
   var html = _wizSources.map(function(s) {
+    var labelMap = { rss:'RSS', url:'URL', upload:'Upload', github:'GitHub', google_drive:'Drive', dropbox:'Dropbox', gmail:'Gmail', google_sheets:'Sheets', bibliography:'Bibliography' };
     var labelMap = { rss:'RSS', url:'URL', upload:'Upload', github:'GitHub', google_drive:'Drive', dropbox:'Dropbox' };
     var label = labelMap[s.type] || s.type;
     var inputHtml;
@@ -6610,11 +6937,13 @@ function _wizRenderSources() {
       inputHtml = '<input type="url" placeholder="' + ph + '" oninput="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src)src.url=el.value;})(this)" value="' + escHtml(s.url||'') + '" style="flex:1;padding:6px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.82rem;">';
     }
     var connectWarning = '';
+    if ((s.type === 'google_drive' || s.type === 'gmail' || s.type === 'google_sheets') && !_cloudStatus.google) {
     if ((s.type === 'google_drive' || s.type === 'dropbox') && !_cloudStatus[s.type === 'google_drive' ? 'google' : 'dropbox']) {
       connectWarning = '<span style="font-size:0.7rem;color:#f59e0b;white-space:nowrap;">⚠ Not connected</span>';
     }
     return '<div style="display:flex;align-items:center;gap:8px;">'
       + '<span style="min-width:52px;font-size:0.75rem;font-weight:600;color:var(--text-muted);">' + label + '</span>'
+    return '<div style="display:flex;align-items:' + (s.type === 'gmail' || s.type === 'google_sheets' ? 'flex-start' : 'center') + ';gap:8px;">'
       + inputHtml
       + connectWarning
       + '<button onclick="wizRemoveSource(\'' + s.id + '\')" style="padding:4px 8px;border:1px solid var(--border);background:var(--bg);color:#ef4444;cursor:pointer;font-size:0.8rem;">&#x2715;</button>'
@@ -6719,6 +7048,7 @@ async function _wizSubmit() {
   var payload = {
     name: document.getElementById('wizName').value.trim(),
     category: document.getElementById('wizCategory').value,
+    sources: _wizSources.map(function(s) { var o = {type:s.type}; if(s.url)o.url=s.url; if(s.repo)o.repo=s.repo; if(s.path)o.path=s.path; if(s.branch)o.branch=s.branch; if(s.folderId)o.folderId=s.folderId; if(s.folderPath!==undefined)o.folderPath=s.folderPath; if(s.type==='gmail'){if(s.from!==undefined)o.from=s.from;if(s.subjectContains!==undefined)o.subjectContains=s.subjectContains;if(s.labelIds)o.labelIds=s.labelIds;if(s.maxResults)o.maxResults=s.maxResults;} if(s.type==='google_sheets'){if(s.sheetId)o.sheetId=s.sheetId;if(s.sheetName)o.sheetName=s.sheetName;if(s.urlColumn)o.urlColumn=s.urlColumn;if(s.notesColumn)o.notesColumn=s.notesColumn;if(s.wpLinkColumn)o.wpLinkColumn=s.wpLinkColumn;} if(s.type==='bibliography'){if(s.bibId)o.bibId=s.bibId;if(s.mode)o.mode=s.mode;} return o; }),
     sources: _wizSources.map(function(s) { var o = {type:s.type}; if(s.url)o.url=s.url; if(s.repo)o.repo=s.repo; if(s.path)o.path=s.path; if(s.branch)o.branch=s.branch; if(s.folderId)o.folderId=s.folderId; if(s.folderPath!==undefined)o.folderPath=s.folderPath; return o; }),
     trigger: {
       type: trigType,
@@ -6786,6 +7116,504 @@ async function updateInboxBadge() {
 }
 
 // Cache: jobId -> { title, contentItem } so renderInboxCard / openAutoInboxJob can show titles
+// ══════════════════════════════ BIBLIOGRAPHY ══════════════════════════════════
+
+var _bibStep = 1;
+var _bibEditId = null;
+var _bibPapers = [];
+var _bibSearchResults = [];
+
+async function loadBibliographies() {
+  var list = document.getElementById('bibliographyList');
+  var empty = document.getElementById('bibliographyEmpty');
+  if (!list) return;
+  list.innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem;">Loading...</p>';
+  try {
+    var bibs = await apiFetch('/api/automation/bibliography');
+    if (!bibs || !bibs.length) {
+      list.innerHTML = '';
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+    var typeLabels = { clinical:'Clinical', guidelines:'Guidelines', 'health-economics':'Health Econ', prevalence:'Prevalence' };
+    // Update hero stats
+    var totalPapers = bibs.reduce(function(sum, b) { return sum + (b.paperCount || 0); }, 0);
+    var statTotal = document.getElementById('bibStatTotal');
+    var statPapers = document.getElementById('bibStatPapers');
+    if (statTotal) statTotal.textContent = bibs.length;
+    if (statPapers) statPapers.textContent = totalPapers;
+
+    list.innerHTML = bibs.map(function(b) {
+      var typeBadge = typeLabels[b.bibliographyType] || b.bibliographyType;
+      var age = b.createdAt ? timeAgo(b.createdAt) : '';
+      var pc = b.paperCount || 0;
+      var eName = escHtml(b.name).replace(/'/g, "\\'");
+      return '<div class="card" style="padding:14px 18px;">'
+        + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">'
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">'
+        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;color:var(--vance-dark);opacity:0.5;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>'
+        + '<span style="font-weight:700;font-size:0.88rem;color:var(--text);">' + escHtml(b.name) + '</span>'
+        + '</div>'
+        + (b.description ? '<p style="margin:0 0 8px;font-size:0.75rem;color:var(--text-muted);line-height:1.4;">' + escHtml(b.description.slice(0, 160)) + '</p>' : '')
+        + '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">'
+        + '<span class="cat-card-pill builtin">' + escHtml(typeBadge) + '</span>'
+        + '<span class="cat-card-pill stat">' + pc + ' paper' + (pc !== 1 ? 's' : '') + '</span>'
+        + '<span class="cat-card-pill builtin">' + escHtml(b.indication || 'IBD') + '</span>'
+        + '<span style="font-size:0.57rem;color:var(--text-muted);">' + age + '</span>'
+        + '</div></div>'
+        + '<div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">'
+        + '<button onclick="openBibPubsModal(\'' + b.id + '\', \'' + eName + '\')" class="btn btn-outline btn-sm" style="font-size:0.68rem;white-space:nowrap;">View Papers</button>'
+        + '<button onclick="createBibAutomation(\'' + b.id + '\', \'' + eName + '\')" class="btn btn-orange btn-sm" style="font-size:0.68rem;white-space:nowrap;">Automate</button>'
+        + '<button onclick="openBibWizard(\'' + b.id + '\')" class="btn btn-outline btn-sm" style="font-size:0.68rem;">Edit</button>'
+        + '<button onclick="deleteBibliography(\'' + b.id + '\', \'' + eName + '\')" class="btn btn-outline btn-sm" style="font-size:0.68rem;color:#ef4444;border-color:#ef4444;">Delete</button>'
+        + '</div></div></div>';
+    }).join('');
+  } catch (err) {
+    list.innerHTML = '<p style="color:#ef4444;font-size:0.82rem;">Failed to load bibliographies: ' + escHtml(err.message) + '</p>';
+  }
+}
+
+async function deleteBibliography(id, name) {
+  if (!confirm('Delete bibliography "' + name + '" and all its papers?')) return;
+  try {
+    await apiFetch('/api/automation/bibliography/' + id, { method: 'DELETE' });
+    showToast('Bibliography deleted');
+    loadBibliographies();
+  } catch (err) { alert('Delete failed: ' + err.message); }
+}
+
+// ── View Publications modal ──────────────────────────────────────────────────
+var _bibPubsData = null; // { bib, papers } for current modal
+
+async function openBibPubsModal(bibId, bibName) {
+  var modal = document.getElementById('bibPubsModal');
+  var title = document.getElementById('bibPubsTitle');
+  var body = document.getElementById('bibPubsBody');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  title.textContent = bibName + ' — Publications';
+  body.innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem;padding:20px 0;text-align:center;">Loading papers...</p>';
+  try {
+    var bib = await apiFetch('/api/automation/bibliography/' + bibId);
+    _bibPubsData = bib;
+    var papers = bib.papers || [];
+    if (!papers.length) {
+      body.innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem;padding:20px 0;text-align:center;">No papers in this bibliography.</p>';
+      return;
+    }
+    body.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:0.75rem;">'
+      + '<thead><tr style="background:var(--bg);position:sticky;top:0;">'
+      + '<th style="padding:8px 10px;text-align:left;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);color:var(--text-muted);">#</th>'
+      + '<th style="padding:8px 10px;text-align:left;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);color:var(--text-muted);">Title</th>'
+      + '<th style="padding:8px 10px;text-align:left;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);color:var(--text-muted);">Authors</th>'
+      + '<th style="padding:8px 10px;text-align:left;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);color:var(--text-muted);">Journal</th>'
+      + '<th style="padding:8px 10px;text-align:left;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);color:var(--text-muted);">Year</th>'
+      + '<th style="padding:8px 10px;text-align:left;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);color:var(--text-muted);">Link</th>'
+      + '</tr></thead><tbody>'
+      + papers.map(function(p, i) {
+        var link = p.url || (p.doi ? 'https://doi.org/' + p.doi : '');
+        return '<tr style="border-bottom:1px solid var(--border);">'
+          + '<td style="padding:8px 10px;color:var(--text-muted);">' + (i + 1) + '</td>'
+          + '<td style="padding:8px 10px;font-weight:600;color:var(--text);max-width:280px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + escHtml(p.title) + '">' + escHtml(p.title) + '</div></td>'
+          + '<td style="padding:8px 10px;color:var(--text-muted);max-width:160px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml((p.authors || []).slice(0, 2).join(', ')) + (p.authors && p.authors.length > 2 ? ' et al.' : '') + '</div></td>'
+          + '<td style="padding:8px 10px;color:var(--text-muted);">' + escHtml(p.journal || '—') + '</td>'
+          + '<td style="padding:8px 10px;color:var(--text-muted);">' + (p.year || '—') + '</td>'
+          + '<td style="padding:8px 10px;">' + (link ? '<a href="' + escHtml(link) + '" target="_blank" rel="noopener" style="color:var(--vance-primary);font-weight:600;text-decoration:none;font-size:0.7rem;">View &rarr;</a>' : '—') + '</td>'
+          + '</tr>';
+      }).join('')
+      + '</tbody></table>';
+  } catch (err) {
+    body.innerHTML = '<p style="color:#ef4444;padding:12px;">Failed to load: ' + escHtml(err.message) + '</p>';
+  }
+}
+
+function closeBibPubsModal() {
+  var modal = document.getElementById('bibPubsModal');
+  if (modal) modal.style.display = 'none';
+  _bibPubsData = null;
+}
+
+// ── Reuse / Use paper (toggle processed flag) ───────────────────────────────
+async function bibReusePaper(paperId, linkEl) {
+  if (!paperId) return;
+  var origText = linkEl.innerHTML;
+  linkEl.innerHTML = '...';
+  linkEl.style.pointerEvents = 'none';
+  try {
+    // Fetch current paper state to toggle
+    // We use a PATCH that sets processed=false to re-queue for automation
+    await apiFetch('/api/automation/bibliography/_/papers/' + paperId, { method: 'PATCH', body: JSON.stringify({ processed: false }) });
+    // Update the status cell in the same row
+    var tr = linkEl.closest('tr');
+    if (tr) {
+      var cells = tr.querySelectorAll('td');
+      // Status is the 5th cell (index 4)
+      if (cells[4]) cells[4].innerHTML = '<span style="background:rgba(243,156,18,0.12);color:#b45309;padding:1px 6px;font-size:0.6rem;font-weight:700;">Pending</span>';
+    }
+    linkEl.innerHTML = '&#9654; Use';
+    linkEl.style.color = 'var(--vance-dark)';
+    showToast('Paper queued for processing');
+  } catch (err) {
+    linkEl.innerHTML = origText;
+    showToast('Failed: ' + err.message);
+  } finally {
+    linkEl.style.pointerEvents = '';
+  }
+}
+
+// ── Download CSV ─────────────────────────────────────────────────────────────
+function bibDownloadCSV() {
+  if (!_bibPubsData || !_bibPubsData.papers) return;
+  var papers = _bibPubsData.papers;
+  var rows = [['#','Title','Authors','Journal','Year','DOI','URL','Source','Abstract']];
+  papers.forEach(function(p, i) {
+    rows.push([
+      i + 1,
+      '"' + (p.title || '').replace(/"/g, '""') + '"',
+      '"' + (p.authors || []).join('; ').replace(/"/g, '""') + '"',
+      '"' + (p.journal || '').replace(/"/g, '""') + '"',
+      p.year || '',
+      p.doi || '',
+      p.url || '',
+      p.source || '',
+      '"' + (p.abstract || '').replace(/"/g, '""') + '"',
+    ]);
+  });
+  var csv = rows.map(function(r) { return r.join(','); }).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = (_bibPubsData.name || 'bibliography').replace(/[^a-zA-Z0-9]/g, '_') + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded');
+}
+
+// ── Download PDF (print-friendly HTML) ───────────────────────────────────────
+function bibDownloadPDF() {
+  if (!_bibPubsData || !_bibPubsData.papers) return;
+  var papers = _bibPubsData.papers;
+  var bibName = _bibPubsData.name || 'Bibliography';
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + escHtml(bibName) + '</title>'
+    + '<style>body{font-family:Georgia,serif;max-width:800px;margin:0 auto;padding:40px 30px;color:#1a2332;font-size:11px;}'
+    + 'h1{font-family:Montserrat,sans-serif;font-size:18px;margin:0 0 4px;color:#374151;}'
+    + '.meta{font-size:10px;color:#6b7a8d;margin-bottom:24px;}'
+    + 'table{width:100%;border-collapse:collapse;font-size:10px;}'
+    + 'th{background:#f4f6f8;padding:6px 8px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #d1d9e0;color:#6b7a8d;}'
+    + 'td{padding:6px 8px;border-bottom:1px solid #e5e7eb;vertical-align:top;}'
+    + 'tr:nth-child(even){background:#fafbfc;}'
+    + '.title-cell{font-weight:600;max-width:240px;}'
+    + 'a{color:#0D9488;text-decoration:none;}'
+    + '@media print{body{padding:20px;}}</style></head><body>'
+    + '<h1>' + escHtml(bibName) + '</h1>'
+    + '<div class="meta">' + escHtml(_bibPubsData.indication || 'IBD') + ' &middot; ' + escHtml(_bibPubsData.bibliographyType || '') + ' &middot; ' + papers.length + ' papers &middot; Generated ' + new Date().toLocaleDateString() + '</div>'
+    + '<table><thead><tr><th>#</th><th>Title</th><th>Authors</th><th>Journal</th><th>Year</th><th>DOI</th></tr></thead><tbody>';
+  papers.forEach(function(p, i) {
+    var doiLink = p.doi ? '<a href="https://doi.org/' + escHtml(p.doi) + '">' + escHtml(p.doi) + '</a>' : '—';
+    html += '<tr><td>' + (i + 1) + '</td>'
+      + '<td class="title-cell">' + escHtml(p.title) + '</td>'
+      + '<td>' + escHtml((p.authors || []).slice(0, 3).join(', ')) + (p.authors && p.authors.length > 3 ? ' et al.' : '') + '</td>'
+      + '<td>' + escHtml(p.journal || '—') + '</td>'
+      + '<td>' + (p.year || '—') + '</td>'
+      + '<td>' + doiLink + '</td></tr>';
+  });
+  html += '</tbody></table></body></html>';
+  var win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(function() { win.print(); }, 400);
+}
+
+function openBibWizard(editId) {
+  _bibStep = 1;
+  _bibEditId = editId || null;
+  _bibPapers = [];
+  _bibSearchResults = [];
+  document.getElementById('bibName').value = '';
+  document.getElementById('bibDesc').value = '';
+  document.getElementById('bibIndication').value = 'IBD';
+  document.getElementById('bibType').value = 'clinical';
+  var _kw = document.getElementById('bibSearchKeywords'); if (_kw) _kw.value = '';
+  var _ct = document.getElementById('bibSearchCountry');  if (_ct) _ct.value = '';
+  var _sr = document.getElementById('bibSearchResults');  if (_sr) _sr.innerHTML = '';
+  var _sq = document.getElementById('bibSearchQuery');    if (_sq) _sq.value = '';
+  document.getElementById('bibWizTitle').textContent = editId ? 'Edit Bibliography' : 'New Bibliography';
+
+  if (editId) {
+    apiFetch('/api/automation/bibliography/' + editId).then(function(bib) {
+      if (!bib) return;
+      document.getElementById('bibName').value = bib.name || '';
+      document.getElementById('bibDesc').value = bib.description || '';
+      document.getElementById('bibIndication').value = bib.indication || 'IBD';
+      document.getElementById('bibType').value = bib.bibliographyType || 'clinical';
+      _bibPapers = (bib.papers || []).map(function(p) {
+        return { id: p.id, title: p.title, authors: p.authors, journal: p.journal, year: p.year, doi: p.doi, url: p.url, abstract: p.abstract, source: p.source, existing: true };
+      });
+      _bibRenderPapersList();
+    });
+  }
+
+  switchTab('bibliography-new');
+  _bibRenderStep(1);
+}
+
+function closeBibWizard() {
+  switchTab('bibliography');
+}
+
+function _bibRenderStep(step) {
+  _bibStep = step;
+  for (var i = 1; i <= 3; i++) {
+    var panel = document.getElementById('bibPanel' + i);
+    var stepEl = document.getElementById('bibStep' + i);
+    if (panel) panel.style.display = i === step ? '' : 'none';
+    if (stepEl) stepEl.className = 'wiz-step' + (i === step ? ' active' : i < step ? ' done' : '');
+  }
+  var backBtn = document.getElementById('bibBtnBack');
+  var nextBtn = document.getElementById('bibBtnNext');
+  if (backBtn) backBtn.style.display = step > 1 ? '' : 'none';
+  if (nextBtn) nextBtn.textContent = step === 3 ? (_bibEditId ? 'Update Bibliography' : 'Save Bibliography') : 'Next \u2192';
+
+  if (step === 2) {
+    _bibRenderPapersList();
+  }
+  if (step === 3) {
+    _bibRenderReview();
+  }
+}
+
+function bibNext() {
+  if (_bibStep === 1) {
+    if (!document.getElementById('bibName').value.trim()) { alert('Bibliography name is required'); return; }
+    _bibRenderStep(2);
+  } else if (_bibStep === 2) {
+    _bibRenderStep(3);
+  } else if (_bibStep === 3) {
+    _bibSubmit();
+  }
+}
+
+function bibBack() {
+  if (_bibStep > 1) _bibRenderStep(_bibStep - 1);
+}
+
+async function bibRunSearch() {
+  var query = document.getElementById('bibSearchQuery').value.trim();
+  if (!query) return;
+  var source   = document.getElementById('bibSearchSource').value;
+  var keywords = (document.getElementById('bibSearchKeywords')?.value || '').trim();
+  var country  = (document.getElementById('bibSearchCountry')?.value  || '').trim();
+
+  // Build combined query: base + keyword ANDs + country filter
+  var fullQuery = query;
+  if (keywords) {
+    var kws = keywords.split(',').map(function(k) { return k.trim(); }).filter(Boolean);
+    if (kws.length) {
+      // Each keyword is ANDed in — narrows results
+      fullQuery += ' AND ' + kws.map(function(k) { return '(' + k + ')'; }).join(' AND ');
+    }
+  }
+  if (country) {
+    // PubMed: [AD] = Affiliation/Address field — most reliable country filter
+    // Semantic Scholar: no native filter, append to query for text-based matching
+    fullQuery += source === 'pubmed'
+      ? ' AND "' + country + '"[AD]'
+      : ' ' + country;
+  }
+
+  var btn = document.getElementById('bibSearchBtn');
+  var resultsDiv = document.getElementById('bibSearchResults');
+  btn.disabled = true; btn.textContent = 'Searching...';
+  resultsDiv.innerHTML = '';
+  try {
+    _bibSearchResults = await apiFetch('/api/automation/bibliography/search', { method: 'POST', body: JSON.stringify({ query: fullQuery, maxResults: 20, source: source }) });
+    if (!_bibSearchResults.length) {
+      resultsDiv.innerHTML = '<p style="font-size:0.78rem;color:var(--text-muted);padding:8px;">No results found.</p>';
+      return;
+    }
+    resultsDiv.innerHTML = _bibRenderSearchResults();
+  } catch (err) {
+    resultsDiv.innerHTML = '<p style="font-size:0.78rem;color:#ef4444;">Search failed: ' + escHtml(err.message) + '</p>';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Search';
+  }
+}
+
+function _bibRenderSearchResults() {
+  return _bibSearchResults.map(function(r, idx) {
+    var already = _bibPapers.some(function(p) { return (p.doi && p.doi === r.doi) || p.title === r.title; });
+    var cites = r.citationCount ? '<span style="font-size:0.65rem;color:var(--text-muted);">' + r.citationCount + ' cit.</span>' : '';
+    var srcBadge = r.source === 'semantic_scholar' ? 'S2' : 'PM';
+    return '<div style="padding:8px 10px;border:1px solid var(--border);margin-bottom:4px;background:var(--card);display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:0.78rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(r.title) + '</div>'
+      + '<div style="font-size:0.7rem;color:var(--text-muted);">' + escHtml((r.authors || []).slice(0, 3).join(', ')) + (r.authors && r.authors.length > 3 ? ' et al.' : '') + '</div>'
+      + '<div style="display:flex;gap:8px;align-items:center;font-size:0.68rem;color:var(--text-muted);">'
+      + '<span>' + escHtml(r.journal || '') + (r.year ? ' (' + r.year + ')' : '') + '</span>'
+      + cites
+      + '<span style="background:var(--bg);border:1px solid var(--border);padding:0 4px;font-size:0.6rem;font-weight:700;">' + srcBadge + '</span>'
+      + '</div></div>'
+      + (already ? '<span style="font-size:0.7rem;color:var(--vance-primary);font-weight:600;white-space:nowrap;">Added</span>'
+        : '<button class="btn btn-outline btn-xs" onclick="bibAddFromSearch(' + idx + ')">+ Add</button>')
+      + '</div>';
+  }).join('');
+}
+
+function bibAddFromSearch(idx) {
+  var r = _bibSearchResults[idx];
+  if (!r) return;
+  if (_bibPapers.some(function(p) { return (p.doi && p.doi === r.doi) || p.title === r.title; })) return;
+  _bibPapers.push({ title: r.title, authors: r.authors || [], journal: r.journal || '', year: r.year, doi: r.doi || '', url: r.url || '', abstract: r.abstract || '', source: r.source || 'pubmed' });
+  _bibRenderPapersList();
+  var resultsDiv = document.getElementById('bibSearchResults');
+  if (resultsDiv && _bibSearchResults.length) resultsDiv.innerHTML = _bibRenderSearchResults();
+}
+
+function bibAddManual() {
+  var title = document.getElementById('bibManTitle').value.trim();
+  if (!title) { alert('Paper title is required'); return; }
+  _bibPapers.push({
+    title: title,
+    authors: document.getElementById('bibManAuthors').value.split(',').map(function(a) { return a.trim(); }).filter(Boolean),
+    journal: document.getElementById('bibManJournal').value.trim(),
+    year: parseInt(document.getElementById('bibManYear').value) || null,
+    doi: document.getElementById('bibManDoi').value.trim(),
+    url: document.getElementById('bibManUrl').value.trim(),
+    abstract: document.getElementById('bibManAbstract').value.trim(),
+    source: 'manual',
+  });
+  // Clear manual fields
+  ['bibManTitle','bibManAuthors','bibManJournal','bibManYear','bibManDoi','bibManUrl','bibManAbstract'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  _bibRenderPapersList();
+}
+
+function bibRemovePaper(idx) {
+  _bibPapers.splice(idx, 1);
+  _bibRenderPapersList();
+}
+
+function _bibRenderPapersList() {
+  var countEl = document.getElementById('bibPaperCount');
+  if (countEl) countEl.textContent = _bibPapers.length;
+  var list = document.getElementById('bibPapersList');
+  if (!list) return;
+  if (!_bibPapers.length) { list.innerHTML = '<p style="font-size:0.75rem;color:var(--text-muted);">No papers added yet.</p>'; return; }
+  list.innerHTML = _bibPapers.map(function(p, idx) {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--border);margin-bottom:3px;background:var(--card);">'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:0.76rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(p.title) + '</div>'
+      + '<div style="font-size:0.68rem;color:var(--text-muted);">' + escHtml((p.authors || []).slice(0, 2).join(', ')) + (p.year ? ' (' + p.year + ')' : '') + '</div>'
+      + '</div>'
+      + '<span style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;">' + escHtml(p.source || 'manual') + '</span>'
+      + '<button onclick="bibRemovePaper(' + idx + ')" style="padding:2px 6px;border:1px solid var(--border);background:var(--bg);color:#ef4444;cursor:pointer;font-size:0.75rem;">&#x2715;</button>'
+      + '</div>';
+  }).join('');
+}
+
+function _bibRenderReview() {
+  var summary = document.getElementById('bibReviewSummary');
+  var table = document.getElementById('bibReviewTable');
+  if (summary) {
+    summary.innerHTML = '<div class="card" style="padding:14px;margin-bottom:12px;">'
+      + '<div style="display:flex;gap:24px;flex-wrap:wrap;font-size:0.82rem;">'
+      + '<div><span style="color:var(--text-muted);">Name:</span> <strong>' + escHtml(document.getElementById('bibName').value) + '</strong></div>'
+      + '<div><span style="color:var(--text-muted);">Type:</span> <strong>' + escHtml(document.getElementById('bibType').value) + '</strong></div>'
+      + '<div><span style="color:var(--text-muted);">Indication:</span> <strong>' + escHtml(document.getElementById('bibIndication').value) + '</strong></div>'
+      + '<div><span style="color:var(--text-muted);">Papers:</span> <strong>' + _bibPapers.length + '</strong></div>'
+      + '</div></div>';
+  }
+  if (table) {
+    if (!_bibPapers.length) {
+      table.innerHTML = '<p style="font-size:0.78rem;color:var(--text-muted);">No papers in this bibliography.</p>';
+      return;
+    }
+    var rows = _bibPapers.map(function(p, idx) {
+      return '<tr>'
+        + '<td style="padding:6px 8px;font-size:0.75rem;border-bottom:1px solid var(--border);">' + (idx + 1) + '</td>'
+        + '<td style="padding:6px 8px;font-size:0.75rem;border-bottom:1px solid var(--border);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(p.title) + '</td>'
+        + '<td style="padding:6px 8px;font-size:0.72rem;border-bottom:1px solid var(--border);color:var(--text-muted);">' + escHtml((p.authors || []).slice(0, 2).join(', ')) + '</td>'
+        + '<td style="padding:6px 8px;font-size:0.72rem;border-bottom:1px solid var(--border);color:var(--text-muted);">' + escHtml(p.journal || '') + '</td>'
+        + '<td style="padding:6px 8px;font-size:0.72rem;border-bottom:1px solid var(--border);color:var(--text-muted);">' + (p.year || '') + '</td>'
+        + '<td style="padding:6px 8px;font-size:0.72rem;border-bottom:1px solid var(--border);color:var(--text-muted);text-transform:uppercase;">' + escHtml(p.source || '') + '</td>'
+        + '</tr>';
+    }).join('');
+    table.innerHTML = '<table style="width:100%;border-collapse:collapse;">'
+      + '<thead><tr style="background:var(--bg);">'
+      + '<th style="padding:6px 8px;font-size:0.7rem;font-weight:700;text-align:left;border-bottom:1px solid var(--border);">#</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;font-weight:700;text-align:left;border-bottom:1px solid var(--border);">Title</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;font-weight:700;text-align:left;border-bottom:1px solid var(--border);">Authors</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;font-weight:700;text-align:left;border-bottom:1px solid var(--border);">Journal</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;font-weight:700;text-align:left;border-bottom:1px solid var(--border);">Year</th>'
+      + '<th style="padding:6px 8px;font-size:0.7rem;font-weight:700;text-align:left;border-bottom:1px solid var(--border);">Source</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+}
+
+async function _bibSubmit() {
+  var btn = document.getElementById('bibBtnNext');
+  if (btn) btn.disabled = true;
+  try {
+    var payload = {
+      name: document.getElementById('bibName').value.trim(),
+      description: document.getElementById('bibDesc').value.trim(),
+      indication: document.getElementById('bibIndication').value,
+      bibliographyType: document.getElementById('bibType').value,
+    };
+
+    if (_bibEditId) {
+      // Update metadata
+      await apiFetch('/api/automation/bibliography/' + _bibEditId, { method: 'PATCH', body: JSON.stringify(payload) });
+      // Add only new papers (not existing ones)
+      var newPapers = _bibPapers.filter(function(p) { return !p.existing; });
+      if (newPapers.length) {
+        await apiFetch('/api/automation/bibliography/' + _bibEditId + '/papers', { method: 'POST', body: JSON.stringify({ papers: newPapers }) });
+      }
+      showToast('Bibliography updated');
+    } else {
+      // Create with papers
+      payload.papers = _bibPapers;
+      await apiFetch('/api/automation/bibliography', { method: 'POST', body: JSON.stringify(payload) });
+      showToast('Bibliography created');
+    }
+    closeBibWizard();
+    loadBibliographies();
+  } catch (err) {
+    alert('Failed to save bibliography: ' + err.message);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function createBibAutomation(bibId, bibName) {
+  openRuleWizard();
+  setTimeout(function() {
+    var nameEl = document.getElementById('wizName');
+    if (nameEl) nameEl.value = 'Articles from ' + bibName;
+    wizAddSource('bibliography');
+    // Set the bibliography ID after cache loads
+    var attempts = 0;
+    var iv = setInterval(function() {
+      attempts++;
+      var bibSrc = _wizSources.find(function(s) { return s.type === 'bibliography'; });
+      if (bibSrc) {
+        bibSrc.bibId = bibId;
+        bibSrc.mode = 'daily';
+        _wizRenderSources();
+        clearInterval(iv);
+      }
+      if (attempts > 20) clearInterval(iv);
+    }, 100);
+  }, 150);
+}
+
+// ══════════════════════════════ END BIBLIOGRAPHY ══════════════════════════════
+
 var __inboxContentCache = {};
 
 async function loadAutoInbox() {
