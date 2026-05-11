@@ -2741,6 +2741,10 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Edit
       </button>
+      <button class="btn btn-xs" id="approveArticleBtn" onclick="approveCurrentArticle()" style="display:none;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.45);color:#10b981;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve &amp; Publish
+      </button>
       <a class="btn btn-outline btn-xs" id="viewOnWpBtn" href="#" target="_blank" style="display:none;background:rgba(0,201,167,0.15);border-color:rgba(0,201,167,0.4);color:#00c9a7;text-decoration:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         View on WordPress ↗
@@ -7683,11 +7687,68 @@ async function viewArticleFromPipeline(itemId) {
     else { wpBtn.style.display = 'none'; }
   }
 
+  // Show Approve & Publish button only when article is pending review / approved but not yet on WP
+  const approveBtn = document.getElementById('approveArticleBtn');
+  if (approveBtn) {
+    approveBtn.style.display = (item.status === 'pending_review' || item.status === 'approved') && !item.wpPostUrl ? '' : 'none';
+  }
+
   // Link the pipeline record so the Review Requests card can load
   currentContentId = item.id;
   loadReviewRequestCard();
 
   switchTab('generator');
+}
+
+async function approveCurrentArticle() {
+  if (!currentContentId) return;
+  const btn = document.getElementById('approveArticleBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Publishing…'; }
+  try {
+    // Find the job for this content item
+    const jobsRes = await fetch('/api/automation/jobs');
+    const jobs = jobsRes.ok ? await jobsRes.json() : [];
+    const job = jobs.find(function(j) { return j.contentId === currentContentId && j.status === 'pending_review'; });
+    if (job) {
+      // Use the approve endpoint (handles WP publish + sheet writeback)
+      const res = await fetch('/api/automation/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id, action: 'approve', channel: 'manual' }),
+      });
+      if (res.ok) {
+        showToast('Article approved and published to WordPress');
+        if (btn) btn.style.display = 'none';
+        try {
+          const allContent = await contentApi.getAll();
+          const updated = allContent.find(function(c) { return c.id === currentContentId; });
+          const wpBtn = document.getElementById('viewOnWpBtn');
+          if (wpBtn && updated?.wpPostUrl) { wpBtn.href = updated.wpPostUrl; wpBtn.style.display = ''; }
+        } catch(e) {}
+        return;
+      }
+    }
+    // Fallback: direct publish (for articles already in 'approved' state)
+    const pubRes = await fetch('/api/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: currentContentId }),
+    });
+    if (pubRes.ok) {
+      const data = await pubRes.json();
+      showToast('Published to WordPress');
+      if (btn) btn.style.display = 'none';
+      const wpBtn = document.getElementById('viewOnWpBtn');
+      if (wpBtn && data.wpPostUrl) { wpBtn.href = data.wpPostUrl; wpBtn.style.display = ''; }
+    } else {
+      const err = await pubRes.json();
+      showToast('Publish failed: ' + (err.error || 'Unknown error'));
+      if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="20 6 9 17 4 12"/></svg> Approve &amp; Publish'; }
+    }
+  } catch(err) {
+    showToast('Error: ' + err.message);
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="20 6 9 17 4 12"/></svg> Approve &amp; Publish'; }
+  }
 }
 
 async function deleteArchiveItem(id) {
