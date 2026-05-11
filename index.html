@@ -6039,7 +6039,27 @@ async function loadAutoRules() {
       list.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px 0;">No automation rules yet. Click <strong>+ New Rule</strong> to get started.</p>';
       return;
     }
-    list.innerHTML = rules.map(renderRuleCard).join('');
+
+    // Group rules by category, following the canonical CATEGORIES order
+    var html = '';
+    var assigned = new Set();
+    CATEGORIES.forEach(function(cat) {
+      var catRules = rules.filter(function(r) { return r.category === cat.id; });
+      if (!catRules.length) return;
+      catRules.forEach(function(r) { assigned.add(r.id); });
+      html += '<div style="font-size:0.65rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);padding:8px 4px 4px;margin-top:4px;border-bottom:1px solid var(--border);">' +
+        escHtml(cat.label) + ' <span style="font-weight:600;opacity:0.7;">(' + catRules.length + ')</span></div>';
+      html += catRules.map(renderRuleCard).join('');
+    });
+
+    // Uncategorised / unknown category
+    var uncat = rules.filter(function(r) { return !assigned.has(r.id); });
+    if (uncat.length) {
+      html += '<div style="font-size:0.65rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);padding:8px 4px 4px;margin-top:4px;border-bottom:1px solid var(--border);">Other <span style="font-weight:600;opacity:0.7;">(' + uncat.length + ')</span></div>';
+      html += uncat.map(renderRuleCard).join('');
+    }
+
+    list.innerHTML = html;
   } catch (err) {
     list.innerHTML = '<p style="color:#ef4444;padding:20px;">Failed to load rules: ' + escHtml(err.message) + '</p>';
   }
