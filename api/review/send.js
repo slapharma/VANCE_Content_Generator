@@ -34,13 +34,13 @@ export async function parseApprovalToken(token) {
 
 function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
   return {
-    from: process.env.RESEND_FROM_EMAIL ?? 'noreply@mail.vancemedicalfoods.com',
+    from: process.env.RESEND_FROM_EMAIL ?? 'noreply@mail.gastrohealthhub.com',
     to: reviewer.email,
     subject: `Review requested: ${content.title}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
         <div style="background:#1e2d40;padding:20px 24px;border-bottom:3px solid #006868;">
-          <span style="color:#fff;font-size:20px;font-weight:800;letter-spacing:1px;">Vance Medical Foods</span>
+          <span style="color:#fff;font-size:20px;font-weight:800;letter-spacing:1px;">Gastro Health Hub</span>
           <span style="color:#006868;font-size:20px;font-weight:800;"> ■</span>
         </div>
         <div style="padding:28px 24px;">
@@ -98,7 +98,7 @@ function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
           <p style="color:#9aa5b4;font-size:12px;">This link expires in 7 days.</p>
         </div>
         <div style="background:#f0f2f5;padding:16px 24px;border-top:1px solid #dde3ea;">
-          <p style="color:#9aa5b4;font-size:12px;margin:0;">Vance Medical Foods Content Platform — vancemedicalfoods.com</p>
+          <p style="color:#9aa5b4;font-size:12px;margin:0;">Gastro Health Hub Content Platform — gastrohealthhub.com</p>
         </div>
       </div>
     `,

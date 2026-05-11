@@ -12,7 +12,7 @@ export function computeNewStatus(item) {
 // ── Shared HTML shell ────────────────────────────────────────────────────────
 const shell = (title, body) => `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${title} — Vance Medical Foods</title>
+<title>${title} — Gastro Health Hub</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:Arial,sans-serif;background:#f0f2f5;min-height:100vh;padding:24px 16px;}
@@ -47,7 +47,7 @@ const shell = (title, body) => `<!DOCTYPE html><html lang="en"><head>
   .confirm-msg p{color:#555;line-height:1.6;margin-bottom:16px;}
   .back{color:#006868;font-weight:bold;text-decoration:none;font-size:0.875rem;}
 </style></head><body>
-<div class="brand"><span class="brand-name"><span>Vance Medical Foods</span> ■</span></span></div>
+<div class="brand"><span class="brand-name"><span>Gastro Health Hub</span> ■</span></span></div>
 ${body}
 </body></html>`;
 
