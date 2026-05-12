@@ -3830,24 +3830,24 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       </div>
     </div>
 
-    <!-- Google Calendar -->
+    <!-- Google Connections (Drive + Gmail + Calendar) -->
     <div class="settings-section">
       <div class="settings-section-header">
-        <h3>Google Calendar</h3>
-        <p>Sync scheduled posts as calendar events</p>
+        <h3>Google Connections</h3>
+        <p>One connection covers Drive, Gmail, and Calendar</p>
       </div>
       <div class="settings-section-body">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-          <div class="settings-gcal-status disconnected" id="gcalStatus">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Not connected
-          </div>
-          <button class="btn btn-outline btn-sm" onclick="connectGoogleCalendar()" id="gcalConnectBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Connect Google Calendar
-          </button>
+        <div id="googleConnectionStatus" style="margin-bottom:12px;">
+          <div class="settings-gcal-status disconnected" id="gcalStatus">Not connected</div>
         </div>
-        <p style="font-size:0.65rem;color:var(--text-muted);margin:10px 0 0;">When connected, scheduling a post automatically creates a calendar event in your Google Calendar.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" id="googleUnifiedConnectBtn" onclick="connectCloudService('google')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Connect Google
+          </button>
+          <button class="btn btn-outline btn-sm" id="googleUnifiedDisconnectBtn" onclick="disconnectCloudService('google')" style="display:none;color:#ef4444;border-color:#ef4444;">Disconnect</button>
+        </div>
+        <p style="font-size:0.65rem;color:var(--text-muted);margin:10px 0 0;">Connects Drive (automation sources), Gmail (email-to-article), and Calendar (schedule sync). Re-connect at any time to refresh permissions.</p>
       </div>
     </div>
 
@@ -3911,8 +3911,6 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <button class="btn btn-outline btn-sm" onclick="saveCloudCreds('google')">Save credentials</button>
-              <button class="btn btn-outline btn-sm" id="googleConnectBtn" onclick="connectCloudService('google')" style="display:none;">Connect Drive</button>
-              <button class="btn btn-outline btn-sm" id="googleDisconnectBtn" onclick="disconnectCloudService('google')" style="display:none;color:#ef4444;border-color:#ef4444;">Disconnect</button>
             </div>
             <p style="font-size:0.63rem;color:var(--text-muted);margin:10px 0 0;line-height:1.5;">
               Create OAuth credentials at <strong>console.cloud.google.com</strong> → APIs &amp; Services → Credentials. Enable the <strong>Google Drive API</strong>. Set the authorised redirect URI to:<br>
@@ -12201,7 +12199,6 @@ let _reviewers = [];
 
 async function loadSettings() {
   await loadReviewers();
-  checkGcalStatus();
   renderSocialConnections();
   loadCloudIntegrationStatus();
 }
@@ -12217,7 +12214,21 @@ async function loadCloudIntegrationStatus() {
     _cloudStatus.dropbox = data.dropbox?.connected || false;
     _renderCloudStatus('google',  data.google);
     _renderCloudStatus('dropbox', data.dropbox);
+    _renderUnifiedGoogleStatus(data.google);
   } catch (e) { /* non-fatal */ }
+}
+
+function _renderUnifiedGoogleStatus(info) {
+  var connected = info?.connected || false;
+  var statusEl      = document.getElementById('gcalStatus');
+  var connectBtn    = document.getElementById('googleUnifiedConnectBtn');
+  var disconnectBtn = document.getElementById('googleUnifiedDisconnectBtn');
+  if (statusEl) {
+    statusEl.className = 'settings-gcal-status ' + (connected ? 'connected' : 'disconnected');
+    statusEl.textContent = connected ? 'Drive ✓  Gmail ✓  Calendar ✓' : 'Not connected';
+  }
+  if (connectBtn)    connectBtn.style.display    = '';
+  if (disconnectBtn) disconnectBtn.style.display = connected ? '' : 'none';
 }
 
 function _renderCloudStatus(service, info) {
@@ -12260,7 +12271,7 @@ function connectCloudService(service) {
     if (e.data && e.data.type === 'oauth-complete') {
       window.removeEventListener('message', handler);
       if (e.data.success) {
-        showToast((service === 'google' ? 'Google Drive' : 'Dropbox') + ' connected!');
+        showToast((service === 'google' ? 'Google' : 'Dropbox') + ' connected!');
         loadCloudIntegrationStatus();
       } else {
         showToast('Connection failed — check credentials and try again');
