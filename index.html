@@ -92,14 +92,16 @@ body.sidebar-collapsed #syncStatus { width: auto; justify-content: center; }
 .sidebar-logo {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 14px 16px 12px;
+  justify-content: center;
+  gap: 0;
+  padding: 14px 12px;
   border-bottom: 2px solid rgba(27,63,48,0.12);
   flex-shrink: 0;
   text-decoration: none;
   background: #ffffff;
 }
-.sidebar-logo-img { height: 32px; width: auto; background: #fff; border-radius: 0; padding: 2px 4px; flex-shrink: 0; }
+.sidebar-logo-img { width: 100%; max-width: 100%; height: auto; max-height: 72px; object-fit: contain; background: transparent; padding: 0; flex-shrink: 0; }
+body.sidebar-collapsed .sidebar-logo-img { max-height: 36px; }
 .sidebar-logo-text { display: flex; flex-direction: column; gap: 1px; }
 .sidebar-logo-name { color: var(--vance-dark); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.3px; line-height: 1.1; }
 .sidebar-logo-name span { color: var(--vance-primary); }
@@ -2231,7 +2233,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <!-- ══════════════════════════════ SIDEBAR NAV ══════════════════════════════ -->
 <aside class="sidebar">
   <a class="sidebar-logo" href="#">
-    <img class="sidebar-logo-img" id="brandLogoImg" src="logo-vance.svg" alt="Vance"/>
+    <img class="sidebar-logo-img" id="brandLogoImg" src="logo-vance-content.png" alt="Vance Content Generator"/>
   </a>
 
   <nav class="sidebar-nav">
