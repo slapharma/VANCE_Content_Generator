@@ -4011,20 +4011,34 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         </div>
       </div>
       <div id="wizTrigSchedule">
-        <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Schedule Preset</label>
-          <select id="wizCronPreset" onchange="wizUpdateCronUI()" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
-            <option value="0 7 * * 1">Weekly &mdash; Mondays at 07:00 UTC</option>
-            <option value="0 7 * * *">Daily &mdash; 07:00 UTC</option>
-            <option value="0 7 1,15 * *">Bi-weekly &mdash; 1st &amp; 15th</option>
-            <option value="0 7 1 * *">Monthly &mdash; 1st of month</option>
-            <option value="custom">Custom cron expression</option>
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Frequency</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button type="button" data-wiz-freq="daily" onclick="wizSetFreq('daily')" style="padding:6px 14px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">Daily</button>
+            <button type="button" data-wiz-freq="weekly" onclick="wizSetFreq('weekly')" style="padding:6px 14px;border:1px solid var(--vance-dark);background:var(--vance-dark);color:#fff;font-size:0.82rem;cursor:pointer;">Weekly</button>
+            <button type="button" data-wiz-freq="biweekly" onclick="wizSetFreq('biweekly')" style="padding:6px 14px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">Bi-weekly</button>
+            <button type="button" data-wiz-freq="monthly" onclick="wizSetFreq('monthly')" style="padding:6px 14px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">Monthly</button>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;" id="wizDayRow">
+          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Day</label>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <button type="button" data-wiz-dow="1" onclick="wizSetDay(1)" style="padding:5px 10px;border:1px solid var(--vance-dark);background:var(--vance-dark);color:#fff;font-size:0.8rem;cursor:pointer;">Mon</button>
+            <button type="button" data-wiz-dow="2" onclick="wizSetDay(2)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Tue</button>
+            <button type="button" data-wiz-dow="3" onclick="wizSetDay(3)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Wed</button>
+            <button type="button" data-wiz-dow="4" onclick="wizSetDay(4)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Thu</button>
+            <button type="button" data-wiz-dow="5" onclick="wizSetDay(5)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Fri</button>
+            <button type="button" data-wiz-dow="6" onclick="wizSetDay(6)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Sat</button>
+            <button type="button" data-wiz-dow="0" onclick="wizSetDay(0)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Sun</button>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Time (GMT)</label>
+          <select id="wizHour" onchange="wizUpdateCronPreview()" style="padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+            <option value="0">00:00 GMT</option><option value="1">01:00 GMT</option><option value="2">02:00 GMT</option><option value="3">03:00 GMT</option><option value="4">04:00 GMT</option><option value="5">05:00 GMT</option><option value="6">06:00 GMT</option><option value="7" selected>07:00 GMT</option><option value="8">08:00 GMT</option><option value="9">09:00 GMT</option><option value="10">10:00 GMT</option><option value="11">11:00 GMT</option><option value="12">12:00 GMT</option><option value="13">13:00 GMT</option><option value="14">14:00 GMT</option><option value="15">15:00 GMT</option><option value="16">16:00 GMT</option><option value="17">17:00 GMT</option><option value="18">18:00 GMT</option><option value="19">19:00 GMT</option><option value="20">20:00 GMT</option><option value="21">21:00 GMT</option><option value="22">22:00 GMT</option><option value="23">23:00 GMT</option>
           </select>
         </div>
-        <div id="wizCustomCron" style="display:none;margin-bottom:12px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Cron Expression</label>
-          <input id="wizCronExpr" type="text" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
-        </div>
+        <div id="wizSchedPreview" style="font-size:0.75rem;color:var(--text-muted);padding:8px 10px;border:1px solid var(--border);background:var(--bg);margin-bottom:4px;">Every Monday at 07:00 GMT</div>
       </div>
       <div id="wizTrigEvent" style="display:none;">
         <div style="margin-bottom:12px;">
@@ -6616,6 +6630,8 @@ var _wizEditId = null;
 var _wizSources = [];
 var _wizBibCache = []; // bibliographies, fetched lazily when a bibliography source is added
 var _wizEmails = [];
+var _wizScheduleFreq = 'weekly'; // 'daily' | 'weekly' | 'biweekly' | 'monthly'
+var _wizScheduleDow  = 1;        // 0=Sun, 1=Mon … 6=Sat (cron day-of-week)
 
 async function openRuleWizard(editId) {
   console.log('[wizard] openRuleWizard called, editId=', editId, typeof editId);
@@ -6623,6 +6639,16 @@ async function openRuleWizard(editId) {
   _wizEditId = editId || null;
   _wizSources = [];
   _wizEmails = [];
+  _wizScheduleFreq = 'weekly';
+  _wizScheduleDow  = 1;
+  // Initialize schedule button states after DOM is ready (deferred)
+  setTimeout(function() {
+    var hourEl = document.getElementById('wizHour');
+    if (hourEl) hourEl.value = '7';
+    wizSetFreq('weekly');
+    wizSetDay(1);
+    wizUpdateCronPreview();
+  }, 0);
   // Refresh cloud status so Drive/Dropbox "⚠ Not connected" warnings are current
   loadCloudIntegrationStatus();
 
@@ -6689,15 +6715,14 @@ async function openRuleWizard(editId) {
         var trigRadio = document.querySelector('input[name="wizTrigger"][value="' + trigType + '"]');
         if (trigRadio) { trigRadio.checked = true; wizUpdateTriggerUI(); }
         if (trigType === 'schedule' && rule.trigger.cron) {
-          var presets = ['0 7 * * 1', '0 7 * * *', '0 7 1,15 * *', '0 7 1 * *'];
-          var cronPresetEl = document.getElementById('wizCronPreset');
-          if (presets.includes(rule.trigger.cron)) {
-            cronPresetEl.value = rule.trigger.cron;
-          } else {
-            cronPresetEl.value = 'custom';
-            document.getElementById('wizCronExpr').value = rule.trigger.cron;
-          }
-          wizUpdateCronUI();
+          var parsed = _wizParseCron(rule.trigger.cron);
+          _wizScheduleFreq = parsed.freq;
+          _wizScheduleDow  = parsed.dow;
+          var hourEl = document.getElementById('wizHour');
+          if (hourEl) hourEl.value = String(parsed.hour);
+          wizSetFreq(_wizScheduleFreq);
+          wizSetDay(_wizScheduleDow);
+          wizUpdateCronPreview();
         }
         if (rule.trigger.minGapHours) {
           var minGapEl = document.getElementById('wizMinGap');
@@ -6888,12 +6913,81 @@ function wizUpdateTriggerUI() {
   document.getElementById('wizTrigEvent').style.display = val === 'event' ? '' : 'none';
 }
 
-function wizUpdateCronUI() {
-  var val = document.getElementById('wizCronPreset').value;
-  var modal = document.getElementById('wizCustomCron');
-  var flat = document.getElementById('wizCronExpr');
-  if (modal) modal.style.display = val === 'custom' ? '' : 'none';
-  if (flat) flat.style.display = val === 'custom' ? '' : 'none';
+// Legacy stub — no-op now that the preset dropdown is replaced by the freq/day/time picker
+function wizUpdateCronUI() {}
+
+function wizSetFreq(freq) {
+  _wizScheduleFreq = freq;
+  document.querySelectorAll('[data-wiz-freq]').forEach(function(btn) {
+    var active = btn.getAttribute('data-wiz-freq') === freq;
+    btn.style.background   = active ? 'var(--vance-dark)' : 'transparent';
+    btn.style.color        = active ? '#fff' : 'var(--text-muted)';
+    btn.style.borderColor  = active ? 'var(--vance-dark)' : 'var(--border)';
+  });
+  var dayRow = document.getElementById('wizDayRow');
+  if (dayRow) dayRow.style.display = freq === 'weekly' ? '' : 'none';
+  wizUpdateCronPreview();
+}
+
+function wizSetDay(dow) {
+  _wizScheduleDow = dow;
+  document.querySelectorAll('[data-wiz-dow]').forEach(function(btn) {
+    var active = parseInt(btn.getAttribute('data-wiz-dow')) === dow;
+    btn.style.background   = active ? 'var(--vance-dark)' : 'transparent';
+    btn.style.color        = active ? '#fff' : 'var(--text-muted)';
+    btn.style.borderColor  = active ? 'var(--vance-dark)' : 'var(--border)';
+  });
+  wizUpdateCronPreview();
+}
+
+function wizUpdateCronPreview() {
+  var hour = parseInt((document.getElementById('wizHour') || {}).value || '7');
+  var previewEl = document.getElementById('wizSchedPreview');
+  if (previewEl) previewEl.textContent = _wizScheduleLabel(hour);
+}
+
+function _wizBuildCron(hour) {
+  switch (_wizScheduleFreq) {
+    case 'daily':    return '0 ' + hour + ' * * *';
+    case 'weekly':   return '0 ' + hour + ' * * ' + _wizScheduleDow;
+    case 'biweekly': return '0 ' + hour + ' 1,15 * *';
+    case 'monthly':  return '0 ' + hour + ' 1 * *';
+    default:         return '0 ' + hour + ' * * ' + _wizScheduleDow;
+  }
+}
+
+function _wizScheduleLabel(hour) {
+  var h = String(hour).padStart(2, '0') + ':00 GMT';
+  var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  switch (_wizScheduleFreq) {
+    case 'daily':    return 'Every day at ' + h;
+    case 'weekly':   return 'Every ' + days[_wizScheduleDow] + ' at ' + h;
+    case 'biweekly': return '1st and 15th of each month at ' + h;
+    case 'monthly':  return '1st of each month at ' + h;
+    default:         return 'Every ' + days[_wizScheduleDow] + ' at ' + h;
+  }
+}
+
+// Parse a cron expression back into frequency/dow/hour for the schedule UI.
+// Handles the four standard patterns; anything else defaults to weekly Mon 07:00.
+function _wizParseCron(cron) {
+  var result = { freq: 'weekly', dow: 1, hour: 7 };
+  if (!cron) return result;
+  var parts = cron.trim().split(/\s+/);
+  if (parts.length < 5) return result;
+  result.hour = parseInt(parts[1]) || 7;
+  var dom = parts[2], dow = parts[4];
+  if (dom === '1,15') {
+    result.freq = 'biweekly';
+  } else if (dom === '1' && parts[3] === '*') {
+    result.freq = 'monthly';
+  } else if (dow === '*') {
+    result.freq = 'daily';
+  } else {
+    result.freq = 'weekly';
+    result.dow  = parseInt(dow) || 1;
+  }
+  return result;
 }
 
 function wizUpdateReviewUI() {
@@ -6934,8 +7028,7 @@ function _wizRenderEmailChips() {
 function _wizBuildSummary() {
   var trigEl = document.querySelector('input[name="wizTrigger"]:checked');
   var trigType = trigEl ? trigEl.value : 'schedule';
-  var cronPreset = document.getElementById('wizCronPreset').value;
-  var cronDisplay = cronPreset === 'custom' ? (document.getElementById('wizCronExpr').value || 'custom') : cronPreset;
+  var cronDisplay = _wizScheduleLabel(parseInt((document.getElementById('wizHour') || {}).value || '7'));
   var reviewEl = document.querySelector('input[name="wizReview"]:checked');
   var reviewReq = !reviewEl || reviewEl.value === 'yes';
   var notifParts = [];
@@ -6968,8 +7061,7 @@ async function wizTestTelegram() {
 async function _wizSubmit() {
   var trigEl = document.querySelector('input[name="wizTrigger"]:checked');
   var trigType = trigEl ? trigEl.value : 'schedule';
-  var cronPreset = document.getElementById('wizCronPreset').value;
-  var cronExpr = cronPreset === 'custom' ? document.getElementById('wizCronExpr').value : cronPreset;
+  var cronExpr = _wizBuildCron(parseInt((document.getElementById('wizHour') || {}).value || '7'));
   var reviewEl = document.querySelector('input[name="wizReview"]:checked');
   var reviewReq = !reviewEl || reviewEl.value === 'yes';
   var combineEl = document.querySelector('input[name="wizCombine"]:checked');
@@ -13165,20 +13257,8 @@ function checkGcalStatus() {
         </div>
       </div>
       <div id="wizTrigSchedule">
-        <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Schedule Preset</label>
-          <select id="wizCronPreset" onchange="wizUpdateCronUI()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;">
-            <option value="0 7 * * 1">Weekly &mdash; Mondays at 07:00 UTC</option>
-            <option value="0 7 * * *">Daily &mdash; 07:00 UTC</option>
-            <option value="0 7 1,15 * *">Bi-weekly &mdash; 1st &amp; 15th</option>
-            <option value="0 7 1 * *">Monthly &mdash; 1st of month</option>
-            <option value="custom">Custom cron expression</option>
-          </select>
-        </div>
-        <div id="wizCustomCron" style="display:none;margin-bottom:12px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Cron Expression</label>
-          <input id="wizCronExpr" type="text" placeholder="0 7 * * 1" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;">
-        </div>
+        <!-- Legacy modal content — duplicate IDs intentionally omitted. The active wizard lives in view-automation-new. -->
+        <div style="font-size:0.75rem;color:var(--text-muted);padding:8px 10px;border:1px solid var(--border);background:var(--bg);">Schedule controls are in the in-page wizard.</div>
       </div>
       <div id="wizTrigEvent" style="display:none;">
         <div style="margin-bottom:12px;">
