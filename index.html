@@ -13016,16 +13016,9 @@ function addPromptToCat(catId) {
   loadPromptsTab();
 }
 
-function connectGoogleCalendar() {
-  const popup = window.open('/api/calendar/auth', 'gcal-auth', 'width=520,height=640,menubar=no,toolbar=no');
-  window.addEventListener('message', e => {
-    if (e.data === 'calendar-connected') {
-      popup?.close();
-      checkGcalStatus();
-      showAlert('generateAlert', '✓ Google Calendar connected!', 'success');
-    }
-  }, { once: true });
-}
+// connectGoogleCalendar() removed — Calendar auth is handled by the unified
+// Google Connections flow (connectCloudService('google')) in Settings. The
+// /api/calendar/auth endpoint never existed, so any stale callers would 404.
 
 // ═══════════════════════════════════════════════════════════
 //  TRASH
@@ -13187,21 +13180,8 @@ function updateTrashBadge(count) {
   }
 }
 
-function checkGcalStatus() {
-  // Lightweight check — if /api/calendar/sync responds we assume tokens exist
-  const statusEl = document.getElementById('gcalStatus');
-  const btnEl    = document.getElementById('gcalConnectBtn');
-  if (!statusEl) return;
-  fetch('/api/calendar/sync', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) })
-    .then(r => {
-      if (r.status === 400) {
-        // 400 = missing contentId (not auth error) → tokens exist
-        statusEl.className = 'settings-gcal-status connected';
-        statusEl.innerHTML = '✓ Connected to Google Calendar';
-        if (btnEl) btnEl.textContent = 'Reconnect';
-      }
-    }).catch(() => {});
-}
+// checkGcalStatus() removed — Calendar status is rendered by
+// _renderUnifiedGoogleStatus() as part of the unified Google connection.
 </script>
 
 <!-- ═══ RULE WIZARD MODAL (shell kept for legacy references; content moved to view-automation-new) ═══ -->
