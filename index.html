@@ -6777,6 +6777,18 @@ function _wizRenderStep(step) {
   var btnNext = document.getElementById('wizBtnNext');
   if (btnBack) btnBack.style.display = step > 1 ? '' : 'none';
   if (btnNext) btnNext.textContent = step === 5 ? (_wizEditId ? 'Save Rule' : 'Create Rule') : 'Next \u2192';
+  if (step === 3) {
+    // Pre-fill prompt and combine mode when at least one source is gmail and the field is empty
+    if (_wizSources.some(function(s) { return s.type === 'gmail'; })) {
+      var promptEl = document.getElementById('wizPrompt');
+      if (promptEl && !promptEl.value.trim()) {
+        promptEl.value = 'You will be given multiple gastroenterology industry news emails received today. Create a single structured article:\n\n1. Open with a section titled "Today\'s Gastro News Highlights" \u2014 a maximum 250-word executive summary written in flowing prose (not bullet points) that connects and contextualises all stories for a healthcare professional audience.\n\n2. Follow with each individual story as a clean, professional gastroenterology industry news article with its own clear headline. Preserve all key facts, figures, and quotes. Do not add any information not present in the original emails.';
+      }
+      // Auto-select combine mode so all emails feed into one structured article
+      var combineRadio = document.querySelector('input[name="wizCombine"][value="combine"]');
+      if (combineRadio) combineRadio.checked = true;
+    }
+  }
   if (step === 5) _wizBuildSummary();
 }
 
