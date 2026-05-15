@@ -17,7 +17,12 @@ test('all-approval: all approved sets approved', () => {
   assert.equal(computeNewStatus(item), 'approved');
 });
 
-test('any rejection sets rejected', () => {
+test('rejection alone does NOT terminate review — stays in_review until approvals arrive', () => {
   const item = { requireAllApprovals: false, reviewers: ['r1','r2'], approvals: [], rejections: ['r1'] };
-  assert.equal(computeNewStatus(item), 'rejected');
+  assert.equal(computeNewStatus(item), 'in_review');
+});
+
+test('rejection + later approval transitions to approved (any-mode)', () => {
+  const item = { requireAllApprovals: false, reviewers: ['r1','r2'], approvals: ['r2'], rejections: ['r1'] };
+  assert.equal(computeNewStatus(item), 'approved');
 });

@@ -1,9 +1,14 @@
 import { kv } from '../../lib/kv.js';
 
+// Note: 'rejected' is intentionally absent from in_review's allowed targets.
+// Reviewers' "Request Changes" feedback is stored as comments on the article but
+// does NOT terminate the review — the article stays in_review until enough
+// approvals arrive. The legacy 'rejected' rows in KV are still readable; the
+// 'rejected → draft / trash' transition stays available so admins can clear them.
 const VALID_TRANSITIONS = {
   draft:      ['in_review', 'approved', 'draft', 'trash'],
-  in_review:  ['approved', 'rejected', 'draft', 'trash'],
-  rejected:   ['draft', 'trash'],
+  in_review:  ['approved', 'draft', 'trash'],
+  rejected:   ['draft', 'trash'], // legacy items only — new items never reach this state
   approved:   ['scheduled', 'published', 'draft', 'trash'],
   scheduled:  ['published', 'approved', 'trash'],
   published:  ['trash'],
@@ -36,7 +41,6 @@ export default async function handler(req, res) {
       }
     }
     const now = new Date().toISOString();
-    // Capture per-status timestamps on first transition into that status
     const statusTimestamps = {};
     if (updates.status && updates.status !== item.status) {
       if (updates.status === 'in_review'  && !item.sentForReviewAt) statusTimestamps.sentForReviewAt = now;

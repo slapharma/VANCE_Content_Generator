@@ -218,15 +218,16 @@ test('Telegram webhook handler', async (t) => {
     await handler(req, res);
 
     assert.deepEqual(responseData, { ok: true });
-    assert.equal(job.status, 'rejected');
-    assert.equal(job.approvedBy, 'telegram');
-    assert.ok(job.rejectedAt);
+    // "Request changes" via Telegram is feedback, not a veto — job stays open so
+    // other reviewers can still vote. Only the rejections array gains the entry.
+    assert.notEqual(job.status, 'rejected');
+    assert.ok(Array.isArray(job.rejections) && job.rejections.includes('telegram'));
 
     // Verify only answerCallbackQuery was called, not publish
     const telegramCall = fetchCalls.find((c) => c.url.includes('answerCallbackQuery'));
     assert.ok(telegramCall, 'answerCallbackQuery should be called');
     const publishCall = fetchCalls.find((c) => c.url.includes('/api/publish'));
-    assert.ok(!publishCall, 'publish API should NOT be called for rejection');
+    assert.ok(!publishCall, 'publish API should NOT be called for change requests');
   });
 
   await t.test('ignores callback for non-existent job', async () => {

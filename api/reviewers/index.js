@@ -1,49 +1,74 @@
-import { kv } from '../../lib/kv.js';
-import { randomUUID } from 'crypto';
+import { getCurrentUser, requireRole, hashPassword, SEED_PASSWORD } from '../../lib/auth.js';
+import {
+  APP_ROLES, validUser, buildUser, safe, loadUsers, saveUsers,
+} from '../../lib/users.js';
 
-export function validateReviewer(data) {
-  if (!data.email) throw new Error('email is required');
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) throw new Error('email is invalid');
-}
-
-export function buildReviewer(data) {
-  return { id: randomUUID(), name: data.name ?? data.email, email: data.email, role: data.role ?? 'must_approve' };
-}
+export function validateReviewer(data) { return validUser(data); }
+export function buildReviewer(data) { return buildUser({ ...data, password: data.password ?? SEED_PASSWORD, mustChangePassword: false }); }
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    const reviewers = await kv.get('reviewers') ?? [];
-    return res.json(reviewers);
+    const users = await loadUsers();
+    return res.json(users.map(safe));
   }
+
+  const me = await getCurrentUser(req);
+  const guard = requireRole(me, 'admin');
+  if (!guard.ok) return res.status(guard.status).json({ error: guard.error });
+
   if (req.method === 'POST') {
-    try { validateReviewer(req.body); } catch (e) { return res.status(400).json({ error: e.message }); }
-    const reviewer = buildReviewer(req.body);
-    const reviewers = await kv.get('reviewers') ?? [];
-    reviewers.push(reviewer);
-    await kv.set('reviewers', reviewers);
-    return res.status(201).json(reviewer);
+    try { validUser(req.body); } catch (e) { return res.status(400).json({ error: e.message }); }
+    const users = await loadUsers();
+    if (users.find(u => u.email.toLowerCase() === req.body.email.toLowerCase())) {
+      return res.status(409).json({ error: 'A user with that email already exists' });
+    }
+    const user = buildUser({ ...req.body, password: req.body.password ?? SEED_PASSWORD, mustChangePassword: req.body.mustChangePassword ?? true });
+    users.push(user);
+    await saveUsers(users);
+    return res.status(201).json(safe(user));
   }
+
   if (req.method === 'PATCH') {
     const { id } = req.query;
     if (!id) return res.status(400).json({ error: 'id is required' });
-    const reviewers = await kv.get('reviewers') ?? [];
-    const idx = reviewers.findIndex(r => r.id === id);
-    if (idx === -1) return res.status(404).json({ error: 'Reviewer not found' });
-    if (req.body.role !== undefined) reviewers[idx].role = req.body.role;
-    if (req.body.name !== undefined) reviewers[idx].name = req.body.name;
+    const users = await loadUsers();
+    const idx = users.findIndex(u => u.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'User not found' });
+    const u = users[idx];
+    if (req.body.name !== undefined) u.name = req.body.name;
     if (req.body.email !== undefined) {
-      const newEmail = req.body.email;
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) return res.status(400).json({ error: 'email is invalid' });
-      reviewers[idx].email = newEmail;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email)) return res.status(400).json({ error: 'email is invalid' });
+      u.email = req.body.email;
     }
-    await kv.set('reviewers', reviewers);
-    return res.json(reviewers[idx]);
+    if (req.body.appRole !== undefined) {
+      if (!APP_ROLES.includes(req.body.appRole)) return res.status(400).json({ error: 'invalid appRole' });
+      if (u.appRole === 'admin' && req.body.appRole !== 'admin') {
+        const adminCount = users.filter(x => x.appRole === 'admin').length;
+        if (adminCount <= 1) return res.status(400).json({ error: 'Cannot demote the last admin' });
+      }
+      u.appRole = req.body.appRole;
+    }
+    if (req.body.role !== undefined) u.role = req.body.role;
+    if (req.body.resetPassword === true) {
+      u.passwordHash = hashPassword(SEED_PASSWORD);
+      u.mustChangePassword = true;
+    }
+    u.updatedAt = new Date().toISOString();
+    await saveUsers(users);
+    return res.json(safe(u));
   }
+
   if (req.method === 'DELETE') {
     const { id } = req.query;
-    const reviewers = (await kv.get('reviewers') ?? []).filter(r => r.id !== id);
-    await kv.set('reviewers', reviewers);
+    const users = await loadUsers();
+    const target = users.find(u => u.id === id);
+    if (target?.appRole === 'admin' && users.filter(u => u.appRole === 'admin').length <= 1) {
+      return res.status(400).json({ error: 'Cannot delete the last admin' });
+    }
+    const next = users.filter(u => u.id !== id);
+    await saveUsers(next);
     return res.status(204).end();
   }
-  res.status(405).json({ error: 'Method not allowed' });
+
+  return res.status(405).json({ error: 'Method not allowed' });
 }

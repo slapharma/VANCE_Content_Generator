@@ -1,6 +1,7 @@
 import { kv } from '../../lib/kv.js';
 import { SignJWT, jwtVerify } from 'jose';
 import { Resend } from 'resend';
+import { renderArticleEmailContent } from '../../lib/email-content.js';
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? 'dev-secret-replace-in-production');
 // Lazy-init so the module can be imported in tests without a real API key
@@ -32,11 +33,12 @@ export async function parseApprovalToken(token) {
 
 // ── Email builder ─────────────────────────────────────────────────────────────
 
-function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
+function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl, urgent = false }) {
+  const subjectBase = `[Review Required] ${content.title}`;
   return {
-    from: process.env.RESEND_FROM_EMAIL ?? 'noreply@mail.gastrohealthhub.com',
+    from: process.env.RESEND_FROM_EMAIL ?? 'Vance Content <noreply@slapharmagroup.com>',
     to: reviewer.email,
-    subject: `Review requested: ${content.title}`,
+    subject: urgent ? `[URGENT] ${subjectBase}` : subjectBase,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
         <div style="background:#1e2d40;padding:20px 24px;border-bottom:3px solid #006868;">
@@ -44,10 +46,12 @@ function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
           <span style="color:#006868;font-size:20px;font-weight:800;"> ■</span>
         </div>
         <div style="padding:28px 24px;">
-          <h2 style="color:#1e2d40;font-size:18px;margin:0 0 12px;">Content Review Request</h2>
+          <h2 style="color:#1e2d40;font-size:18px;margin:0 0 12px;">${urgent ? '⚠ URGENT — Reminder: Content Review Request' : 'Content Review Request'}</h2>
           <p style="color:#555;font-size:14px;line-height:1.6;margin:0 0 16px;">Hi ${reviewer.name},</p>
           <p style="color:#555;font-size:14px;line-height:1.6;margin:0 0 20px;">
-            The following content has been submitted for your review:
+            ${urgent
+              ? 'This is a reminder — the following content is still awaiting your approval and is now overdue:'
+              : 'The following content has been submitted for your review:'}
           </p>
           <table cellpadding="12" cellspacing="0" border="0" width="100%"
                  style="background:#f0f2f5;border-radius:8px;border-left:3px solid #006868;margin-bottom:24px;">
@@ -59,20 +63,13 @@ function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
               </td>
             </tr>
           </table>
-          ${(() => {
-            const plain = (content.body || content.excerpt || '')
-              .replace(/<[^>]+>/g, '').replace(/#{1,6}\s*/g, '').trim();
-            const preview = plain.slice(0, 4000) + (plain.length > 4000 ? '\n\n[…article continues]' : '');
-            const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            return preview ? `
-          <div style="margin:0 0 24px;">
-            <p style="font-size:11px;color:#6b7a8d;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;font-family:Arial,sans-serif;">Full Article</p>
-            <div style="background:#fafbfc;border:1px solid #dde3ea;border-radius:6px;padding:16px 18px;
-                        font-size:13px;color:#333;line-height:1.75;white-space:pre-wrap;font-family:Georgia,serif;">
-              ${esc(preview)}
-            </div>
-          </div>` : '';
-          })()}
+          ${renderArticleEmailContent({
+            title: content.title,
+            body: content.body,
+            excerpt: content.excerpt,
+            heroImageUrl: content.heroImageUrl,
+            category: content.category,
+          })}
           <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;">
             <tr>
               <td style="padding-right:12px;">
@@ -110,16 +107,25 @@ function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl }) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { contentId, requireAllApprovals = false } = req.body;
+  const { contentId, requireAllApprovals = false, urgent = false, reviewerIds = null } = req.body;
   if (!contentId) return res.status(400).json({ error: 'contentId required' });
 
-  const [content, reviewers] = await Promise.all([
+  const [content, allReviewers] = await Promise.all([
     kv.get(`content:${contentId}`),
     kv.get('reviewers'),
   ]);
 
   if (!content) return res.status(404).json({ error: 'Content not found' });
-  if (!reviewers?.length) return res.status(400).json({ error: 'No reviewers configured. Add reviewers in Settings.' });
+  if (!allReviewers?.length) return res.status(400).json({ error: 'No reviewers configured. Add users in Settings.' });
+
+  // Filter reviewers by selection: request body > content's saved reviewerIds > all
+  const selectedIds = Array.isArray(reviewerIds) && reviewerIds.length
+    ? reviewerIds
+    : (Array.isArray(content.reviewerIds) && content.reviewerIds.length ? content.reviewerIds : null);
+  const reviewers = selectedIds
+    ? allReviewers.filter(r => selectedIds.includes(r.id))
+    : allReviewers;
+  if (!reviewers.length) return res.status(400).json({ error: 'None of the selected reviewers exist' });
 
   const results = await Promise.allSettled(reviewers.map(async reviewer => {
     const [approveToken, rejectToken] = await Promise.all([
@@ -129,7 +135,7 @@ export default async function handler(req, res) {
     const approveUrl = `${APP_URL}/api/review/${approveToken}`;
     const rejectUrl  = `${APP_URL}/api/review/${rejectToken}`;
     const result = await getResend().emails.send(
-      buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl })
+      buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl, urgent })
     );
     if (result.error) throw new Error(`Resend error for ${reviewer.email}: ${result.error.message}`);
     return { reviewer: reviewer.email, id: result.data?.id };
@@ -145,14 +151,19 @@ export default async function handler(req, res) {
     });
   }
 
+  const nowIso = new Date().toISOString();
   const updated = {
     ...content,
     status: 'in_review',
     requireAllApprovals,
     reviewers: reviewers.map(r => r.id),
-    approvals: [],
-    rejections: [],
-    updatedAt: new Date().toISOString(),
+    reviewerIds: selectedIds ?? reviewers.map(r => r.id),
+    // Preserve approvals/rejections on URGENT resend; reset on initial send
+    approvals: urgent ? (content.approvals ?? []) : [],
+    rejections: urgent ? (content.rejections ?? []) : [],
+    sentForReviewAt: content.sentForReviewAt ?? nowIso,
+    ...(urgent && { lastReminderAt: nowIso, reminderCount: (content.reminderCount ?? 0) + 1 }),
+    updatedAt: nowIso,
   };
   await kv.set(`content:${contentId}`, updated);
 
@@ -160,6 +171,7 @@ export default async function handler(req, res) {
     sent,
     failed: failures.length,
     status: 'in_review',
+    urgent,
     ...(failures.length && { warnings: failures }),
   });
 }

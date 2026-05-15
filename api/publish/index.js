@@ -1,12 +1,13 @@
 import { kv } from '../../lib/kv.js';
 
-// Map app category IDs → WordPress category slugs
+// Map app category IDs → WordPress category slugs. Mirrors BUILTIN_CATEGORY_META in index.html.
 const CATEGORY_SLUG_MAP = {
   'industry-news':    'content-healthcare-news',
   'clinical-reviews': 'content-clinical-reviews',
   'op-eds':           'content-expert-opinions',
   'white-papers':     'content-white-papers',
   'infographics':     'content-infographic',
+  'ibd-living':       'content-gastro-living',
 };
 
 // Resolve a WP category slug to its numeric ID via the REST API.
@@ -131,7 +132,7 @@ export function buildWpPayload(item, categoryIds, featuredMediaId = null) {
   };
 }
 
-async function publishToWordPress(item) {
+async function publishToWordPress(item, { fallbackHeroImageUrl } = {}) {
   const credentials = Buffer.from(
     `${process.env.WP_USERNAME}:${process.env.WP_APP_PASSWORD}`
   ).toString('base64');
@@ -148,12 +149,15 @@ async function publishToWordPress(item) {
     console.warn(`[publish] WP category slug "${slug}" not found — posting without category`);
   }
 
-  // Upload hero image and get media ID (non-fatal if it fails)
+  // Upload hero image and get media ID (non-fatal if it fails). Falls back to the
+  // category-level hero image when the article has none.
   let featuredMediaId = null;
-  if (item.heroImageUrl) {
-    featuredMediaId = await uploadHeroImageToWp(item.heroImageUrl, item.title, siteUrl, authHeader);
+  const heroUrl = item.heroImageUrl || fallbackHeroImageUrl || null;
+  if (heroUrl) {
+    featuredMediaId = await uploadHeroImageToWp(heroUrl, item.title, siteUrl, authHeader);
     if (featuredMediaId) {
-      console.log(`[publish] Hero image uploaded as WP media ID ${featuredMediaId}`);
+      const source = item.heroImageUrl ? 'article' : 'category fallback';
+      console.log(`[publish] Hero image uploaded as WP media ID ${featuredMediaId} (${source})`);
     }
   }
 
@@ -177,7 +181,7 @@ async function publishToWordPress(item) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { contentId } = req.body;
+  const { contentId, fallbackHeroImageUrl } = req.body;
   if (!contentId) return res.status(400).json({ error: 'contentId required' });
 
   const item = await kv.get(`content:${contentId}`);
@@ -188,7 +192,7 @@ export default async function handler(req, res) {
 
   let wpPost;
   try {
-    wpPost = await publishToWordPress(item);
+    wpPost = await publishToWordPress(item, { fallbackHeroImageUrl });
   } catch (err) {
     return res.status(502).json({ error: err.message });
   }

@@ -1,5 +1,7 @@
 **/*.test.js
-docs/
+docs/*.md
+docs/*.html
+docs/superpowers/
 
 # Individual automation handlers — excluded from Vercel function count.
 # They are imported by api/automation/[...slug].js at runtime (bundled together).

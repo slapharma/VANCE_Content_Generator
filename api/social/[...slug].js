@@ -12,6 +12,7 @@ import postHandler from '../../lib/social/handlers/post.js';
 import scheduleHandler from '../../lib/social/handlers/schedule.js';
 import cronHandler from '../../lib/social/handlers/cron.js';
 import imageHandler from '../../lib/social/handlers/image.js';
+import connectionsHandler from '../../lib/social/handlers/connections.js';
 
 export default async function handler(req, res) {
   // In non-Next.js Vercel serverless, [...slug].js exposes matched segments as
@@ -64,6 +65,12 @@ export default async function handler(req, res) {
     // POST /social/image — hero image generation via OpenRouter
     if (req.method === 'POST' && resource === 'image') {
       return await imageHandler(req, res);
+    }
+
+    // GET /social/connections                 → per-platform env-var status
+    // POST /social/connections/test           → live verification call
+    if (resource === 'connections') {
+      return await connectionsHandler(req, res, id);
     }
 
     return res.status(404).json({ error: 'Not found' });

@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VANCE Content Generator — User Guide</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      color: #003d3d;
+      background: #f4ffff;
+    }
+
+    /* ── Cover ── */
+    .cover { background: #008080; color: white; padding: 60px 80px 50px; }
+    .cover .logo { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; }
+    .cover .logo-box { background: white; border-radius: 12px; padding: 8px 14px; font-size: 28px; font-weight: 900; color: #008080; letter-spacing: -1px; }
+    .cover .logo-box span { color: #78bfbf; }
+    .cover h1 { font-size: 42px; font-weight: 800; margin-bottom: 10px; line-height: 1.2; }
+    .cover .subtitle { font-size: 18px; opacity: 0.85; max-width: 540px; }
+    .cover .version { margin-top: 24px; font-size: 13px; opacity: 0.7; }
+
+    /* ── Layout ── */
+    .container { max-width: 860px; margin: 0 auto; padding: 0 40px 80px; }
+
+    /* ── TOC ── */
+    .toc { background: white; border-left: 4px solid #008080; border-radius: 0 12px 12px 0; padding: 28px 32px; margin: 48px 0 56px; box-shadow: 0 2px 12px rgba(0,128,128,0.10); }
+    .toc h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #78bfbf; margin-bottom: 14px; }
+    .toc ol { padding-left: 22px; }
+    .toc li { margin: 6px 0; }
+    .toc a { color: #008080; text-decoration: none; font-weight: 500; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ── Sections ── */
+    section { margin-bottom: 72px; }
+    section h2 { font-size: 28px; font-weight: 800; color: #008080; padding-bottom: 10px; border-bottom: 2px solid #aedbdb; margin-bottom: 28px; }
+    section h3 { font-size: 18px; font-weight: 700; color: #003d3d; margin: 32px 0 12px; }
+
+    /* ── Steps ── */
+    .steps { counter-reset: step; }
+    .step { display: flex; gap: 20px; margin-bottom: 32px; align-items: flex-start; }
+    .step-num { counter-increment: step; flex-shrink: 0; width: 36px; height: 36px; background: #008080; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; margin-top: 2px; }
+    .step-num::before { content: counter(step); }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 10px; }
+
+    /* ── Screenshot mockup frame ── */
+    .screenshot { margin: 18px 0 6px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,128,128,0.15); border: 1px solid #aedbdb; background: white; }
+    .shot-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #def4f4; border-bottom: 1px solid #aedbdb; }
+    .shot-bar .dot { width: 9px; height: 9px; border-radius: 50%; background: #aedbdb; }
+    .shot-bar .url { flex: 1; font-size: 12px; color: #008080; font-family: monospace; padding: 3px 10px; background: white; border-radius: 4px; border: 1px solid #aedbdb; }
+    .shot-body { display: flex; min-height: 220px; }
+    .shot-side { width: 110px; background: #003d3d; padding: 14px 10px; color: white; font-size: 11px; }
+    .shot-side .side-grp { color: #78bfbf; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 4px; font-weight: 700; }
+    .shot-side .side-grp:first-child { margin-top: 0; }
+    .shot-side .side-item { padding: 4px 6px; border-radius: 3px; margin: 1px 0; opacity: 0.75; }
+    .shot-side .side-item.active { background: #008080; opacity: 1; font-weight: 600; }
+    .shot-main { flex: 1; padding: 18px 22px; background: #f4ffff; }
+    .shot-main .shot-title { font-size: 14px; font-weight: 800; color: #008080; margin-bottom: 12px; }
+    .shot-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .shot-card { background: white; border: 1px solid #aedbdb; border-radius: 6px; padding: 10px; height: 60px; }
+    .shot-kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .shot-kanban-col { background: white; border: 1px solid #aedbdb; border-radius: 6px; padding: 6px; min-height: 130px; }
+    .shot-kanban-col .col-title { font-size: 9px; text-transform: uppercase; color: #78bfbf; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .shot-kanban-card { background: #def4f4; border-left: 3px solid #008080; padding: 5px 6px; margin-bottom: 4px; font-size: 9px; color: #003d3d; border-radius: 2px; }
+    .shot-list { display: flex; flex-direction: column; gap: 6px; }
+    .shot-row { display: flex; align-items: center; gap: 10px; background: white; border: 1px solid #aedbdb; border-radius: 4px; padding: 8px 12px; font-size: 11px; }
+    .shot-row .row-tag { background: #def4f4; color: #008080; font-size: 9px; padding: 2px 6px; border-radius: 3px; font-weight: 700; }
+    .shot-form { display: flex; flex-direction: column; gap: 10px; }
+    .shot-field { display: flex; flex-direction: column; gap: 3px; }
+    .shot-field-label { font-size: 9px; text-transform: uppercase; color: #78bfbf; font-weight: 700; letter-spacing: 0.5px; }
+    .shot-field-input { background: white; border: 1px solid #aedbdb; border-radius: 4px; padding: 6px 10px; min-height: 24px; font-size: 11px; color: #335555; }
+    .shot-pill { display: inline-block; background: #008080; color: white; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .shot-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .shot-cal-day { background: white; border: 1px solid #aedbdb; aspect-ratio: 1; padding: 4px; font-size: 9px; color: #78bfbf; position: relative; }
+    .shot-cal-day.has { background: #def4f4; }
+    .shot-cal-day.has::after { content: ""; display: block; position: absolute; left: 4px; right: 4px; bottom: 4px; height: 4px; background: #008080; border-radius: 2px; }
+    .caption { font-size: 13px; color: #78bfbf; margin-bottom: 20px; font-style: italic; padding-left: 4px; }
+
+    /* ── Callouts ── */
+    .tip, .note, .warning, .new { border-radius: 8px; padding: 14px 18px; margin: 16px 0; font-size: 15px; display: flex; gap: 10px; align-items: flex-start; }
+    .tip     { background: #def4f4; border-left: 4px solid #008080; }
+    .note    { background: #fffbe6; border-left: 4px solid #f5a623; }
+    .warning { background: #fff0f0; border-left: 4px solid #e84040; }
+    .new     { background: #edfff4; border-left: 4px solid #22c55e; }
+    .tip .icon, .note .icon, .warning .icon, .new .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Badge ── */
+    .badge-new { display: inline-block; background: #22c55e; color: white; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; border-radius: 4px; padding: 2px 7px; margin-left: 6px; vertical-align: middle; }
+
+    /* ── UI Labels ── */
+    kbd { background: #def4f4; border: 1px solid #aedbdb; border-radius: 4px; padding: 2px 7px; font-family: monospace; font-size: 13px; color: #003d3d; }
+    .btn-label { display: inline-block; background: #008080; color: white; border-radius: 6px; padding: 3px 10px; font-size: 13px; font-weight: 600; }
+    .btn-label.gold { background: #78bfbf; color: #003d3d; }
+    .btn-label.outline { background: white; color: #008080; border: 1.5px solid #008080; }
+
+    /* ── Reference table ── */
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; table-layout: auto; }
+    th { background: #008080; color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+    td { padding: 10px 14px; border-bottom: 1px solid #aedbdb; vertical-align: top; }
+    tr:nth-child(even) td { background: #f4ffff; }
+    table.nav-ref td:first-child { white-space: nowrap; min-width: 180px; }
+    table.nav-ref td:nth-child(2) { color: #335555; }
+
+    /* ── Glossary ── */
+    dl dt { font-weight: 700; margin-top: 14px; color: #008080; }
+    dl dd { margin-left: 20px; color: #335555; }
+
+    /* ── Type cards ── */
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+    .type-card { background: white; border: 1.5px solid #aedbdb; border-radius: 10px; padding: 18px 20px; }
+    .type-card .type-name { font-weight: 800; color: #008080; font-size: 15px; margin-bottom: 6px; }
+    .type-card .type-desc { font-size: 14px; color: #335555; line-height: 1.5; }
+    .type-card .type-terms { margin-top: 8px; font-size: 13px; color: #78bfbf; font-style: italic; }
+
+    /* ── Print ── */
+    @media print {
+      body { background: white; }
+      .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      section { page-break-inside: avoid; }
+      .screenshot { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ COVER ══════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="logo">
+    <div class="logo-box">vance<span>.</span></div>
+    <div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;">VANCE Content Generator</div>
+      <div style="font-size:13px;opacity:0.8;letter-spacing:1px;text-transform:uppercase;">Vance Medical Foods · Content Platform</div>
+    </div>
+  </div>
+  <h1>How to Use the<br>VANCE Content Generator</h1>
+  <div class="subtitle">A practical guide for the Vance Medical Foods clinical and marketing team — drafting, reviewing, scheduling, and publishing evidence-based content end-to-end.</div>
+  <div class="version">SLA Pharma Group &nbsp;·&nbsp; May 2026 &nbsp;·&nbsp; v1</div>
+</div>
+
+<div class="container">
+
+  <!-- ══ TOC ══ -->
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#overview">What does this tool do?</a></li>
+      <li><a href="#getting-started">Getting Started &amp; Sidebar Map</a></li>
+      <li><a href="#generator">Generating an Article</a></li>
+      <li><a href="#library">Library</a></li>
+      <li><a href="#pipeline">Pipeline (Review &amp; Approval)</a></li>
+      <li><a href="#social">Social Distribution</a></li>
+      <li><a href="#calendar">Calendar &amp; Scheduling</a></li>
+      <li><a href="#monitoring">Monitoring &amp; Reports</a></li>
+      <li><a href="#automation">Automation Rules &amp; Notifications <span class="badge-new">NEW</span></a></li>
+      <li><a href="#bibliography">Bibliography</a></li>
+      <li><a href="#categories">Categories &amp; Prompts</a></li>
+      <li><a href="#llm">LLM Models</a></li>
+      <li><a href="#settings">Settings, Users &amp; Trash</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+    </ol>
+  </div>
+
+
+  <!-- ══ 1. OVERVIEW ══════════════════════════════════════════════════════ -->
+  <section id="overview">
+    <h2>1 &nbsp; What does this tool do?</h2>
+    <p>
+      The <strong>VANCE Content Generator</strong> is the in-house content factory for
+      <strong>Vance Medical Foods</strong> (<a href="https://vancemedicalfoods.com">vancemedicalfoods.com</a>).
+      It turns evidence sources, prompt templates, and large-language-model output into clinically-reviewed
+      articles and social posts — and then ushers each piece through review, scheduling, and publication
+      without leaving the app.
+    </p>
+    <ul style="margin: 12px 0 0 24px;">
+      <li style="margin-bottom:6px;"><strong>Generate</strong> long-form articles from category prompts using OpenRouter-hosted LLMs.</li>
+      <li style="margin-bottom:6px;"><strong>Review</strong> drafts via the Pipeline tab and secure reviewer links — no email back-and-forth.</li>
+      <li style="margin-bottom:6px;"><strong>Distribute</strong> on social with the built-in Kit Builder, Queue, and Connections.</li>
+      <li style="margin-bottom:6px;"><strong>Schedule</strong> publication using the Calendar.</li>
+      <li style="margin-bottom:6px;"><strong>Automate</strong> recurring content jobs with Automations + Notifications.</li>
+      <li style="margin-bottom:6px;"><strong>Track</strong> performance through Monitoring and Reports.</li>
+    </ul>
+
+    <div class="tip">
+      <span class="icon">💡</span>
+      <span>The app runs entirely in the browser at <strong>vance-content.vercel.app</strong> — there is nothing to install. All data persists automatically; you do not need to "save".</span>
+    </div>
+
+    <div class="note">
+      <span class="icon">📝</span>
+      <span>Everything you publish must reference <strong>Vance Medical Foods</strong> and <strong>vancemedicalfoods.com</strong>. Other branding is treated as a draft error.</span>
+    </div>
+  </section>
+
+
+  <!-- ══ 2. GETTING STARTED ═══════════════════════════════════════════════ -->
+  <section id="getting-started">
+    <h2>2 &nbsp; Getting Started &amp; Sidebar Map</h2>
+    <p>
+      Open <kbd>vance-content.vercel.app</kbd> in any modern browser and sign in. The left-hand sidebar
+      is your permanent navigation; the main panel changes as you switch between tabs. The first screen
+      you land on is the <strong>Home</strong> (Dashboard).
+    </p>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">Main</div>
+          <div class="side-item active">⌂ Home</div>
+          <div class="side-item">⚡ Generate</div>
+          <div class="side-item">▤ Library</div>
+          <div class="side-grp">Workflow</div>
+          <div class="side-item">▦ Pipeline</div>
+          <div class="side-item">⇄ Social</div>
+          <div class="side-item">▦ Calendar</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">Home</div>
+          <div class="shot-cards">
+            <div class="shot-card"></div><div class="shot-card"></div><div class="shot-card"></div>
+            <div class="shot-card"></div><div class="shot-card"></div><div class="shot-card"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">The Home dashboard. Sidebar groups are: Main · Workflow · Insights · Automation · Research · System.</div>
+
+    <h3>Sidebar reference</h3>
+    <table class="nav-ref">
+      <tr><th>Section</th><th>Sidebar item</th><th>What it does</th></tr>
+      <tr><td rowspan="3"><strong>Main</strong></td><td>⌂ <strong>Home</strong></td><td>Dashboard — pipeline status, open review tasks, content category overview, quick-access shortcuts.</td></tr>
+      <tr><td>⚡ <strong>Generate</strong></td><td>Create a new article from a category prompt. See <a href="#generator">Section 3</a>.</td></tr>
+      <tr><td>▤ <strong>Library</strong></td><td>Searchable archive of every article — drafts, approved, published, and superseded.</td></tr>
+      <tr><td rowspan="3"><strong>Workflow</strong></td><td>▦ <strong>Pipeline</strong></td><td>Kanban board of drafts in review (Ready → In Review → Approved).</td></tr>
+      <tr><td>⇄ <strong>Social</strong></td><td>Social Distribution — Kit Builder, Queue, Posted, Prompt Library, Connections.</td></tr>
+      <tr><td>▦ <strong>Calendar</strong></td><td>Schedule approved content for future publication.</td></tr>
+      <tr><td rowspan="2"><strong>Insights</strong></td><td>📈 <strong>Monitoring</strong></td><td>Live event log — automation runs, generations, webhook activity.</td></tr>
+      <tr><td>📊 <strong>Reports</strong></td><td>Volume, coverage, and reviewer-throughput analytics.</td></tr>
+      <tr><td rowspan="3"><strong>Automation</strong></td><td>＋ <strong>Create New</strong></td><td>Opens the 5-step rule wizard.</td></tr>
+      <tr><td>⟳ <strong>Automations</strong></td><td>List of all configured automation rules.</td></tr>
+      <tr><td>🔔 <strong>Notifications</strong></td><td>Pending approvals from automation runs (badge shows unread count).</td></tr>
+      <tr><td><strong>Research</strong></td><td>📚 <strong>Bibliography</strong></td><td>Central source library — papers, guidelines, citations.</td></tr>
+      <tr><td rowspan="4"><strong>System</strong></td><td>▦ <strong>Categories</strong></td><td>Topic taxonomy and the prompts attached to each.</td></tr>
+      <tr><td>⚙ <strong>LLM</strong></td><td>Model selection, fallback chains, API keys.</td></tr>
+      <tr><td>⚙ <strong>Settings</strong></td><td>Workspace preferences, integrations, and user roster.</td></tr>
+      <tr><td>🗑 <strong>Trash</strong></td><td>Deleted items — recoverable for 30 days.</td></tr>
+    </table>
+
+    <div class="tip">
+      <span class="icon">💡</span>
+      <span>The Home dashboard's quick-setting buttons jump you straight to Settings, LLM, Social, or Categories — useful when onboarding a new team member.</span>
+    </div>
+  </section>
+
+
+  <!-- ══ 3. GENERATOR ═════════════════════════════════════════════════════ -->
+  <section id="generator">
+    <h2>3 &nbsp; Generating an Article</h2>
+    <p>
+      The Generator is the most-used screen in the app. It turns a category prompt + your chosen sources
+      into a draft article.
+    </p>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#generate</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">Main</div>
+          <div class="side-item">⌂ Home</div>
+          <div class="side-item active">⚡ Generate</div>
+          <div class="side-item">▤ Library</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">Generate Content</div>
+          <div class="shot-form">
+            <div class="shot-field"><div class="shot-field-label">Category</div><div class="shot-field-input">IBD &amp; Nutrition</div></div>
+            <div class="shot-field"><div class="shot-field-label">Working title (optional)</div><div class="shot-field-input">Crohn's flare-up dietary tactics…</div></div>
+            <div class="shot-field"><div class="shot-field-label">Model</div><div class="shot-field-input">google/gemma-3-27b-it:free</div></div>
+            <div><span class="shot-pill">⚡ Generate</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">The Generator screen — category picker, optional title, model selector, and the big Generate button.</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Open the Generator</strong>
+          <p>Click <span class="btn-label">⚡ Generate</span> in the sidebar, or use the <span class="btn-label outline">+ New Article</span> shortcut on the Home dashboard.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Pick a category</strong>
+          <p>The category sets the prompt template, the recommended bibliography, and the visual tone. See <a href="#categories">Section 11</a> for how prompts are organised.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Refine the brief</strong>
+          <p>Optionally narrow the topic, paste a working title, or pin specific sources from the bibliography. Anything you leave blank is filled by the prompt template.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Choose the model</strong>
+          <p>Defaults to the workspace's primary model. Switch to a different one if the topic needs a longer context window or stricter structure. Free models are tagged <kbd>:free</kbd>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Generate</strong>
+          <p>Press <span class="btn-label">⚡ Generate</span>. The draft appears within a few seconds and is auto-saved into the Pipeline as <em>ready for review</em>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <span class="icon">💡</span>
+      <span>Generation is best treated as a first draft. Always send it through the Pipeline (<a href="#pipeline">Section 5</a>) for clinical review before publishing — the reviewer chain is what makes the output safe to ship.</span>
+    </div>
+  </section>
+
+
+  <!-- ══ 4. LIBRARY ═══════════════════════════════════════════════════════ -->
+  <section id="library">
+    <h2>4 &nbsp; Library</h2>
+    <p>
+      The Library is the searchable archive of every article — drafts, approved pieces, published copy,
+      and superseded versions. Use it to audit what's live, repurpose old content into social kits, or
+      roll back to a prior version.
+    </p>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#library</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">Main</div>
+          <div class="side-item">⌂ Home</div>
+          <div class="side-item">⚡ Generate</div>
+          <div class="side-item active">▤ Library</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">Library</div>
+          <div class="shot-list">
+            <div class="shot-row"><span class="row-tag">PUBLISHED</span>Crohn's flare-up dietary tactics</div>
+            <div class="shot-row"><span class="row-tag">DRAFT</span>Iron deficiency in IBD patients</div>
+            <div class="shot-row"><span class="row-tag">APPROVED</span>Low-FODMAP diet — clinical evidence</div>
+            <div class="shot-row"><span class="row-tag">PUBLISHED</span>Probiotics &amp; ulcerative colitis</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Library list with status chips. Filter by category, status, or date range using the toolbar at the top.</div>
+
+    <h3>Useful actions</h3>
+    <table>
+      <tr><th>Action</th><th>Where</th></tr>
+      <tr><td><strong>Filter by category</strong></td><td>Filter chips along the top of the Library.</td></tr>
+      <tr><td><strong>Compare versions</strong></td><td>Click <span class="btn-label outline">⇄ Compare</span> on any card with version history.</td></tr>
+      <tr><td><strong>Send to social</strong></td><td>Open an article → <span class="btn-label">⇄ Send to Social</span> — opens the Kit Builder pre-filled with this article.</td></tr>
+      <tr><td><strong>Restore an older version</strong></td><td>Open the article → <em>Versions</em> tab → <span class="btn-label outline">↶ Restore</span>.</td></tr>
+    </table>
+  </section>
+
+
+  <!-- ══ 5. PIPELINE ══════════════════════════════════════════════════════ -->
+  <section id="pipeline">
+    <h2>5 &nbsp; Pipeline (Review &amp; Approval)</h2>
+    <p>
+      Every draft lands in the <strong>Pipeline</strong> tab. Think of it as a kanban board with columns
+      for <em>Ready</em>, <em>In Review</em>, <em>Approved</em>, and <em>Scheduled</em>. Each card is one
+      piece of content.
+    </p>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#pipeline</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">Workflow</div>
+          <div class="side-item active">▦ Pipeline</div>
+          <div class="side-item">⇄ Social</div>
+          <div class="side-item">▦ Calendar</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">Pipeline</div>
+          <div class="shot-kanban">
+            <div class="shot-kanban-col"><div class="col-title">Ready</div><div class="shot-kanban-card">Crohn's flare diet</div><div class="shot-kanban-card">Iron in IBD</div></div>
+            <div class="shot-kanban-col"><div class="col-title">In Review</div><div class="shot-kanban-card">Low-FODMAP guide</div></div>
+            <div class="shot-kanban-col"><div class="col-title">Approved</div><div class="shot-kanban-card">Probiotics &amp; UC</div></div>
+            <div class="shot-kanban-col"><div class="col-title">Scheduled</div><div class="shot-kanban-card">Microbiome basics</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">The Pipeline kanban — drafts move left to right as reviewers sign off.</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Open a draft card</strong>
+          <p>Click any card to see the full draft, source list, and reviewer comments.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Send for review</strong>
+          <p>Click <span class="btn-label">📨 Send for Review</span>. Pick reviewers from the user roster — each gets a unique secure link to the draft. No login required for reviewers.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Track sign-offs</strong>
+          <p>The card shows each reviewer's status: <kbd>pending</kbd>, <kbd>approved</kbd>, or <kbd>changes requested</kbd>. Must-approve reviewers gate the next stage; reference reviewers are advisory only.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Approve &amp; publish</strong>
+          <p>Once all must-approve reviewers sign off, the card moves to <em>Approved</em>. Click <span class="btn-label gold">↑ Publish Now</span> or schedule it from the <a href="#calendar">Calendar</a>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="warning">
+      <span class="icon">⚠️</span>
+      <span>Once a card is <em>Published</em>, edits create a new version rather than overwriting the live copy. Use the Library to manage versions.</span>
+    </div>
+
+    <div class="note">
+      <span class="icon">📝</span>
+      <span>The Home dashboard's <em>Article Reviewing: Open Tasks</em> section surfaces every review request currently waiting on you — a faster route in than scanning the Pipeline.</span>
+    </div>
+  </section>
+
+
+  <!-- ══ 6. SOCIAL ════════════════════════════════════════════════════════ -->
+  <section id="social">
+    <h2>6 &nbsp; Social Distribution</h2>
+    <p>
+      The <strong>Social</strong> tab (called "Social Distribution" inside the page) is where you turn an
+      approved article into platform-ready social posts, queue them up, and watch them publish. It is
+      organised into five sub-tabs.
+    </p>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#social</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">Workflow</div>
+          <div class="side-item">▦ Pipeline</div>
+          <div class="side-item active">⇄ Social</div>
+          <div class="side-item">▦ Calendar</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">Social Distribution</div>
+          <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+            <span class="shot-pill">Kit Builder</span>
+            <span class="shot-pill" style="background:white;color:#008080;border:1px solid #008080;">Queue</span>
+            <span class="shot-pill" style="background:white;color:#008080;border:1px solid #008080;">Posted</span>
+            <span class="shot-pill" style="background:white;color:#008080;border:1px solid #008080;">Prompt Library</span>
+            <span class="shot-pill" style="background:white;color:#008080;border:1px solid #008080;">Connections</span>
+          </div>
+          <div class="shot-cards"><div class="shot-card"></div><div class="shot-card"></div><div class="shot-card"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Social Distribution with its five sub-tabs across the top.</div>
+
+    <h3>The five sub-tabs</h3>
+    <div class="type-grid">
+      <div class="type-card">
+        <div class="type-name">⚡ Kit Builder</div>
+        <div class="type-desc">Pick an approved article and generate a matching kit of social posts (LinkedIn, Instagram, X, TikTok) plus media.</div>
+        <div class="type-terms">Article → kit in a few clicks</div>
+      </div>
+      <div class="type-card">
+        <div class="type-name">▦ Queue</div>
+        <div class="type-desc">Drafted but not yet posted social items. Edit copy, regenerate media, or schedule the publish time.</div>
+        <div class="type-terms">Badge shows how many items are waiting</div>
+      </div>
+      <div class="type-card">
+        <div class="type-name">✓ Posted</div>
+        <div class="type-desc">Audit log of everything already published — with links to the live posts on each platform.</div>
+        <div class="type-terms">Read-only history</div>
+      </div>
+      <div class="type-card">
+        <div class="type-name">✏ Prompt Library</div>
+        <div class="type-desc">The system prompts that drive social post generation. One prompt per platform, editable per category.</div>
+        <div class="type-terms">Badge shows total prompts on file</div>
+      </div>
+      <div class="type-card">
+        <div class="type-name">🔗 Connections</div>
+        <div class="type-desc">OAuth connections to LinkedIn, Instagram, X, TikTok. Authorise once; tokens refresh automatically.</div>
+        <div class="type-terms">Red dot means a connection has expired</div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <span class="icon">💡</span>
+      <span>You can also reach the Kit Builder from the Library — open any approved article and click <span class="btn-label">⇄ Send to Social</span>.</span>
+    </div>
+  </section>
+
+
+  <!-- ══ 7. CALENDAR ══════════════════════════════════════════════════════ -->
+  <section id="calendar">
+    <h2>7 &nbsp; Calendar &amp; Scheduling</h2>
+    <p>
+      The Calendar shows approved content laid out by publication date. Drag any approved card onto a
+      calendar slot to schedule it. Times are interpreted in GMT.
+    </p>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#calendar</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">Workflow</div>
+          <div class="side-item">▦ Pipeline</div>
+          <div class="side-item">⇄ Social</div>
+          <div class="side-item active">▦ Calendar</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">May 2026</div>
+          <div class="shot-cal">
+            <div class="shot-cal-day">M</div><div class="shot-cal-day">T</div><div class="shot-cal-day">W</div><div class="shot-cal-day">T</div><div class="shot-cal-day">F</div><div class="shot-cal-day">S</div><div class="shot-cal-day">S</div>
+            <div class="shot-cal-day has">12</div><div class="shot-cal-day">13</div><div class="shot-cal-day has">14</div><div class="shot-cal-day">15</div><div class="shot-cal-day has">16</div><div class="shot-cal-day">17</div><div class="shot-cal-day">18</div>
+            <div class="shot-cal-day has">19</div><div class="shot-cal-day">20</div><div class="shot-cal-day has">21</div><div class="shot-cal-day">22</div><div class="shot-cal-day has">23</div><div class="shot-cal-day">24</div><div class="shot-cal-day">25</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Drag-and-drop scheduling. The picker uses a GMT clock; the publisher fires at the local equivalent of that time.</div>
+
+    <div class="tip">
+      <span class="icon">💡</span>
+      <span>Use recurring slots (Mon/Wed/Fri 9am, for example) to enforce a publishing rhythm — combine with Automation Rules (<a href="#automation">Section 9</a>) to refill those slots automatically.</span>
+    </div>
+  </section>
+
+
+  <!-- ══ 8. MONITORING & REPORTS ══════════════════════════════════════════ -->
+  <section id="monitoring">
+    <h2>8 &nbsp; Monitoring &amp; Reports</h2>
+    <p>Two complementary views into how the platform is performing.</p>
+
+    <h3>Monitoring</h3>
+    <p>
+      A live log of every automation run, generation, webhook, and reviewer action. Use the filter chips
+      to narrow by event type. Failed jobs are highlighted in red and link straight to the affected draft.
+    </p>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#monitoring</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">Insights</div>
+          <div class="side-item active">📈 Monitoring</div>
+          <div class="side-item">📊 Reports</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">Monitoring</div>
+          <div class="shot-list">
+            <div class="shot-row"><span class="row-tag" style="background:#edfff4;color:#22c55e;">OK</span>Rule run · IBD weekly</div>
+            <div class="shot-row"><span class="row-tag" style="background:#edfff4;color:#22c55e;">OK</span>Generation · Crohn's flare diet</div>
+            <div class="shot-row"><span class="row-tag" style="background:#fff0f0;color:#e84040;">FAIL</span>OpenRouter timeout · retry queued</div>
+            <div class="shot-row"><span class="row-tag" style="background:#edfff4;color:#22c55e;">OK</span>Reviewer approved · Low-FODMAP guide</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Monitoring view. Click any failed row to see the error payload.</div>
+
+    <h3>Reports</h3>
+    <p>
+      Higher-level analytics: drafts generated per week, reviewer turnaround times, bibliography coverage
+      by category, and publication volume by channel. Export buttons let you download any chart as CSV
+      for the monthly leadership pack.
+    </p>
+
+    <div class="tip">
+      <span class="icon">💡</span>
+      <span>Reviewer turnaround is the single most useful metric — if it climbs above three days you're typically bottlenecked on must-approve reviewers.</span>
+    </div>
+  </section>
+
+
+  <!-- ══ 9. AUTOMATION ════════════════════════════════════════════════════ -->
+  <section id="automation">
+    <h2>9 &nbsp; Automation Rules &amp; Notifications <span class="badge-new">NEW</span></h2>
+    <p>
+      Automation lets you set up recurring content jobs — "every Monday at 09:00, draft an article in the
+      IBD category using my pinned sources" — without anyone having to click <em>Generate</em>. The
+      sidebar shows three Automation entries:
+    </p>
+
+    <table class="nav-ref">
+      <tr><th>Sidebar item</th><th>Purpose</th></tr>
+      <tr><td>＋ <strong>Create New</strong></td><td>Opens the 5-step rule wizard.</td></tr>
+      <tr><td>⟳ <strong>Automations</strong></td><td>List of every configured rule. Activate, pause, or edit from here.</td></tr>
+      <tr><td>🔔 <strong>Notifications</strong></td><td>Pending approvals from automation runs (badge shows unread count).</td></tr>
+    </table>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#automations</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">Automation</div>
+          <div class="side-item">＋ Create New</div>
+          <div class="side-item active">⟳ Automations</div>
+          <div class="side-item">🔔 Notifications</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">Automations</div>
+          <div class="shot-list">
+            <div class="shot-row"><span class="row-tag">ACTIVE</span>IBD weekly · Mon 09:00</div>
+            <div class="shot-row"><span class="row-tag">ACTIVE</span>Nutrition tips · Wed 09:00</div>
+            <div class="shot-row"><span class="row-tag" style="background:#fffbe6;color:#f5a623;">PAUSED</span>Microbiome monthly · 1st of month</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">The Automations list. Each row is a recurring job with its own schedule, category, and model.</div>
+
+    <div class="new">
+      <span class="icon">✨</span>
+      <span>When a rule runs it can ping the <strong>Notifications</strong> inbox for approval before the draft enters the Pipeline — useful when you want a human-in-the-loop on auto-generated content. Approvals also fire via Telegram if the bot is connected.</span>
+    </div>
+
+    <h3>Creating a rule (5-step wizard)</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Name &amp; describe</strong><p>Give the rule a memorable name. The description is purely for your team.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Pick category &amp; prompt</strong><p>The category determines which prompt the generator uses. Edit prompts on the <a href="#categories">Categories page</a>.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Pick a model</strong><p>Defaults to the workspace primary. Override if this rule needs a longer context window or a structured output model.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Set the schedule</strong><p>Pick a cron pattern (daily, weekly, monthly) or a fixed time-of-day. Schedules are evaluated in GMT.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Choose approval flow</strong><p>Decide whether the rule auto-files into the Pipeline as a draft, or whether it pings the Notifications inbox first for a thumbs-up. Save with <span class="btn-label gold">✓ Activate</span>.</p></div></div>
+    </div>
+  </section>
+
+
+  <!-- ══ 10. BIBLIOGRAPHY ═════════════════════════════════════════════════ -->
+  <section id="bibliography">
+    <h2>10 &nbsp; Bibliography</h2>
+    <p>
+      The Bibliography is the central source library — every paper, guideline, or institutional URL the
+      Generator can cite. Curating this list is the single biggest lever for clinical accuracy.
+    </p>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#bibliography</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">Research</div>
+          <div class="side-item active">📚 Bibliography</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">Bibliography</div>
+          <div class="shot-list">
+            <div class="shot-row"><span class="row-tag">PREFERRED</span>Lancet 2024 · IBD nutrition guidelines</div>
+            <div class="shot-row"><span class="row-tag">PREFERRED</span>ESPEN 2023 · Clinical Nutrition in IBD</div>
+            <div class="shot-row"><span class="row-tag" style="background:#fffbe6;color:#f5a623;">ALLOWED</span>BMJ 2022 · Low-FODMAP review</div>
+            <div class="shot-row"><span class="row-tag" style="background:#def4f4;color:#78bfbf;">REF ONLY</span>Wikipedia · Inflammatory bowel disease</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Bibliography entries with trust tier. Preferred sources are cited first; Reference-only sources can be linked but not quoted.</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Add a source</strong>
+          <p>Click <span class="btn-label">+ New Source</span>. Paste a DOI, PubMed ID, or URL and the form auto-fills citation metadata.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Tag it</strong>
+          <p>Tag by category and topic so the Generator can pick it up automatically. Untagged sources won't be suggested.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Mark trust level</strong>
+          <p>Set the source as <em>Preferred</em>, <em>Allowed</em>, or <em>Reference only</em>. The LLM prioritises Preferred citations and won't cite Reference-only sources in body text.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══ 11. CATEGORIES ═══════════════════════════════════════════════════ -->
+  <section id="categories">
+    <h2>11 &nbsp; Categories &amp; Prompts</h2>
+    <p>Categories are the topic taxonomy that drives every generation. Each category owns:</p>
+    <ul style="margin: 12px 0 16px 24px;">
+      <li style="margin-bottom:6px;">A coloured icon and label (visible everywhere a category appears).</li>
+      <li style="margin-bottom:6px;">A <strong>system prompt</strong> — the instructions the LLM follows when drafting.</li>
+      <li style="margin-bottom:6px;">A <strong>recommended bibliography</strong> — sources auto-suggested when generating.</li>
+      <li style="margin-bottom:6px;">Optional style guardrails (tone, reading level, word count).</li>
+    </ul>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#categories</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">System</div>
+          <div class="side-item active">▦ Categories</div>
+          <div class="side-item">⚙ LLM</div>
+          <div class="side-item">⚙ Settings</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">Categories</div>
+          <div class="shot-cards">
+            <div class="shot-card"></div><div class="shot-card"></div><div class="shot-card"></div>
+            <div class="shot-card"></div><div class="shot-card"></div><div class="shot-card"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Click any category tile to open its prompt editor and source preferences.</div>
+
+    <div class="note">
+      <span class="icon">📝</span>
+      <span>Always include the line <em>"Output must reference Vance Medical Foods (vancemedicalfoods.com)"</em> in any prompt that produces published copy. The brand-review hook flags drafts that don't.</span>
+    </div>
+  </section>
+
+
+  <!-- ══ 12. LLM ══════════════════════════════════════════════════════════ -->
+  <section id="llm">
+    <h2>12 &nbsp; LLM Models</h2>
+    <p>
+      The LLM tab manages the models the Generator can call. Models are accessed via OpenRouter — the
+      workspace's API key is set in Settings.
+    </p>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#llm</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">System</div>
+          <div class="side-item">▦ Categories</div>
+          <div class="side-item active">⚙ LLM</div>
+          <div class="side-item">⚙ Settings</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">LLM Models</div>
+          <div class="shot-list">
+            <div class="shot-row"><span class="row-tag">PRIMARY</span>google/gemma-3-27b-it:free</div>
+            <div class="shot-row"><span class="row-tag" style="background:#def4f4;color:#008080;">FALLBACK 1</span>minimax/minimax-m1:extended</div>
+            <div class="shot-row"><span class="row-tag" style="background:#def4f4;color:#008080;">FALLBACK 2</span>meta-llama/llama-3.3-70b-instruct:free</div>
+            <div class="shot-row"><span class="row-tag" style="background:#aedbdb;color:#003d3d;">INFOGRAPHIC</span>google/gemini-2.0-flash:free</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Primary model, fallback chain, and the separate infographic chain used for structured output.</div>
+
+    <h3>Key concepts</h3>
+    <table>
+      <tr><th>Concept</th><th>Meaning</th></tr>
+      <tr><td><strong>Primary model</strong></td><td>The model used by default for new generations.</td></tr>
+      <tr><td><strong>Fallback chain</strong></td><td>Ordered list of models tried if the primary errors or is rate-limited.</td></tr>
+      <tr><td><strong>Infographic chain</strong></td><td>A separate fallback list used for structured outputs (infographics, social kits).</td></tr>
+      <tr><td><strong>Free tier</strong></td><td>Models tagged <kbd>:free</kbd> use OpenRouter's free quota. Quality varies.</td></tr>
+    </table>
+
+    <div class="note">
+      <span class="icon">📝</span>
+      <span>If a generation fails, check the Monitoring tab first — it shows which model in the chain errored and why. Most failures are quota-related, not model bugs.</span>
+    </div>
+  </section>
+
+
+  <!-- ══ 13. SETTINGS ═════════════════════════════════════════════════════ -->
+  <section id="settings">
+    <h2>13 &nbsp; Settings, Users &amp; Trash</h2>
+    <p>
+      Settings holds workspace-wide preferences, the keys that connect VANCE to external services, and
+      the <strong>Users</strong> roster — which doubles as the reviewer list.
+    </p>
+
+    <div class="screenshot">
+      <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">vance-content.vercel.app/#settings</span></div>
+      <div class="shot-body">
+        <div class="shot-side">
+          <div class="side-grp">System</div>
+          <div class="side-item">▦ Categories</div>
+          <div class="side-item">⚙ LLM</div>
+          <div class="side-item active">⚙ Settings</div>
+          <div class="side-item">🗑 Trash</div>
+        </div>
+        <div class="shot-main">
+          <div class="shot-title">Settings</div>
+          <div class="shot-form">
+            <div class="shot-field"><div class="shot-field-label">Branding</div><div class="shot-field-input">Vance Medical Foods · vancemedicalfoods.com</div></div>
+            <div class="shot-field"><div class="shot-field-label">OpenRouter API key</div><div class="shot-field-input">sk-or-v1-••••••••</div></div>
+            <div class="shot-field"><div class="shot-field-label">Telegram bot token</div><div class="shot-field-input">••••••••</div></div>
+            <div class="shot-field"><div class="shot-field-label">Users</div><div class="shot-field-input">3 users · 2 admins · 1 content</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Settings page with Branding, integration keys, and the Users roster section.</div>
+
+    <h3>What lives where</h3>
+    <table class="nav-ref">
+      <tr><th>Section</th><th>Contents</th></tr>
+      <tr><td><strong>Branding</strong></td><td>Site name, tagline, footer disclaimer. Fixed to "Vance Medical Foods" for production.</td></tr>
+      <tr><td><strong>OpenRouter</strong></td><td>API key used for every LLM call. Stored as a Vercel env var.</td></tr>
+      <tr><td><strong>Telegram bot</strong></td><td>Token, chat ID, and webhook secret for Notifications.</td></tr>
+      <tr><td><strong>KV storage</strong></td><td>Vercel KV credentials for content persistence. Don't change without coordinating with engineering.</td></tr>
+      <tr><td><strong>Email</strong></td><td>SMTP credentials for reviewer-link delivery.</td></tr>
+      <tr><td><strong>Users</strong></td><td>The roster of people who can sign in. Any user can be assigned as a reviewer on a draft.</td></tr>
+    </table>
+
+    <h3>User roles</h3>
+    <div class="type-grid">
+      <div class="type-card">
+        <div class="type-name">🛡 Admin</div>
+        <div class="type-desc">Full access — manage users, edit settings, edit categories, publish, and review.</div>
+        <div class="type-terms">Reserved for the workspace owner</div>
+      </div>
+      <div class="type-card">
+        <div class="type-name">✏ Content</div>
+        <div class="type-desc">Can generate, edit, publish, and review drafts. Cannot edit settings or users.</div>
+        <div class="type-terms">Day-to-day editorial team</div>
+      </div>
+      <div class="type-card">
+        <div class="type-name">👤 User (basic)</div>
+        <div class="type-desc">Can be assigned as a reviewer on drafts but cannot create or edit content.</div>
+        <div class="type-terms">External clinicians, advisors</div>
+      </div>
+      <div class="type-card">
+        <div class="type-name">📨 Reviewer assignment</div>
+        <div class="type-desc">Any user can be flagged <em>must-approve</em> or <em>reference</em> per draft from the Pipeline.</div>
+        <div class="type-terms">Set per draft, not per person</div>
+      </div>
+    </div>
+
+    <h3>Trash</h3>
+    <p>
+      Deleted drafts, articles, and rules land in Trash for 30 days. Open the Trash tab and click
+      <span class="btn-label outline">↶ Restore</span> to bring an item back, or
+      <span class="btn-label">🗑 Empty</span> to permanently delete everything older than 30 days.
+    </p>
+
+    <div class="warning">
+      <span class="icon">⚠️</span>
+      <span>Emptying Trash is irreversible. There is no second confirmation after the modal — be sure before you click.</span>
+    </div>
+  </section>
+
+
+  <!-- ══ 14. GLOSSARY ═════════════════════════════════════════════════════ -->
+  <section id="glossary">
+    <h2>14 &nbsp; Glossary</h2>
+    <dl>
+      <dt>Automation rule</dt>
+      <dd>A configured job that generates content on a recurring schedule — e.g. "draft an IBD article every Monday".</dd>
+
+      <dt>Bibliography</dt>
+      <dd>The central library of sources (papers, guidelines, URLs) the Generator can cite when drafting.</dd>
+
+      <dt>Category</dt>
+      <dd>A topic bucket that owns a system prompt, a recommended bibliography, and visual styling.</dd>
+
+      <dt>Draft</dt>
+      <dd>An unpublished article. Lives in the Pipeline until approved.</dd>
+
+      <dt>Fallback chain</dt>
+      <dd>An ordered list of LLMs the Generator tries if the primary model fails or is rate-limited.</dd>
+
+      <dt>GMT</dt>
+      <dd>Greenwich Mean Time — the canonical time zone the platform uses for all schedules.</dd>
+
+      <dt>Kit (social kit)</dt>
+      <dd>A bundle of LinkedIn/Instagram/X/TikTok posts plus media derived from a parent article.</dd>
+
+      <dt>Library</dt>
+      <dd>The searchable archive of every article — drafts, approved, published, and superseded.</dd>
+
+      <dt>Must-approve reviewer</dt>
+      <dd>A reviewer whose sign-off is required before a draft can move from <em>In Review</em> to <em>Approved</em>.</dd>
+
+      <dt>Notifications</dt>
+      <dd>The approval inbox for automation runs. Approving here creates the draft and moves it to the Pipeline.</dd>
+
+      <dt>OpenRouter</dt>
+      <dd>The third-party API that fronts all the LLMs the Generator can call. Configured under Settings.</dd>
+
+      <dt>Pipeline</dt>
+      <dd>The kanban queue for drafts. Stages are Ready → In Review → Approved → Scheduled → Published.</dd>
+
+      <dt>Reference reviewer</dt>
+      <dd>An advisory reviewer who can comment on a draft but does not gate progression.</dd>
+
+      <dt>Social Distribution (Social tab)</dt>
+      <dd>The page where social posts are built, queued, posted, and connected to platforms.</dd>
+
+      <dt>Trash</dt>
+      <dd>Soft-deletion store. Items remain recoverable for 30 days before permanent removal.</dd>
+
+      <dt>Vance Medical Foods</dt>
+      <dd>The brand this platform produces content for. Production URL: <a href="https://vancemedicalfoods.com">vancemedicalfoods.com</a>.</dd>
+    </dl>
+  </section>
+
+  <hr style="border:none;border-top:1px solid #aedbdb;margin:60px 0 32px;" />
+  <div style="text-align:center;font-size:13px;color:#78bfbf;padding-bottom:40px;">
+    SLA Pharma Group &nbsp;·&nbsp; VANCE Content Generator &nbsp;·&nbsp; May 2026<br>
+    For support contact your SLA technical team.
+  </div>
+
+</div>
+</body>
+</html>

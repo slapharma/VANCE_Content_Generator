@@ -82,7 +82,7 @@ describe('sendNotifications — Telegram', () => {
     const content = { title: 'Test', category: 'Cardio' };
 
     process.env.TELEGRAM_BOT_TOKEN = 'fake-bot-token';
-    const errors = await sendNotifications({ rule, job, content, fetchFn: mockFetch });
+    const { errors } = await sendNotifications({ rule, job, content, fetchFn: mockFetch });
 
     assert.ok(calledUrl, 'fetchFn should have been called');
     assert.ok(calledUrl.includes('api.telegram.org'), 'URL should be Telegram API');
@@ -116,10 +116,11 @@ describe('sendNotifications — Email', () => {
     const job = { id: 'job-email-1' };
     const content = { title: 'Email Article', category: 'Oncology' };
 
-    const errors = await sendNotifications({ rule, job, content, resendClient: mockResend });
+    const { errors } = await sendNotifications({ rule, job, content, resendClient: mockResend });
 
     assert.ok(sentPayload, 'resend client should have been called');
-    assert.deepEqual(sentPayload.to, ['reviewer@example.com']);
+    // Per-recipient send: `to` is now a single email per call, not an array
+    assert.equal(sentPayload.to, 'reviewer@example.com');
     assert.ok(sentPayload.subject.includes('Email Article'), 'subject should include title');
     assert.equal(errors.length, 0, 'no errors expected on success');
   });
@@ -142,7 +143,7 @@ describe('sendNotifications — error handling', () => {
     const content = { title: 'Fail Article', category: 'Test' };
 
     process.env.TELEGRAM_BOT_TOKEN = 'any-token';
-    const errors = await sendNotifications({ rule, job, content, fetchFn: failFetch });
+    const { errors } = await sendNotifications({ rule, job, content, fetchFn: failFetch });
     delete process.env.TELEGRAM_BOT_TOKEN;
 
     assert.equal(errors.length, 1, 'should have one error');
@@ -163,7 +164,7 @@ describe('sendNotifications — error handling', () => {
     const content = { title: 'Throw Article', category: 'Test' };
 
     process.env.TELEGRAM_BOT_TOKEN = 'any-token';
-    const errors = await sendNotifications({ rule, job, content, fetchFn: throwFetch });
+    const { errors } = await sendNotifications({ rule, job, content, fetchFn: throwFetch });
     delete process.env.TELEGRAM_BOT_TOKEN;
 
     assert.equal(errors.length, 1, 'should have one error');

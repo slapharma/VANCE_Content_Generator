@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Vance Content Generator mark: bold teal V with arrow extending from right stroke -->
+  <!-- Left stroke of V -->
+  <polygon points="6,8 18,8 36,50 24,50" fill="#006868"/>
+  <!-- Right stroke of V (shorter — arrow continues above) -->
+  <polygon points="36,50 24,50 38,18 49,23" fill="#006868"/>
+  <!-- Arrow shaft (continues the right stroke upward at the same angle) -->
+  <polygon points="38,18 49,23 56,8 45,3" fill="#006868"/>
+  <!-- Arrow head -->
+  <polygon points="58,4 44,4 52,18" fill="#006868"/>
+</svg>

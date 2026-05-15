@@ -5,3 +5,14 @@ node_modules/
 .env*.local
 .worktrees/
 .env.production
+
+# Audit dumps and one-off operational files — NEVER commit (may contain secrets)
+.env*.audit
+*.audit
+fix-env-secrets.sh
+
+# Local-only assets / screenshots
+hcp-desktop-full.png
+
+# Local Claude config (per-machine, may contain settings/credentials)
+.claude/
