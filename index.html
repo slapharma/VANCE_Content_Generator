@@ -2849,6 +2849,10 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         Send for Review
       </button>
+      <button class="btn btn-xs" id="approveToolbarBtn" onclick="approveFromToolbar()" style="display:none;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.45);color:#10b981;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve
+      </button>
       <button class="btn btn-orange btn-xs" onclick="saveReviewToArchive()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
         Save to Library
@@ -2886,7 +2890,11 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           <button class="btn btn-outline btn-xs" onclick="document.getElementById('heroLeftKeywordInput').focus();setHeroLeftMode('search');" style="background:rgba(0,0,0,0.6);border-color:rgba(255,255,255,0.3);color:#fff;font-size:0.65rem;">🔄 Change</button>
         </div>
       </div>
-      <h1 id="articleTitleDisplay" style="display:none;font-family:'Montserrat',sans-serif;font-size:1.4rem;font-weight:800;color:var(--vance-dark);margin:0 0 12px 0;line-height:1.25;"></h1>
+      <h1 id="articleTitleDisplay" style="display:none;font-family:'Montserrat',sans-serif;font-size:1.4rem;font-weight:800;color:var(--vance-dark);margin:0 0 6px 0;line-height:1.25;"></h1>
+      <div id="articleSourceDisplay" style="display:none;font-size:0.7rem;color:var(--text-muted);margin:0 0 12px 0;">
+        <span style="text-transform:uppercase;letter-spacing:0.6px;font-weight:700;font-size:0.6rem;color:var(--text-muted);">Source: </span>
+        <span id="articleSourceText"></span>
+      </div>
       <div id="articleContent"></div>
       <textarea class="article-edit-textarea" id="articleEditTextarea" placeholder="Edit article text here…"></textarea>
       <div class="edit-mode-toolbar">
@@ -2977,18 +2985,18 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <section class="dash-section">
       <div class="dash-section-title" id="reviewTasksTitle">Article Reviewing: Open Tasks</div>
       <div class="review-tasks-stats" id="reviewTasksStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
-        <div class="review-stat-card" style="background:var(--card-bg,#fff);border:1px solid var(--border);padding:14px 16px;">
+        <a href="#" class="review-stat-card" onclick="event.preventDefault();openReviewBucketPopup('received')" style="background:var(--card-bg,#fff);border:1px solid var(--border);padding:14px 16px;text-decoration:none;cursor:pointer;display:block;">
           <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Review requests received</div>
           <div id="statReviewRequested" style="font-size:1.6rem;font-weight:800;color:var(--vance-dark);margin-top:2px;font-variant-numeric:tabular-nums;">—</div>
-        </div>
-        <div class="review-stat-card" style="background:var(--card-bg,#fff);border:1px solid var(--border);padding:14px 16px;">
+        </a>
+        <a href="#" class="review-stat-card" onclick="event.preventDefault();openReviewBucketPopup('approved')" style="background:var(--card-bg,#fff);border:1px solid var(--border);padding:14px 16px;text-decoration:none;cursor:pointer;display:block;">
           <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Approved by you</div>
           <div id="statApprovedByUser" style="font-size:1.6rem;font-weight:800;color:#006868;margin-top:2px;font-variant-numeric:tabular-nums;">—</div>
-        </div>
-        <div class="review-stat-card" style="background:var(--card-bg,#fff);border:1px solid var(--border);padding:14px 16px;">
+        </a>
+        <a href="#" class="review-stat-card" onclick="event.preventDefault();openReviewBucketPopup('commented')" style="background:var(--card-bg,#fff);border:1px solid var(--border);padding:14px 16px;text-decoration:none;cursor:pointer;display:block;">
           <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Change requests authored</div>
           <div id="statCommentsByUser" style="font-size:1.6rem;font-weight:800;color:#c0392b;margin-top:2px;font-variant-numeric:tabular-nums;">—</div>
-        </div>
+        </a>
       </div>
       <div id="reviewTasksList">
         <div style="font-size:0.72rem;color:var(--text-muted);padding:14px;">Loading…</div>
@@ -5460,6 +5468,11 @@ let extractedText   = '';
 let rawArticleText  = '';
 let currentContentId = null; // pipeline KV id of the currently loaded/generated article
 let currentFile     = null;
+// Human-readable label for whatever the current article was generated from:
+// uploaded filename, fetched URL, etc. Stamped onto the content item at
+// creation time so reviewers see it in the email and the review page.
+let currentSourceLabel = null;
+let currentSourceUrl   = null;
 let isGenerating    = false;
 let promptCollapsed = false;
 let activePromptId  = null;
@@ -6013,6 +6026,8 @@ async function handleGenFileSelect(evt) {
     }
   }
   extractedText = texts.join('\n\n');
+  currentSourceLabel = files.length === 1 ? files[0].name : files.map(function(f) { return f.name; }).join(', ');
+  currentSourceUrl = null;
   if (list) {
     list.innerHTML = files.map(function(f) {
       return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:0.75rem;">'
@@ -6070,6 +6085,8 @@ async function fetchGenUrl(btn) {
       .trim();
     if (!fetched) throw new Error('No readable content found at that URL');
     extractedText = (extractedText ? extractedText + '\n\n' : '') + 'Source URL: ' + url + '\n\n' + fetched;
+    currentSourceLabel = url;
+    currentSourceUrl = url;
     if (statusEl) statusEl.textContent = '✓ Fetched: ' + url;
     updateGenerateButton();
     if (typeof heroLeftPopulateKeywords === 'function') heroLeftPopulateKeywords();
@@ -9285,6 +9302,8 @@ function handleFileSelect(event) { const f = event.target.files[0]; if (f) proce
 async function processFile(file) {
   if (!file.name.match(/\.(pdf|txt)$/i)) { showExtractionStatus('Only PDF and TXT files are supported.', 'error'); return; }
   currentFile = file;
+  currentSourceLabel = file.name;
+  currentSourceUrl = null;
   // Only update clinical-reviews upload UI elements (other categories manage their own UI)
   const fileInfoEl = document.getElementById('fileInfo');
   const uploadZoneEl = document.getElementById('uploadZone');
@@ -9333,6 +9352,8 @@ function readTextFile(file) {
 function removeFile() {
   extractedText = '';
   currentFile = null;
+  currentSourceLabel = null;
+  currentSourceUrl = null;
   document.getElementById('fileInfo').style.display = 'none';
   document.getElementById('uploadZone').style.display = '';
   document.getElementById('pdfInput').value = '';
@@ -9884,6 +9905,20 @@ async function viewArticleFromPipeline(itemId) {
     titleEl.textContent = item.title || 'Untitled article';
     titleEl.style.display = 'block';
   }
+  // Source-document line — shown beneath the title when the article was
+  // generated from a traceable file/URL/sheet row. Clickable when we have a URL.
+  const srcWrap = document.getElementById('articleSourceDisplay');
+  const srcText = document.getElementById('articleSourceText');
+  if (srcWrap && srcText) {
+    if (item.sourceDocName) {
+      srcText.innerHTML = item.sourceDocUrl
+        ? '<a href="' + escapeHtml(item.sourceDocUrl) + '" target="_blank" rel="noopener" style="color:var(--vance-primary);text-decoration:underline;">' + escapeHtml(item.sourceDocName) + '</a>'
+        : escapeHtml(item.sourceDocName);
+      srcWrap.style.display = '';
+    } else {
+      srcWrap.style.display = 'none';
+    }
+  }
   // Hero image: restore from saved item so it shows on view
   heroImageUrl  = item.heroImageUrl || null;
   heroImageType = item.heroImageType || null;
@@ -9907,6 +9942,11 @@ async function viewArticleFromPipeline(itemId) {
   // Enable Edit button (was disabled by default in toolbar markup)
   const editBtn = document.getElementById('editArticleBtn');
   if (editBtn) editBtn.disabled = false;
+  // Send for Review is wired to currentContentId — enable as soon as a pipeline
+  // article is loaded. (Toolbar markup ships it disabled so fresh sessions
+  // without content can't fire it; we re-enable here.)
+  const sfrBtn = document.getElementById('sendForReviewBtn');
+  if (sfrBtn) sfrBtn.disabled = false;
   // If WP-published, show "View on WordPress" button
   const wpBtn = document.getElementById('viewOnWpBtn');
   if (wpBtn) {
@@ -9919,12 +9959,46 @@ async function viewArticleFromPipeline(itemId) {
   if (approveBtn) {
     approveBtn.style.display = (item.status === 'pending_review' || item.status === 'approved') && !item.wpPostUrl ? '' : 'none';
   }
+  // Plain Approve button — symmetric with pipeline's Approve. Visible whenever
+  // the article isn't already approved / scheduled / published.
+  const approveTbBtn = document.getElementById('approveToolbarBtn');
+  if (approveTbBtn) {
+    const canApprove = item.status !== 'approved' && item.status !== 'scheduled' && item.status !== 'published';
+    approveTbBtn.style.display = canApprove ? '' : 'none';
+    approveTbBtn.disabled = false;
+    approveTbBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="20 6 9 17 4 12"/></svg> Approve';
+  }
 
   // Link the pipeline record so the Review Requests card can load
   currentContentId = item.id;
   loadReviewRequestCard();
 
   switchTab('generator');
+}
+
+// Plain Approve from the article toolbar — flips status to 'approved' without
+// triggering the WP publish path. Mirrors pipeline's approveDirect().
+async function approveFromToolbar() {
+  if (!currentContentId) return;
+  const btn = document.getElementById('approveToolbarBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Approving…'; }
+  try {
+    const r = await fetch('/api/content/' + currentContentId, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'approved' }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || r.statusText);
+    if (typeof showToast === 'function') showToast('Approved');
+    if (btn) btn.style.display = 'none';
+    loadReviewRequestCard();
+  } catch (e) {
+    alert('Approve failed: ' + e.message);
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="20 6 9 17 4 12"/></svg> Approve';
+    }
+  }
 }
 
 async function approveCurrentArticle() {
@@ -10826,6 +10900,8 @@ async function queueCurrentForPublishing() {
     category: currentCategory,
     ...(heroImageUrl ? { heroImageUrl, heroImageType } : {}),
     ...(wpSlug ? { wpCategorySlug: wpSlug } : {}),
+    ...(currentSourceLabel ? { sourceDocName: currentSourceLabel } : {}),
+    ...(currentSourceUrl ? { sourceDocUrl: currentSourceUrl } : {}),
   });
   if (created) {
     currentContentId = created.id;
@@ -10941,6 +11017,8 @@ async function fetchNewsLink() {
     if (!cleaned) throw new Error('No readable text found at this URL. The site may block automated access — try pasting the article text instead.');
 
     extractedText = `Source URL: ${url}\n\n${cleaned}`;
+    currentSourceLabel = url;
+    currentSourceUrl = url;
     const wc = cleaned.split(/\s+/).filter(w => w).length;
     statusEl.className = 'alert alert-success';
     statusEl.textContent = `✓ Fetched — ${wc.toLocaleString()} words extracted`;
@@ -11420,6 +11498,8 @@ async function handleCustomSingleFile(event, catId) {
   if (infoEl) { infoEl.style.display = ''; infoEl.textContent = 'Reading ' + file.name + '…'; }
   try {
     extractedText = await extractTextFromFile(file);
+    currentSourceLabel = file.name;
+    currentSourceUrl = null;
     if (infoEl) infoEl.textContent = '✓ ' + file.name + ' — ' + extractedText.split(/\s+/).filter(w=>w).length.toLocaleString() + ' words';
     updateGenerateButton();
   } catch(e) {
@@ -11447,6 +11527,8 @@ function renderCustomMultiDocList(catId) {
   ).join('');
   Promise.all(docs.map(d => extractTextFromFile(d.file))).then(texts => {
     extractedText = texts.join('\n\n---\n\n');
+    currentSourceLabel = docs.length === 1 ? docs[0].name : docs.map(d => d.name).join(', ');
+    currentSourceUrl = null;
     updateGenerateButton();
   });
 }
@@ -13441,6 +13523,113 @@ function renderCategoryArticles() {
 // Loads all content, filters to articles where the currently-signed-in user has
 // a review task (in_review + named as reviewer + hasn't voted yet) and computes
 // per-user historic counts.
+let _reviewBuckets = { received: [], approved: [], commented: [] };
+
+// Open the dashboard review-bucket popup. `bucket` is 'received' | 'approved' | 'commented'.
+// Each row shows title, date+time, automation rule, category, and three actions:
+// View, Approve, Add Review. Pulls from the cache built by loadReviewTasks().
+function openReviewBucketPopup(bucket) {
+  const titleMap = {
+    received:  'Review Requests Received',
+    approved:  'Approved by You',
+    commented: 'Change Requests Authored',
+  };
+  const tsField = { received: 'sentForReviewAt', approved: 'approvedAt', commented: 'lastCommentAt' };
+  const rows = (_reviewBuckets && _reviewBuckets[bucket]) || [];
+  const catLabel = (id) => (typeof CATEGORY_LABELS !== 'undefined' && CATEGORY_LABELS[id]) || id || '—';
+
+  const fmtDT = (iso) => {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    } catch { return iso; }
+  };
+
+  const rowsHtml = rows.length
+    ? rows.map(r => {
+        const ts = r[tsField[bucket]] || r.updatedAt || r.createdAt;
+        const rule = r.automationRuleName ? escapeHtml(r.automationRuleName) : '<span style="color:var(--text-muted);">Manual</span>';
+        const canApprove = r.status === 'draft' || r.status === 'in_review' || r.status === 'rejected';
+        const approveBtn = canApprove
+          ? `<button class="btn btn-xs" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.4);color:#15803d;" onclick="reviewPopupApprove('${r.id}', this)">✓ Approve</button>`
+          : `<button class="btn btn-xs" style="opacity:0.4;cursor:not-allowed;" disabled>✓ Approve</button>`;
+        return `
+          <tr data-row-id="${r.id}">
+            <td style="padding:8px 10px;font-size:0.74rem;font-weight:600;color:var(--text);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(r.title || 'Untitled')}">${escapeHtml(r.title || 'Untitled')}</td>
+            <td style="padding:8px 10px;font-size:0.68rem;color:var(--text-muted);white-space:nowrap;">${escapeHtml(fmtDT(ts))}</td>
+            <td style="padding:8px 10px;font-size:0.68rem;color:var(--text);">${rule}</td>
+            <td style="padding:8px 10px;font-size:0.68rem;color:var(--text);">${escapeHtml(catLabel(r.category))}</td>
+            <td style="padding:8px 10px;white-space:nowrap;display:flex;gap:5px;justify-content:flex-end;">
+              <button class="btn btn-outline btn-xs" onclick="reviewPopupView('${r.id}')">View</button>
+              ${approveBtn}
+              <button class="btn btn-orange btn-xs" onclick="reviewPopupAddReview('${r.id}')">+ Add Review</button>
+            </td>
+          </tr>`;
+      }).join('')
+    : `<tr><td colspan="5" style="padding:24px;text-align:center;font-size:0.74rem;color:var(--text-muted);">No items in this bucket.</td></tr>`;
+
+  const existing = document.getElementById('reviewBucketPopup');
+  if (existing) existing.remove();
+  const wrap = document.createElement('div');
+  wrap.id = 'reviewBucketPopup';
+  wrap.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,34,0.55);z-index:9500;display:flex;align-items:center;justify-content:center;font-family:Montserrat,sans-serif;padding:20px;';
+  wrap.innerHTML = `
+    <div style="background:#fff;border:1px solid var(--border);width:min(960px,100%);max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);">
+        <h3 style="font-size:0.95rem;margin:0;color:#1e2d40;">${titleMap[bucket]} <span style="color:var(--text-muted);font-weight:600;font-size:0.78rem;">· ${rows.length}</span></h3>
+        <button type="button" onclick="document.getElementById('reviewBucketPopup').remove()" style="background:none;border:none;font-size:1.3rem;color:#6b7a8d;cursor:pointer;line-height:1;padding:0 4px;">×</button>
+      </div>
+      <div style="overflow:auto;flex:1;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f7f9fc;text-align:left;">
+              <th style="padding:8px 10px;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Title</th>
+              <th style="padding:8px 10px;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Date · Time</th>
+              <th style="padding:8px 10px;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Automation Rule</th>
+              <th style="padding:8px 10px;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Category</th>
+              <th style="padding:8px 10px;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+    </div>`;
+  wrap.addEventListener('click', e => { if (e.target === wrap) wrap.remove(); });
+  document.body.appendChild(wrap);
+}
+
+// Popup actions — wrap the existing handlers so the popup can react to results.
+function reviewPopupView(contentId) {
+  const p = document.getElementById('reviewBucketPopup');
+  if (p) p.remove();
+  viewArticleFromPipeline(contentId);
+}
+async function reviewPopupApprove(contentId, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Approving…'; }
+  try {
+    const r = await fetch('/api/content/' + contentId, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'approved' }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.statusText);
+    if (btn) { btn.textContent = '✓ Approved'; btn.style.opacity = '0.7'; }
+    if (typeof showToast === 'function') showToast('Approved');
+    loadReviewTasks();
+  } catch (e) {
+    alert('Approve failed: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Approve'; }
+  }
+}
+function reviewPopupAddReview(contentId) {
+  // sendForReview opens the reviewer picker; popup stays open so the user
+  // can keep working through the list. Closing it would be jarring when
+  // the picker modal also overlays on top.
+  sendForReview(contentId);
+}
+
 async function loadReviewTasks() {
   const titleEl = document.getElementById('reviewTasksTitle');
   const listEl  = document.getElementById('reviewTasksList');
@@ -13468,6 +13657,12 @@ async function loadReviewTasks() {
     const data = await r.json();
     stats = data.stats || stats;
     openTasks = Array.isArray(data.openTasks) ? data.openTasks : [];
+    // Cache the per-bucket lists so the three dashboard tiles can open
+    // an instant popup without re-fetching. Empty fallback keeps the
+    // popup safe to open even on stale deploys without the new shape.
+    _reviewBuckets = (data.buckets && typeof data.buckets === 'object')
+      ? data.buckets
+      : { received: [], approved: [], commented: [] };
   } catch {
     listEl.innerHTML = '<div style="font-size:0.72rem;color:#c0392b;padding:14px;">Could not load review tasks.</div>';
     return;
@@ -14039,7 +14234,11 @@ function renderKanbanCard(item) {
       : '';
     actions = `
       ${aiAllBtn}
-      <button class="btn btn-outline btn-sm" onclick="sendForReview('${item.id}')">Resend Email</button>`;
+      <button class="btn btn-outline btn-sm" onclick="sendForReview('${item.id}')">+ Add Review</button>
+      <button class="btn btn-approve-pipeline btn-sm" onclick="approveDirect('${item.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve
+      </button>`;
   } else if (item.status === 'approved') {
     badge   = `<div class="kbadge kbadge-approved">✓ Approved</div>`;
     actions = `
@@ -14085,16 +14284,21 @@ function renderKanbanCard(item) {
     const canAiEditAll = isContentPlus() && comments.length > 0;
     actions = `
       ${canAiEditAll && comments.length > 1 ? `<button class="btn btn-sm" style="background:#1e2d40;color:#fff;border:1px solid #1e2d40;" onclick="openAiRevise('${item.id}', 'all')" title="Use AI to revise the article addressing all reviewer comments">✨ AI revise — all comments</button>` : ''}
-      <button class="btn btn-orange btn-sm" onclick="resetToDraft('${item.id}')">
+      <button class="btn btn-outline btn-sm" onclick="resetToDraft('${item.id}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 9a9 9 0 1 0 .49-3.5"/></svg>
         Reset to Draft
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="sendForReview('${item.id}')">+ Add Review</button>
+      <button class="btn btn-approve-pipeline btn-sm" onclick="approveDirect('${item.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve
       </button>`;
   } else {
-    // draft — show Send for Review AND direct Approve (bypass email)
+    // draft — Add Review (picks reviewers + emails) and direct Approve (bypass email)
     actions = `
       <button class="btn btn-orange btn-sm" onclick="sendForReview('${item.id}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        Send for Review
+        + Add Review
       </button>
       <button class="btn btn-approve-pipeline btn-sm" onclick="approveDirect('${item.id}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><polyline points="20 6 9 17 4 12"/></svg>
@@ -14511,6 +14715,14 @@ async function loadReviewRequestCard() {
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' +
         'Generated by rule: <strong>' + escapeHtml(item.automationRuleName) + '</strong></p>'
       : '';
+    var sourceLine = item.sourceDocName
+      ? '<p style="font-size:0.7rem;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+        'Source: ' + (item.sourceDocUrl
+          ? '<a href="' + escapeHtml(item.sourceDocUrl) + '" target="_blank" rel="noopener" style="color:var(--vance-primary);text-decoration:underline;"><strong>' + escapeHtml(item.sourceDocName) + '</strong></a>'
+          : '<strong>' + escapeHtml(item.sourceDocName) + '</strong>') +
+        '</p>'
+      : '';
     var closeBtn = st !== 'draft'
       ? '<button class="btn btn-outline btn-sm" onclick="closeReviewRequest()">Close &amp; Reset to Draft</button>'
       : '';
@@ -14518,10 +14730,14 @@ async function loadReviewRequestCard() {
     var aiAllBtn = (canAiEdit && rejComments.length > 1)
       ? '<button class="btn btn-sm" style="background:#1e2d40;color:#fff;border:1px solid #1e2d40;" onclick="openAiRevise(\'' + item.id + '\', \'all\')" title="Use AI to revise the article addressing all reviewer comments">✨ AI revise — all comments</button>'
       : '';
-    body.innerHTML = ts + ruleLine +
+    var addReviewBtn = '<button class="btn btn-outline btn-sm" onclick="sendForReview(\'' + item.id + '\')" title="Pick reviewers and send the approval email">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>' +
+      ' Add Review</button>';
+    body.innerHTML = ts + ruleLine + sourceLine +
       (logHtml ? '<div class="review-req-log">' + logHtml + '</div>' : '') +
       '<div class="review-req-actions">' +
         aiAllBtn +
+        addReviewBtn +
         '<button class="btn btn-orange btn-sm" onclick="resendReview()">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
           ' ' + sendLabel +

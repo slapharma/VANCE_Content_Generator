@@ -23,6 +23,12 @@ export function buildContentItem(data) {
     // on cards/emails/logs without a per-render rule lookup. Null for manual.
     automationRuleId: data.automationRuleId ?? null,
     automationRuleName: data.automationRuleName ?? null,
+    // Source-document provenance — the file / URL / sheet row / email this
+    // article was generated from. Surfaced in review emails, the review-token
+    // landing page, and the in-app article view so reviewers know what was
+    // summarised before they vote. Null for ad-hoc content with no traceable source.
+    sourceDocName: data.sourceDocName ?? null,
+    sourceDocUrl: data.sourceDocUrl ?? null,
     createdAt: now,
     updatedAt: now,
     reviewers: [],
@@ -77,12 +83,26 @@ export default async function handler(req, res) {
 
     let totalReviewRequests = 0, approvedByUser = 0, commentsByUser = 0;
     const openTasksRaw = [];
+    const receivedRaw = [], approvedRaw = [], commentedRaw = [];
     for (const it of items) {
-      if (isMyReviewItem(it)) totalReviewRequests++;
-      if (iApproved(it))      approvedByUser++;
-      const live = (it.rejectionComments || []).filter(c => c.reviewerId === uid).length;
-      const past = (it.priorRejectionComments || []).filter(c => c.reviewerId === uid).length;
-      commentsByUser += live + past;
+      if (isMyReviewItem(it)) {
+        totalReviewRequests++;
+        receivedRaw.push(it);
+      }
+      if (iApproved(it)) {
+        approvedByUser++;
+        approvedRaw.push(it);
+      }
+      const liveMine = (it.rejectionComments || []).filter(c => c.reviewerId === uid);
+      const pastMine = (it.priorRejectionComments || []).filter(c => c.reviewerId === uid);
+      const myComments = liveMine.length + pastMine.length;
+      commentsByUser += myComments;
+      if (myComments > 0) {
+        const lastAt = [...liveMine, ...pastMine]
+          .map(c => c.at).filter(Boolean)
+          .sort().slice(-1)[0] || null;
+        commentedRaw.push({ ...it, _myLastCommentAt: lastAt, _myCommentCount: myComments });
+      }
       if (it.status === 'in_review' && isMyReviewItem(it) && !iApproved(it) && !iRejected(it)) {
         openTasksRaw.push(it);
       }
@@ -102,9 +122,39 @@ export default async function handler(req, res) {
         wordCount:       it.body ? it.body.split(/\s+/).filter(Boolean).length : 0,
       }));
 
+    // Slim shape for the dashboard's per-bucket popup. Every row carries
+    // enough to render a list line plus drive Approve / Add Review actions:
+    // title, category, status, automation-rule name, the relevant timestamp.
+    const slimRow = (it, extra = {}) => ({
+      id:                 it.id,
+      title:              it.title,
+      category:           it.category,
+      status:             it.status,
+      automationRuleName: it.automationRuleName || null,
+      sourceDocName:      it.sourceDocName || null,
+      sourceDocUrl:       it.sourceDocUrl || null,
+      createdAt:          it.createdAt || null,
+      updatedAt:          it.updatedAt || null,
+      ...extra,
+    });
+    const byNewest = (a, b) =>
+      new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0);
+
+    const buckets = {
+      received: receivedRaw.slice().sort(byNewest).map(it =>
+        slimRow(it, { sentForReviewAt: it.sentForReviewAt || null })),
+      approved: approvedRaw.slice().sort(byNewest).map(it =>
+        slimRow(it, { approvedAt: it.approvedAt || null })),
+      commented: commentedRaw
+        .slice()
+        .sort((a, b) => new Date(b._myLastCommentAt || b.updatedAt || 0) - new Date(a._myLastCommentAt || a.updatedAt || 0))
+        .map(it => slimRow(it, { lastCommentAt: it._myLastCommentAt, myCommentCount: it._myCommentCount })),
+    };
+
     return res.json({
       stats: { totalReviewRequests, approvedByUser, commentsByUser },
       openTasks,
+      buckets,
     });
   }
 
@@ -384,6 +434,8 @@ export default async function handler(req, res) {
         heroImageUrl: slimHero(i.heroImageUrl),
         automationRuleId: i.automationRuleId ?? null,
         automationRuleName: i.automationRuleName ?? null,
+        sourceDocName: i.sourceDocName ?? null,
+        sourceDocUrl: i.sourceDocUrl ?? null,
         createdAt: i.createdAt,
         updatedAt: i.updatedAt,
         scheduledAt: i.scheduledAt ?? null,

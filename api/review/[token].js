@@ -223,6 +223,11 @@ function approveConfirmPage(token, item) {
   <div class="card-head">
     <h1>${escHtml(item.title)}</h1>
     ${item.category ? `<div class="cat">${escHtml(item.category)}</div>` : ''}
+    ${item.sourceDocName ? `<div class="cat" style="margin-top:6px;"><span style="opacity:0.75;">Source:</span> ${
+      item.sourceDocUrl
+        ? `<a href="${escHtml(item.sourceDocUrl)}" style="color:#7dd3fc;text-decoration:underline;">${escHtml(item.sourceDocName)}</a>`
+        : escHtml(item.sourceDocName)
+    }</div>` : ''}
   </div>
   <div class="card-body">
     ${fullArticleBlockHtml(item)}
@@ -244,6 +249,11 @@ function feedbackPage(token, item) {
   <div class="card-head">
     <h1>${escHtml(item.title)}</h1>
     ${item.category ? `<div class="cat">${escHtml(item.category)}</div>` : ''}
+    ${item.sourceDocName ? `<div class="cat" style="margin-top:6px;"><span style="opacity:0.75;">Source:</span> ${
+      item.sourceDocUrl
+        ? `<a href="${escHtml(item.sourceDocUrl)}" style="color:#7dd3fc;text-decoration:underline;">${escHtml(item.sourceDocName)}</a>`
+        : escHtml(item.sourceDocName)
+    }</div>` : ''}
   </div>
   <div class="card-body">
     <p style="font-size:0.78rem;color:#006868;background:#f0fafa;border-left:3px solid #006868;padding:8px 10px;margin:0 0 14px;border-radius:0 4px 4px 0;">💡 <strong>Tip:</strong> highlight any passage in the article to leave an inline comment on that specific text, in addition to your overall feedback below.</p>
