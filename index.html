@@ -14,7 +14,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════
-   DESIGN TOKENS — Gastro Health Hub Brand
+   DESIGN TOKENS — Vance Health Hub Brand
 ══════════════════════════════════════════════════ */
 :root {
   --vance-primary:   #006868;
@@ -2293,7 +2293,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 </style>
 <script>
 /* ── Per-domain branding override ──────────────────────────────────────────
-   Default branding = Gastro Health Hub (vance-content-generator.vercel.app).
+   Default branding = Vance Health Hub (vance-content-generator.vercel.app).
    Reserved for future domain overrides if needed.                         */
 </script>
 </head>
@@ -2506,7 +2506,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           <option value="op-eds">Op-Eds</option>
           <option value="white-papers">White Papers</option>
           <option value="infographics">Infographics</option>
-          <option value="ibd-living">Gastro Living</option>
+          <option value="ibd-living">Vance Living</option>
         </select>
         <!-- Custom categories injected by activateCustomCategories() -->
         <span id="customCatBtns-generator" style="display:none;"></span>
@@ -3302,7 +3302,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
   <button class="cat-bar-btn" data-cat="op-eds" onclick="switchCategory('op-eds')">Op-Eds</button>
   <button class="cat-bar-btn" data-cat="white-papers" onclick="switchCategory('white-papers')">White Papers</button>
   <button class="cat-bar-btn" data-cat="infographics" onclick="switchCategory('infographics')">Infographics</button>
-  <button class="cat-bar-btn" data-cat="ibd-living" onclick="switchCategory('ibd-living')">Gastro Living</button>
+  <button class="cat-bar-btn" data-cat="ibd-living" onclick="switchCategory('ibd-living')">Vance Living</button>
   <span id="customCatBtns-archive"></span>
 </div>
   <div class="archive-container">
@@ -3800,10 +3800,10 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             <div class="llm-save-row" style="margin-top:8px;">
             </div>
           </div>
-          <!-- Gastro Living -->
+          <!-- Vance Living -->
           <div class="llm-cat-card">
-            <div class="llm-cat-name">Gastro Living</div>
-            <select id="llm-cat-ibd-living" class="llm-quick-select" onchange="saveCategoryModel('ibd-living',this.value);showToast('✓ Saved for Gastro Living')">
+            <div class="llm-cat-name">Vance Living</div>
+            <select id="llm-cat-ibd-living" class="llm-quick-select" onchange="saveCategoryModel('ibd-living',this.value);showToast('✓ Saved for Vance Living')">
               <option value="">— Use global default —</option>
               <optgroup label="── Recommended (Free) ──">
                 <option value="arcee-ai/trinity-large-preview:free">Arcee AI: Trinity Large ★</option>
@@ -4092,13 +4092,13 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <div class="settings-section">
       <div class="settings-section-header">
         <h3>WordPress Publishing</h3>
-        <p>Auto-publish approved content to gastrohealthhub.com</p>
+        <p>Auto-publish approved content to vancehealthhub.co.uk</p>
       </div>
       <div class="settings-section-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <div>
             <label style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--vance-dark);margin-bottom:5px;display:block;">Site URL</label>
-            <input type="text" value="https://gastrohealthhub.com" disabled style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.72rem;background:var(--bg);color:var(--text-muted);" />
+            <input type="text" value="https://vancehealthhub.co.uk" disabled style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.72rem;background:var(--bg);color:var(--text-muted);" />
           </div>
           <div>
             <label style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--vance-dark);margin-bottom:5px;display:block;">Status</label>
@@ -4947,7 +4947,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           <option value="industry-news">Gastroenterology Updates</option>
           <option value="op-eds">Opinion &amp; Commentary</option>
           <option value="white-papers">White Papers &amp; Guides</option>
-          <option value="ibd-living">Gastro Living</option>
+          <option value="ibd-living">Vance Living</option>
         </select>
       </div>
       <div id="schedCategoryDisplay" style="display:none;font-size:0.72rem;color:var(--text-muted);display:none;align-items:center;gap:7px;">
@@ -5044,10 +5044,10 @@ const CATEGORIES = [
   { id: 'op-eds',           label: 'Op-Eds' },
   { id: 'white-papers',     label: 'White Papers' },
   { id: 'infographics',     label: 'Infographics' },
-  { id: 'ibd-living',       label: 'Gastro Living' }
+  { id: 'ibd-living',       label: 'Vance Living' }
 ];
 
-const DEFAULT_PROMPT = `You are a medical writer creating a curated clinical paper review for publication on Gastro Health Hub (gastrohealthhub.com), the IBD and gastroenterology content platform owned by Vance Medical Foods Ltd. Produce a structured, objective summary of a single published clinical trial intended for a physician audience. Your role is purely curatorial: you present what the paper reports, nothing more. You do not add clinical commentary, personal opinion, practice recommendations, or conclusions beyond those stated by the authors.
+const DEFAULT_PROMPT = `You are a medical writer creating a curated clinical paper review for publication on Vance Health Hub (vancehealthhub.co.uk), the IBD and gastroenterology content platform owned by Vance Medical Foods Ltd. Produce a structured, objective summary of a single published clinical trial intended for a physician audience. Your role is purely curatorial: you present what the paper reports, nothing more. You do not add clinical commentary, personal opinion, practice recommendations, or conclusions beyond those stated by the authors.
 
 TONE & STYLE
 Write in clear, precise clinical language appropriate for a practicing physician. Use correct medical and pharmacological terminology throughout. The tone is neutral, factual, and authoritative — like a well-written abstract expanded into a readable narrative. Avoid advocacy language, hedging phrases like "interestingly" or "remarkably," and any framing that implies editorial judgment. Use bullet points rarely in the body of the article. Write in continuous prose with section headers. Active voice is preferred where natural.
@@ -5088,15 +5088,15 @@ Output the article in markdown. The very first line MUST be the title prefixed w
 
 // ─── Category-specific default prompts ───────────────────────────────────────
 
-const DEFAULT_PROMPT_INDUSTRY_NEWS = `You are a medical journalist writing for Gastro Health Hub — a UK gastroenterology and GI health digital research platform (covering the full breadth of GI medicine, with particular interest in IBD, IBS, and related conditions). Transform the source material (a clinical paper, research summary, or healthcare press release) into a clear, engaging Healthcare News article for gastrohealthhub.com.
+const DEFAULT_PROMPT_INDUSTRY_NEWS = `You are a medical journalist writing for Vance Health Hub — a UK gastroenterology and GI health digital research platform (covering the full breadth of GI medicine, with particular interest in IBD, IBS, and related conditions). Transform the source material (a clinical paper, research summary, or healthcare press release) into a clear, engaging Healthcare News article for vancehealthhub.co.uk.
 
-Gastro Health Hub's focus is IBD (Crohn's disease, ulcerative colitis), gastrointestinal nutrition, and longevity science. Readers include UK-based gastroenterologists, IBD nurses, dietitians, and GPs, as well as well-informed patients living with IBD and gastrointestinal conditions.
+Vance Health Hub's focus is IBD (Crohn's disease, ulcerative colitis), gastrointestinal nutrition, and longevity science. Readers include UK-based gastroenterologists, IBD nurses, dietitians, and GPs, as well as well-informed patients living with IBD and gastrointestinal conditions.
 
 TONE & STYLE
 Write in clear, engaging journalistic prose — authoritative but accessible. Use correct clinical terminology with brief contextual explanation where needed. Active voice throughout. Convey genuine clinical relevance without sensationalism. Avoid phrases like "groundbreaking" or "revolutionary." Do not speculate beyond what the source states.
 
 STRUCTURE
-1. Headline (~10 words) — MUST start with "Gastro Health News: " followed by a clear, informative phrase. No clickbait.
+1. Headline (~10 words) — MUST start with "Vance Health News: " followed by a clear, informative phrase. No clickbait.
 2. Lead Paragraph (50–75 words) — what happened, why it matters, who it affects.
 3. Background Context (75–125 words) — orient readers with relevant disease or treatment context from the source.
 4. Key Findings (150–200 words) — most important results or developments, plain numerical values, clearly attributed to the study authors or originating organisation.
@@ -5104,13 +5104,13 @@ STRUCTURE
 6. Reference — full citation in Vancouver format with DOI where available.
 
 OUTPUT FORMAT
-Output the article in markdown. The very first line MUST be the title prefixed with "# Gastro Health News: ..." All other section headers use "## ". Do NOT use "IBD Industry News", "IBD Health News", or any other variant — always start the title with "Gastro Health News: ".
+Output the article in markdown. The very first line MUST be the title prefixed with "# Vance Health News: ..." All other section headers use "## ". Do NOT use "IBD Industry News", "IBD Health News", or any other variant — always start the title with "Vance Health News: ".
 
 FORMATTING RULES
 Total length: 450–600 words. UK British English. Paraphrase throughout — do not reproduce verbatim text from the source. Attribute all findings clearly. Do not include advice to change clinical practice or medication. Add a disclaimer in small italic text at the bottom: This article is a journalistic summary for informational purposes only. It does not constitute clinical advice or a recommendation to alter treatment decisions.`;
 
 const DEFAULT_PROMPT_OP_EDS = `PROMPT: Op-Ed Generator
-You are a senior medical columnist and Key Opinion Leader (KOL) writing an op-ed style editorial for Gastro Health Hub (gastrohealthhub.com), the IBD content platform owned by Vance Medical Foods Ltd. Your task is to transform the uploaded publication(s) into a compelling, human, and clinically grounded opinion piece (600–700 words). The goal is not to summarise the paper, but to interpret it — placing the findings into real-world context in a way that is insightful, readable, and engaging for a broad audience that includes both clinicians and informed non-specialists.
+You are a senior medical columnist and Key Opinion Leader (KOL) writing an op-ed style editorial for Vance Health Hub (vancehealthhub.co.uk), the IBD content platform owned by Vance Medical Foods Ltd. Your task is to transform the uploaded publication(s) into a compelling, human, and clinically grounded opinion piece (600–700 words). The goal is not to summarise the paper, but to interpret it — placing the findings into real-world context in a way that is insightful, readable, and engaging for a broad audience that includes both clinicians and informed non-specialists.
 The writing must be comprehensible to a general reader without a medical background. Assume the reader is intelligent and curious, but not clinically trained. Explain what the disease is, why the problem matters, and what the study actually did, in plain and direct terms. Do not assume familiarity with clinical terminology, drug names, or disease management concepts. When a technical term is unavoidable, explain it briefly in the same sentence or the next.
 
 TITLE GUIDANCE
@@ -5157,9 +5157,9 @@ You will be provided with one or more clinical publications. Use them as the fou
 OUTPUT FORMAT
 Output the article in markdown. The very first line MUST be the title prefixed with "# " (e.g. "# <your insight-led title>"). The rest is continuous prose with no section headers, as specified above.`;
 
-const DEFAULT_PROMPT_WHITE_PAPERS = `You are a scientific medical writer producing a White Paper for Gastro Health Hub — a UK gastroenterology and GI health research platform (covering the full breadth of GI medicine, with particular interest in IBD, IBS, and related conditions). Synthesise multiple clinical papers and published evidence sources into a comprehensive, structured white paper on a specific topic in IBD, gastrointestinal nutrition, or gastrointestinal medicine.
+const DEFAULT_PROMPT_WHITE_PAPERS = `You are a scientific medical writer producing a White Paper for Vance Health Hub — a UK gastroenterology and GI health research platform (covering the full breadth of GI medicine, with particular interest in IBD, IBS, and related conditions). Synthesise multiple clinical papers and published evidence sources into a comprehensive, structured white paper on a specific topic in IBD, gastrointestinal nutrition, or gastrointestinal medicine.
 
-White Papers on Gastro Health Hub are substantive, evidence-based documents used by healthcare professionals, researchers, and healthcare organisations to understand the current state of evidence on a topic and its clinical implications.
+White Papers on Vance Health Hub are substantive, evidence-based documents used by healthcare professionals, researchers, and healthcare organisations to understand the current state of evidence on a topic and its clinical implications.
 
 TARGET AUDIENCE
 Primary: UK-based gastroenterologists, IBD specialists, dietitians, GPs, and clinical researchers. Secondary: Informed patients and patient advocacy groups.
@@ -5168,7 +5168,7 @@ TONE & STYLE
 Formal, systematic, and evidence-led. Comprehensive scholarship without being inaccessible. Use correct clinical and scientific terminology. Clearly structured with informative section headers. Continuous prose — use lists only where they genuinely serve clarity. Active voice where natural.
 
 STRUCTURE
-1. Title Block — full title, subtitle (if applicable), prepared for: Gastro Health Hub, date.
+1. Title Block — full title, subtitle (if applicable), prepared for: Vance Health Hub, date.
 2. Executive Summary (150–200 words) — topic, key evidence reviewed, and headline conclusions. Must stand alone as a brief overview.
 3. Background & Clinical Context (200–300 words) — the condition, relevant patient populations, current UK standard of care, and the unmet clinical need this white paper addresses.
 4. Evidence Review (400–600 words) — systematically summarise key evidence from the source papers. Organise by theme or chronology as appropriate. Report study designs, populations, interventions, and key findings. Attribute all data to source authors. Note study limitations where authors report them.
@@ -5178,11 +5178,11 @@ STRUCTURE
 8. References — full citations in Vancouver format with DOIs where available.
 
 FORMATTING RULES
-Total length: 1,400–2,000 words. UK British English. All numerical data must match source papers exactly — do not round or alter figures. Do not speculate beyond what the evidence supports. Do not reproduce verbatim text from source papers. Add a disclaimer in small italic text at the end: This White Paper has been prepared by Gastro Health Hub for educational and informational purposes only. It does not constitute clinical guidelines or a recommendation to alter clinical practice. Healthcare professionals should exercise independent clinical judgement in applying this information.`;
+Total length: 1,400–2,000 words. UK British English. All numerical data must match source papers exactly — do not round or alter figures. Do not speculate beyond what the evidence supports. Do not reproduce verbatim text from source papers. Add a disclaimer in small italic text at the end: This White Paper has been prepared by Vance Health Hub for educational and informational purposes only. It does not constitute clinical guidelines or a recommendation to alter clinical practice. Healthcare professionals should exercise independent clinical judgement in applying this information.`;
 
-const DEFAULT_PROMPT_INFOGRAPHICS = `You are a medical content designer producing infographic copy for Gastro Health Hub — a UK gastroenterology and GI health digital platform (covering the full breadth of GI medicine, with particular interest in IBD, IBS, and related conditions). Transform the source clinical paper or research summary into structured, visually optimised copy for an infographic.
+const DEFAULT_PROMPT_INFOGRAPHICS = `You are a medical content designer producing infographic copy for Vance Health Hub — a UK gastroenterology and GI health digital platform (covering the full breadth of GI medicine, with particular interest in IBD, IBS, and related conditions). Transform the source clinical paper or research summary into structured, visually optimised copy for an infographic.
 
-Infographics on Gastro Health Hub distil complex clinical findings into clear, visual-first content for both healthcare professionals and patients. The output you produce will be handed directly to a visual designer — write for the eye, not the paragraph.
+Infographics on Vance Health Hub distil complex clinical findings into clear, visual-first content for both healthcare professionals and patients. The output you produce will be handed directly to a visual designer — write for the eye, not the paragraph.
 
 TARGET AUDIENCE
 Dual audience: UK-based healthcare professionals (gastroenterologists, IBD nurses, dietitians) and patients with IBD (Crohn's disease, ulcerative colitis, IBS).
@@ -5217,13 +5217,13 @@ Include verbatim: For educational purposes only. Consult your clinical team befo
 FORMATTING RULES
 Total copy length: 150–300 words maximum. UK British English. All statistics must match the source paper exactly. Do not speculate. Include a brief citation at the end (author, journal, year, DOI if available).`;
 
-const DEFAULT_PROMPT_GASTRO_LIVING = `Gastro Living_Generation Prompt
+const DEFAULT_PROMPT_GASTRO_LIVING = `Vance Living_Generation Prompt
 
 INPUT
 You will be given a topic related to gut health, diet, lifestyle, supplements, or inflammatory processes.
 
 TASK
-Write a complete, publication-ready blog article for Gastro Health Hub (gastrohealthhub.com), the IBD and gastroenterology content platform owned by Vance Medical Foods Ltd, based on the topic.
+Write a complete, publication-ready blog article for Vance Health Hub (vancehealthhub.co.uk), the IBD and gastroenterology content platform owned by Vance Medical Foods Ltd, based on the topic.
 The article must be:
 Patient-facing (primary audience)
 Scientifically accurate and clinically credible
@@ -5336,9 +5336,9 @@ Output the article in markdown. The very first line MUST be the title prefixed w
 
 const DEFAULT_SOCIAL_PROMPTS = {
 
-twitter: `You are a social media copywriter for Gastro Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write X / Twitter posts promoting a clinical article from gastrohealthhub.com.
+twitter: `You are a social media copywriter for Vance Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write X / Twitter posts promoting a clinical article from vancehealthhub.co.uk.
 
-Gastro Health Hub's X audience includes gastroenterologists, IBD nurses, dietitians, GPs, researchers, and patients living with Crohn's disease, ulcerative colitis, and IBS.
+Vance Health Hub's X audience includes gastroenterologists, IBD nurses, dietitians, GPs, researchers, and patients living with Crohn's disease, ulcerative colitis, and IBS.
 
 RULES FOR EVERY POST
 - Strictly maximum 280 characters — count carefully before finalising
@@ -5349,22 +5349,22 @@ RULES FOR EVERY POST
 - UK British English. 0–1 emoji per post maximum.
 - Do not fabricate statistics not present in the source article`,
 
-linkedin: `You are a social media copywriter for Gastro Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write LinkedIn posts promoting a clinical article from gastrohealthhub.com.
+linkedin: `You are a social media copywriter for Vance Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write LinkedIn posts promoting a clinical article from vancehealthhub.co.uk.
 
-Gastro Health Hub's LinkedIn audience is primarily professional: gastroenterologists, IBD specialists, dietitians, GPs, clinical researchers, and healthcare executives in the UK.
+Vance Health Hub's LinkedIn audience is primarily professional: gastroenterologists, IBD specialists, dietitians, GPs, clinical researchers, and healthcare executives in the UK.
 
 RULES FOR EVERY POST
 - Maximum 1,300 characters
 - Write ONLY the post text — no label, no preamble
 - Each post must take a meaningfully different angle (e.g. post 1: HCP clinical insight; post 2: broader scientific or policy implication)
-- Structure: compelling hook (1–2 lines) → clinical insight (2–4 lines) → implication or reflection → call to action ending with "Read the full article at Gastro Health Hub"
+- Structure: compelling hook (1–2 lines) → clinical insight (2–4 lines) → implication or reflection → call to action ending with "Read the full article at Vance Health Hub"
 - Professional but conversational — not a press release. Short paragraphs with line breaks.
 - 1–3 hashtags at the end: #IBD #Gastroenterology #ClinicalResearch #GutHealth #IBDResearch #MedicalNutrition
 - UK British English. Do not fabricate content not in the source article.`,
 
-facebook: `You are a social media copywriter for Gastro Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write Facebook posts promoting a clinical article from gastrohealthhub.com.
+facebook: `You are a social media copywriter for Vance Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write Facebook posts promoting a clinical article from vancehealthhub.co.uk.
 
-Gastro Health Hub's Facebook audience is primarily patient-facing: people living with Crohn's disease, ulcerative colitis, and IBS, their families, carers, and the broader UK IBD community.
+Vance Health Hub's Facebook audience is primarily patient-facing: people living with Crohn's disease, ulcerative colitis, and IBS, their families, carers, and the broader UK IBD community.
 
 RULES FOR EVERY POST
 - Maximum 2,000 characters
@@ -5373,25 +5373,25 @@ RULES FOR EVERY POST
 - Warm, conversational, and empathetic tone — never condescending or alarmist
 - End every post with an open question to encourage comments
 - Plain English — define any clinical terms used
-- Include: "Read the full article at gastrohealthhub.com"
+- Include: "Read the full article at vancehealthhub.co.uk"
 - 2–4 hashtags: #IBD #CrohnsDisease #UlcerativeColitis #GutHealth #IBDWarrior
 - Emojis welcome but sparingly (1–3 per post). UK British English.
 - Do not give clinical or dietary advice — report what the research says.`,
 
-substack: `You are a newsletter writer for Gastro Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write a Substack teaser post promoting a clinical article to drive readers to gastrohealthhub.com.
+substack: `You are a newsletter writer for Vance Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write a Substack teaser post promoting a clinical article to drive readers to vancehealthhub.co.uk.
 
-Gastro Health Hub's Substack audience is engaged, health-literate, and opted-in: a mix of IBD patients, healthcare professionals, and researchers who want clinical content updates.
+Vance Health Hub's Substack audience is engaged, health-literate, and opted-in: a mix of IBD patients, healthcare professionals, and researchers who want clinical content updates.
 
 RULES FOR THIS POST
 - Maximum 600 characters
 - Write ONLY the post text — no label, no preamble
-- Structure: (1) compelling hook in italics marked with asterisks: *Hook sentence here* (2) 2–3 bullet points with key findings (3) read-more CTA ending with "→ Read the full article at gastrohealthhub.com"
+- Structure: (1) compelling hook in italics marked with asterisks: *Hook sentence here* (2) 2–3 bullet points with key findings (3) read-more CTA ending with "→ Read the full article at vancehealthhub.co.uk"
 - Editorial voice — thoughtful and insight-led. No hashtags.
 - UK British English. Do not fabricate content not in the source article.`,
 
-tiktok: `You are a short-form video scriptwriter for Gastro Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write TikTok video scripts or captions promoting a clinical article from gastrohealthhub.com.
+tiktok: `You are a short-form video scriptwriter for Vance Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write TikTok video scripts or captions promoting a clinical article from vancehealthhub.co.uk.
 
-Gastro Health Hub's TikTok content targets a younger patient-facing audience: people with IBD, chronic health advocates, and health-curious individuals. Content must feel authentic and energetic — not like a medical brochure.
+Vance Health Hub's TikTok content targets a younger patient-facing audience: people with IBD, chronic health advocates, and health-curious individuals. Content must feel authentic and energetic — not like a medical brochure.
 
 RULES FOR EVERY SCRIPT
 - Maximum 300 characters
@@ -5404,9 +5404,9 @@ RULES FOR EVERY SCRIPT
 - Casual, energetic. Emojis welcome (2–4). UK British English but informal register.
 - Do not give clinical advice.`,
 
-instagram: `You are a social media copywriter for Gastro Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write Instagram captions accompanying a visual post promoting a clinical article from gastrohealthhub.com.
+instagram: `You are a social media copywriter for Vance Health Hub — a UK gastroenterology and GI health platform (with particular interest in IBD, IBS, and related conditions). Write Instagram captions accompanying a visual post promoting a clinical article from vancehealthhub.co.uk.
 
-Gastro Health Hub's Instagram audience spans IBD patients, chronic illness advocates, health-conscious individuals, and some healthcare professionals. Content should be engaging and share-worthy.
+Vance Health Hub's Instagram audience spans IBD patients, chronic illness advocates, health-conscious individuals, and some healthcare professionals. Content should be engaging and share-worthy.
 
 RULES FOR EVERY CAPTION
 - Maximum 2,200 characters
@@ -6802,7 +6802,7 @@ function toggleApiKeyVisibility() {
 // activation, caches in localStorage for fast sync reads from getGodPrompt(),
 // and saves back to the server. Server prepends it in run.js for automation.
 var MASTER_PROMPT_DEFAULT = `[BRAND]
-You are writing for Gastro Health Hub (gastrohealthhub.com), the IBD and gastroenterology content platform owned by Vance Medical Foods Ltd. Vance Medical Foods is the parent company in the background — when a brand is referenced, lead with Gastro Health Hub.
+You are writing for Vance Health Hub (vancehealthhub.co.uk), the IBD and gastroenterology content platform owned by Vance Medical Foods Ltd. Vance Medical Foods is the parent company in the background — when a brand is referenced, lead with Vance Health Hub.
 
 [STYLE — UNIVERSAL RULES]
 Never use em dashes (—) anywhere in the output. Replace with a comma, colon, semicolon, or restructure the sentence. Apply this rule in titles, headings, body text, takeaways, and disclaimers. Review the entire output before delivering and remove any em dashes that slipped in.
@@ -10151,7 +10151,7 @@ async function executeComparison(ids, model) {
     `=== ITEM ${i+1}: "${r.title}" (generated by ${r.model || 'Unknown'}) ===\n\n${r.text.slice(0, 8000)}`
   ).join('\n\n---\n\n');
 
-  const comparisonPrompt = `You are a senior medical editor and clinical writing expert at Gastro Health Hub. You have been given ${reviews.length} content pieces. Your task is to compare them rigorously across two dimensions: (1) accuracy and completeness, and (2) writing style and quality.
+  const comparisonPrompt = `You are a senior medical editor and clinical writing expert at Vance Health Hub. You have been given ${reviews.length} content pieces. Your task is to compare them rigorously across two dimensions: (1) accuracy and completeness, and (2) writing style and quality.
 
 Provide a structured analysis with the following sections:
 
@@ -10206,7 +10206,7 @@ Specific, actionable improvements for the weaker item(s).`;
 async function attemptAnalysis(model, systemPrompt, reviewsText) {
   const response = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${getApiKey()}`, 'Content-Type': 'application/json', 'HTTP-Referer': window.location.href, 'X-Title': 'Gastro Health Hub Content Comparison' },
+    headers: { 'Authorization': `Bearer ${getApiKey()}`, 'Content-Type': 'application/json', 'HTTP-Referer': window.location.href, 'X-Title': 'Vance Health Hub Content Comparison' },
     body: JSON.stringify({ model, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: `Please analyse and compare the following ${reviewsText.split('=== ITEM').length - 1} content items:\n\n${reviewsText}` }], stream: true, max_tokens: 2500, temperature: 0.2 })
   });
   if (!response.ok) {
@@ -11840,7 +11840,7 @@ async function testWpCategorySlug() {
   if (!slug) { statusEl.textContent = 'Enter a slug first.'; statusEl.style.color = 'var(--text-muted)'; return; }
   statusEl.textContent = 'Verifying…'; statusEl.style.color = 'var(--text-muted)';
   try {
-    const resp = await fetch('https://gastrohealthhub.com/wp-json/wp/v2/categories?slug=' + encodeURIComponent(slug) + '&per_page=1');
+    const resp = await fetch('https://vancehealthhub.co.uk/wp-json/wp/v2/categories?slug=' + encodeURIComponent(slug) + '&per_page=1');
     if (!resp.ok) throw new Error('WP API error ' + resp.status);
     const data = await resp.json();
     if (data.length > 0) {
@@ -11898,7 +11898,7 @@ function renderCatPromptPanel(catId) {
   var el = document.getElementById('catEditorPromptPanel');
   if (!el || !catId) return;
 
-  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: getCatDefaultPrompt(catId) };
+  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: getCatDefaultPrompt(catId) };
   var prompts = getPromptsForCat(catId) || [DEFAULT_OBJ];
 
   // Update tab badge count
@@ -11908,7 +11908,7 @@ function renderCatPromptPanel(catId) {
   var active = prompts[0];
   var aText  = typeof active === 'string' ? active : (active.text || '');
   var aName  = typeof active === 'string' ? 'Default Prompt' : (active.name || 'Default Prompt');
-  var aBy    = typeof active === 'string' ? 'Gastro Health Hub' : (active.createdBy || '');
+  var aBy    = typeof active === 'string' ? 'Vance Health Hub' : (active.createdBy || '');
 
   var activeEditor =
     '<div class="ced-prompt-active">' +
@@ -11970,7 +11970,7 @@ function cedSavePromptItem(catId, idx) {
   var byEl   = document.getElementById('cedp-by-'   + catId + '-' + idx);
   var textEl = document.getElementById('cedp-text-' + catId + '-' + idx);
   if (!textEl) return;
-  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: getCatDefaultPrompt(catId) };
+  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: getCatDefaultPrompt(catId) };
   var prompts = getPromptsForCat(catId) || [DEFAULT_OBJ];
   prompts[idx] = {
     name:      nameEl ? nameEl.value.trim() : (prompts[idx] && prompts[idx].name ? prompts[idx].name : ''),
@@ -12016,7 +12016,7 @@ function cedAddPromptToCat(catId) {
   var nameEl = document.getElementById('cedp-new-name-' + catId);
   var byEl   = document.getElementById('cedp-new-by-' + catId);
   if (!textEl || !textEl.value.trim()) { alert('Please enter prompt text.'); return; }
-  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: getCatDefaultPrompt(catId) };
+  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: getCatDefaultPrompt(catId) };
   var prompts = getPromptsForCat(catId) || [DEFAULT_OBJ];
   prompts.push({
     name:      nameEl ? nameEl.value.trim() || 'Alternate Prompt' : 'Alternate Prompt',
@@ -12476,7 +12476,7 @@ async function callOpenRouter(prompt, apiKey, model) {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': window.location.href,
-      'X-Title': 'Gastro Health Hub Content Generator',
+      'X-Title': 'Vance Health Hub Content Generator',
     },
     body: JSON.stringify({
       model,
@@ -13143,7 +13143,7 @@ async function heroLeftGenerate() {
   const model = (document.getElementById('heroAiModelSelect') || {}).value || 'google/gemini-3.1-flash-image-preview-20260226';
   showHeroLeftStatus('info', 'Generating image with AI… this can take 15–30 seconds');
   const kws = extractKeywordsFromText(text, 6);
-  const prompt = kws.join(', ') + ', medical healthcare professional, clinical setting, high quality, Gastro Health Hub brand navy and teal. Absolutely no text, words, letters, numbers, or typography anywhere in the image.';
+  const prompt = kws.join(', ') + ', medical healthcare professional, clinical setting, high quality, Vance Health Hub brand navy and teal. Absolutely no text, words, letters, numbers, or typography anywhere in the image.';
   try {
     const resp = await fetch('/api/social/image', {
       method: 'POST',
@@ -14015,7 +14015,7 @@ const CATEGORY_LABELS = {
   'op-eds':           'Op-Ed',
   'white-papers':     'White Paper',
   'infographics':     'Infographic',
-  'ibd-living':       'Gastro Living',
+  'ibd-living':       'Vance Living',
 };
 
 // ── Pipeline layout ──────────────────────────────
@@ -15662,9 +15662,9 @@ function getPromptsForCat(catId) {
     // prompts cached in localStorage from earlier deploys).
     var fresh = (typeof getCatDefaultPrompt === 'function') ? getCatDefaultPrompt(catId) : null;
     return raw.map(function(p) {
-      if (typeof p === 'string') return { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: p };
-      if (fresh && p && p.name === 'Default Prompt' && p.createdBy === 'Gastro Health Hub' && (!/OUTPUT FORMAT/.test(p.text || '') || /slahealth|ibdhealthhub|Vance\.co\.uk/i.test(p.text || ''))) {
-        return Object.assign({}, p, { text: fresh });
+      if (typeof p === 'string') return { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: p };
+      if (fresh && p && p.name === 'Default Prompt' && (p.createdBy === 'Vance Health Hub' || p.createdBy === 'Gastro Health Hub') && (!/OUTPUT FORMAT/.test(p.text || '') || /slahealth|ibdhealthhub|gastrohealthhub|gastro health hub|Vance\.co\.uk/i.test(p.text || ''))) {
+        return Object.assign({}, p, { text: fresh, createdBy: 'Vance Health Hub' });
       }
       return p;
     });
@@ -15686,11 +15686,11 @@ function initPromptAutoSave() {
     _promptAutoSaveTimer = setTimeout(function() {
       var text = ta.value.trim();
       if (!text || !currentCategory) return;
-      var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: getCatDefaultPrompt(currentCategory) };
+      var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: getCatDefaultPrompt(currentCategory) };
       var prompts = getPromptsForCat(currentCategory) || [DEFAULT_OBJ];
       // Update the active prompt (index 0) with the current textarea value
       if (typeof prompts[0] === 'string') {
-        prompts[0] = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: text };
+        prompts[0] = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: text };
       } else {
         prompts[0] = Object.assign({}, prompts[0], { text: text });
       }
@@ -15721,14 +15721,14 @@ function loadPromptsTab_articleOnly() {
   if (!el) return;
 
   el.innerHTML = CATEGORIES.map(function(cat) {
-    var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: getCatDefaultPrompt(cat.id) };
+    var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: getCatDefaultPrompt(cat.id) };
     var prompts = getPromptsForCat(cat.id) || [DEFAULT_OBJ];
 
     // Active (index 0) — full editor
     var active = prompts[0];
     var aText  = typeof active === 'string' ? active : (active.text || '');
     var aName  = typeof active === 'string' ? 'Default Prompt' : (active.name || '');
-    var aBy    = typeof active === 'string' ? 'Gastro Health Hub' : (active.createdBy || '');
+    var aBy    = typeof active === 'string' ? 'Vance Health Hub' : (active.createdBy || '');
     var aId    = cat.id + '-0';
 
     var activeEditor = '<div class="prompt-active-editor">' +
@@ -15797,7 +15797,7 @@ function getSocialPromptsForPlat(platId) {
     var raw = JSON.parse(localStorage.getItem('vance_social_prompts_' + platId) || 'null');
     if (!raw) return null;
     return raw.map(function(p) {
-      if (typeof p === 'string') return { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: p };
+      if (typeof p === 'string') return { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: p };
       return p;
     });
   } catch(_) { return null; }
@@ -15820,13 +15820,13 @@ function loadSocialPromptsTab() {
   if (!el) return;
 
   el.innerHTML = SOCIAL_PLATFORMS.map(function(plat) {
-    var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: DEFAULT_SOCIAL_PROMPTS[plat.id] || '' };
+    var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: DEFAULT_SOCIAL_PROMPTS[plat.id] || '' };
     var prompts = getSocialPromptsForPlat(plat.id) || [DEFAULT_OBJ];
 
     var active = prompts[0];
     var aText  = typeof active === 'string' ? active : (active.text || '');
     var aName  = typeof active === 'string' ? 'Default Prompt' : (active.name || '');
-    var aBy    = typeof active === 'string' ? 'Gastro Health Hub' : (active.createdBy || '');
+    var aBy    = typeof active === 'string' ? 'Vance Health Hub' : (active.createdBy || '');
     var aId    = 'sp-' + plat.id + '-0';
 
     var smallSvg = (PLAT_SVG[plat.id] || '').replace(/width:20px;height:20px/g, 'width:14px;height:14px');
@@ -15896,7 +15896,7 @@ function saveSocialPromptItem(platId, idx) {
   var textEl = document.getElementById('prompt-text-' + aId);
   if (!textEl) return;
   var platDefaultText = (function() { var p = SOCIAL_PLATFORMS.find(function(x){return x.id===platId;}); return p ? ('Write a ' + p.label + ' post. Tone: ' + p.tone) : ''; })();
-  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: platDefaultText };
+  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: platDefaultText };
   var prompts = getSocialPromptsForPlat(platId) || [DEFAULT_OBJ];
   prompts[idx] = {
     name:      nameEl ? nameEl.value.trim() : (prompts[idx].name || ''),
@@ -15931,7 +15931,7 @@ function addSocialPromptToPlat(platId) {
   var byEl   = document.getElementById('prompt-new-by-sp-' + platId);
   if (!textEl || !textEl.value.trim()) return;
   var platDefaultText = (function() { var p = SOCIAL_PLATFORMS.find(function(x){return x.id===platId;}); return p ? ('Write a ' + p.label + ' post. Tone: ' + p.tone) : ''; })();
-  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: platDefaultText };
+  var DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: platDefaultText };
   var prompts = getSocialPromptsForPlat(platId) || [DEFAULT_OBJ];
   prompts.push({
     name:      (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : ('Prompt ' + (prompts.length + 1)),
@@ -15998,7 +15998,7 @@ function savePromptItem(catId, idx) {
   const textEl = document.getElementById('prompt-text-' + catId + '-' + idx);
   if (!textEl) return;
 
-  const DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: DEFAULT_PROMPT };
+  const DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: DEFAULT_PROMPT };
   const prompts = getPromptsForCat(catId) || [DEFAULT_OBJ];
 
   prompts[idx] = {
@@ -16053,7 +16053,7 @@ function addPromptToCat(catId) {
   const byEl   = document.getElementById('prompt-new-by-'   + catId);
   if (!textEl || !textEl.value.trim()) return;
 
-  const DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: DEFAULT_PROMPT };
+  const DEFAULT_OBJ = { name: 'Default Prompt', createdBy: 'Vance Health Hub', text: DEFAULT_PROMPT };
   const prompts = getPromptsForCat(catId) || [DEFAULT_OBJ];
 
   prompts.push({

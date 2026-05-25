@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   try {
     const response = await fetch(parsed.href, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; VanceBot/1.0; +https://gastrohealthhub.com)',
+        'User-Agent': 'Mozilla/5.0 (compatible; VanceBot/1.0; +https://vancehealthhub.co.uk)',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-GB,en;q=0.9',
       },
