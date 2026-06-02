@@ -1,6 +1,11 @@
 import { kv } from '../../lib/kv.js';
+import { resolveOrCreateWpCategory, resolveOrCreateWpTags, parseTagList } from '../../lib/wp-taxonomy.js';
 
 // Map app category IDs → WordPress category slugs. Mirrors BUILTIN_CATEGORY_META in index.html.
+// Acts as the *parent* category when a content item arrives with a sub-category
+// (i.e. a per-row category name like "Lifestyle & Wellbeing" from the bulk-upload
+// spreadsheet). The sub-category becomes the assigned category; the entry below
+// only tells us which parent to nest a freshly auto-created sub-category under.
 const CATEGORY_SLUG_MAP = {
   'industry-news':    'content-healthcare-news',
   'clinical-reviews': 'content-clinical-reviews',
@@ -121,13 +126,14 @@ function markdownToWpHtml(text) {
   return html.filter(l => l !== '').join('\n');
 }
 
-export function buildWpPayload(item, categoryIds, featuredMediaId = null) {
+export function buildWpPayload(item, categoryIds, tagIds = [], featuredMediaId = null) {
   return {
     title:      item.title,
     content:    markdownToWpHtml(item.body),
     excerpt:    item.excerpt ?? '',
     status:     'publish',
     categories: Array.isArray(categoryIds) && categoryIds.length > 0 ? categoryIds : [],
+    tags:       Array.isArray(tagIds) && tagIds.length > 0 ? tagIds : [],
     ...(featuredMediaId ? { featured_media: featuredMediaId } : {}),
   };
 }
@@ -139,14 +145,81 @@ async function publishToWordPress(item, { fallbackHeroImageUrl } = {}) {
   const authHeader = `Basic ${credentials}`;
   const siteUrl    = (process.env.WP_SITE_URL ?? '').trim().replace(/\/$/, '');
 
-  // Resolve category slug → numeric ID
-  // item.wpCategorySlug takes precedence (set per-item from category config)
-  const slug       = item.wpCategorySlug || CATEGORY_SLUG_MAP[item.category] || null;
-  const categoryId = slug ? await resolveWpCategoryId(slug, siteUrl, authHeader) : null;
-  const categoryIds = categoryId ? [categoryId] : [];
+  // ── Category resolution ─────────────────────────────────────────────────
+  // Posts are assigned to BOTH the parent app-category (e.g. "Gastro Living")
+  // AND the per-row sub-category (e.g. "Understanding Your Condition") when a
+  // sub-category is provided. This keeps category-archive pages working at
+  // both levels — /category/content-gastro-living/ continues to list every
+  // post, while /category/understanding-your-condition/ filters to the slice.
+  //
+  // Resolution priority:
+  //   • Parent: item.wpCategorySlug → CATEGORY_SLUG_MAP[item.category]
+  //   • Sub-category: item.subCategory (resolved by name/slug, auto-created
+  //                    under the parent if missing)
+  //
+  // Both IDs land in categoryIds[]. When no sub-category is provided, only
+  // the parent is assigned (legacy behaviour).
+  const parentAppSlug = CATEGORY_SLUG_MAP[item.category] || null;
+  const explicitSlug  = item.wpCategorySlug || parentAppSlug || null;
+  const categoryIdsSet = new Set();
+  let subCategoryCreated = false;
+  let subCategoryResolved = null;
 
-  if (slug && !categoryId) {
-    console.warn(`[publish] WP category slug "${slug}" not found — posting without category`);
+  // Diagnostic: what taxonomy data did the content record carry in?
+  console.log(`[publish] item ${item.id} taxonomy input — category="${item.category}" wpCategorySlug="${item.wpCategorySlug || ''}" subCategory="${item.subCategory || ''}" tags=${JSON.stringify(item.tags)}`);
+
+  // Resolve the parent category first so we always have it in the assignment.
+  if (explicitSlug) {
+    const parentId = await resolveWpCategoryId(explicitSlug, siteUrl, authHeader);
+    if (parentId) {
+      categoryIdsSet.add(parentId);
+    } else {
+      console.warn(`[publish] WP parent category slug "${explicitSlug}" not found — proceeding without parent`);
+    }
+  }
+
+  // Resolve the sub-category and attach it alongside the parent.
+  if (item.subCategory && String(item.subCategory).trim()) {
+    const resolved = await resolveOrCreateWpCategory(item.subCategory, {
+      siteUrl,
+      authHeader,
+      parentSlug: parentAppSlug,
+      autoCreate: true,
+    });
+    if (resolved.id) {
+      categoryIdsSet.add(resolved.id);
+      subCategoryCreated = resolved.created === true;
+      subCategoryResolved = resolved.term || null;
+      if (subCategoryCreated) {
+        console.log(`[publish] Auto-created WP sub-category "${item.subCategory}" (id ${resolved.id}) under parent slug "${parentAppSlug || 'top-level'}"`);
+      }
+    } else {
+      console.warn(`[publish] Sub-category "${item.subCategory}" could not be resolved or created — posting under parent only`);
+    }
+  }
+
+  const categoryIds = Array.from(categoryIdsSet);
+
+  // ── Tag resolution ──────────────────────────────────────────────────────
+  // item.tags can be: a comma-separated string ("IBD, IBS"), an array of
+  // strings, or null/undefined. parseTagList normalises to a string array.
+  let tagIds = [];
+  let tagsCreated = [];
+  const tagNames = parseTagList(item.tags);
+  if (tagNames.length) {
+    const tagResult = await resolveOrCreateWpTags(tagNames, {
+      siteUrl,
+      authHeader,
+      autoCreate: true,
+    });
+    tagIds = tagResult.ids;
+    tagsCreated = tagResult.created;
+    if (tagsCreated.length) {
+      console.log(`[publish] Auto-created WP tags: ${tagsCreated.join(', ')}`);
+    }
+    if (tagResult.failed?.length) {
+      console.warn(`[publish] Failed to resolve/create WP tags: ${tagResult.failed.join(', ')}`);
+    }
   }
 
   // Upload hero image and get media ID (non-fatal if it fails). Falls back to the
@@ -167,7 +240,7 @@ async function publishToWordPress(item, { fallbackHeroImageUrl } = {}) {
       'Content-Type':  'application/json',
       'Authorization': authHeader,
     },
-    body: JSON.stringify(buildWpPayload(item, categoryIds, featuredMediaId)),
+    body: JSON.stringify(buildWpPayload(item, categoryIds, tagIds, featuredMediaId)),
   });
 
   if (!response.ok) {
@@ -175,7 +248,20 @@ async function publishToWordPress(item, { fallbackHeroImageUrl } = {}) {
     // Include which username was attempted to aid debugging
     throw new Error(`WordPress API ${response.status} (user: ${process.env.WP_USERNAME ?? 'not set'}, site: ${process.env.WP_SITE_URL ?? 'not set'}): ${err}`);
   }
-  return response.json();
+  const wpPost = await response.json();
+  // Surface taxonomy outcomes so the caller (the cron handler / KV record) can
+  // tell whether terms were auto-created — useful for the upload-preview UI to
+  // confirm what landed in WP after a batch run.
+  return {
+    ...wpPost,
+    _taxonomy: {
+      categoryIds,
+      tagIds,
+      subCategoryCreated,
+      subCategoryResolved,
+      tagsCreated,
+    },
+  };
 }
 
 export default async function handler(req, res) {
@@ -203,8 +289,18 @@ export default async function handler(req, res) {
     publishedAt: new Date().toISOString(),
     wpPostId: wpPost.id,
     wpPostUrl: wpPost.link,
+    // Snapshot taxonomy outcomes onto the content record so the dashboard /
+    // logs can show what category + tags landed in WP without an extra fetch.
+    wpCategoryIds: wpPost._taxonomy?.categoryIds ?? [],
+    wpTagIds:      wpPost._taxonomy?.tagIds ?? [],
+    wpAutoCreatedSubCategory: wpPost._taxonomy?.subCategoryCreated ?? false,
+    wpAutoCreatedTags:        wpPost._taxonomy?.tagsCreated ?? [],
     updatedAt: new Date().toISOString(),
   };
   await kv.set(`content:${contentId}`, updated);
-  return res.json({ wpPostId: wpPost.id, wpPostUrl: wpPost.link });
+  return res.json({
+    wpPostId: wpPost.id,
+    wpPostUrl: wpPost.link,
+    taxonomy: wpPost._taxonomy ?? null,
+  });
 }

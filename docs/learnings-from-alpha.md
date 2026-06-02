@@ -64,3 +64,10 @@ The "Implication for Beta" field is the key one — it forces the entry to be us
 - **Implication for Beta**:
 - **Tag**: #
 ```
+
+## 2026-06-02 — Hero image prompts are now KV-backed and per-category
+
+- **Context**: Added a hero image prompt manager — global default + reusable presets on the LLM page, and a per-category override in the category editor.
+- **Finding**: Hero prompts now live in a single KV record `vance:hero-prompts` = `{ default, presets[], categories{} }`, served by `api/content/hero-prompts.js` (GET any auth, PUT admin/content, **partial-merge** so the LLM page and Categories page can each save their slice without clobbering). Resolution is shared in three places and must stay in sync: `lib/social/media.js` (`buildDirectHeroPrompt(title, template)` + exported `DEFAULT_HERO_PROMPT_TEMPLATE`), `lib/automation/handlers/run.js` (loads the record once per run, resolves `categories[rule.category] || default`, passes into `generateImageFast(title, '16:9', template)`), and `index.html` (`getResolvedHeroPrompt(catId, topic)` for the manual generator). `{topic}`/`{title}` tokens are substituted; templates with no token get the subject appended.
+- **Implication for Beta**: This is per-brand config — the `vance:hero-prompts` key must become tenant-scoped via the same `lib/kv.js` `p(key)` prefix primitive (Phase 1). The 3-way resolution duplication is a maintenance hazard; if Beta refactors, consider extracting a single shared resolver. The category editor writes the override to KV separately from the GitHub-backed custom-categories file, so per-category hero prompts do NOT travel with the custom-categories JSON — they're keyed by category id in the KV record instead.
+- **Tag**: #kv #prompts #brand-identity
