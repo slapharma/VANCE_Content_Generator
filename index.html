@@ -4121,13 +4121,13 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <div class="settings-section">
       <div class="settings-section-header">
         <h3>WordPress Publishing</h3>
-        <p>Auto-publish approved content to gastrohealthhub.com</p>
+        <p>Auto-publish approved content to vancehealthhub.co.uk</p>
       </div>
       <div class="settings-section-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <div>
             <label style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--vance-dark);margin-bottom:5px;display:block;">Site URL</label>
-            <input type="text" value="https://gastrohealthhub.com" disabled style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.72rem;background:var(--bg);color:var(--text-muted);" />
+            <input type="text" value="https://vancehealthhub.co.uk" disabled style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.72rem;background:var(--bg);color:var(--text-muted);" />
           </div>
           <div>
             <label style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--vance-dark);margin-bottom:5px;display:block;">Status</label>
@@ -12247,7 +12247,7 @@ async function testWpCategorySlug() {
   if (!slug) { statusEl.textContent = 'Enter a slug first.'; statusEl.style.color = 'var(--text-muted)'; return; }
   statusEl.textContent = 'Verifying…'; statusEl.style.color = 'var(--text-muted)';
   try {
-    const resp = await fetch('https://gastrohealthhub.com/wp-json/wp/v2/categories?slug=' + encodeURIComponent(slug) + '&per_page=1');
+    const resp = await fetch('https://vancehealthhub.co.uk/wp-json/wp/v2/categories?slug=' + encodeURIComponent(slug) + '&per_page=1');
     if (!resp.ok) throw new Error('WP API error ' + resp.status);
     const data = await resp.json();
     if (data.length > 0) {
