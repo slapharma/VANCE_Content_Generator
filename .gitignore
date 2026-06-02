@@ -16,3 +16,5 @@ hcp-desktop-full.png
 
 # Local Claude config (per-machine, may contain settings/credentials)
 .claude/
+
+.env.prod.fresh

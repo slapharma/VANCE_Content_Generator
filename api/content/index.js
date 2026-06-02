@@ -19,6 +19,19 @@ export function buildContentItem(data) {
     heroImageUrl: data.heroImageUrl ?? null,   // stored for WP featured image upload
     heroImageType: data.heroImageType ?? null, // 'pexels' | 'ai'
     wpCategorySlug: data.wpCategorySlug ?? null, // per-category WP slug override
+    // Per-row sub-category name (from the multi-column bulk-upload spreadsheet,
+    // e.g. "Lifestyle & Wellbeing"). When set, the publish endpoint resolves it
+    // by name/slug and posts to that sub-category instead of the app category's
+    // top-level slug — auto-creating the term under the inferred parent if needed.
+    subCategory: data.subCategory ?? null,
+    // Per-row WP tag list. Accepts a comma-separated string ("IBD, IBS") OR an
+    // array. The publish endpoint resolves each tag by name and auto-creates
+    // missing tags before posting.
+    tags: Array.isArray(data.tags) ? data.tags : (data.tags ?? null),
+    // Author-supplied research / writing-style focus for this article (from the
+    // spreadsheet's Notes column). Stitched into the LLM prompt at generation
+    // time so each article gets per-row guidance on what to emphasise.
+    rowNotes: data.rowNotes ?? null,
     // Automation provenance — snapshotted at creation so the rule name shows
     // on cards/emails/logs without a per-render rule lookup. Null for manual.
     automationRuleId: data.automationRuleId ?? null,

@@ -3564,6 +3564,35 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       </div>
     </div>
 
+    <!-- Section A2: Hero Image Prompts — image generation prompt library -->
+    <div class="llm-section">
+      <div class="llm-section-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <div style="flex:1;">
+          <div class="llm-section-title">Hero Image Prompts</div>
+          <div class="llm-section-desc">The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use <code>{topic}</code> where the article subject should be inserted. Set a per-category override on the <a href="#" onclick="switchTab('categories');return false;" style="color:var(--vance-primary);">Categories</a> page; this is the global default plus a reusable preset library.</div>
+        </div>
+      </div>
+      <div class="llm-section-body">
+        <label style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--vance-dark);display:block;margin-bottom:6px;">Global default prompt</label>
+        <textarea id="heroDefaultPromptTextarea" rows="8" placeholder="Describe the hero image style… include {topic} where the article subject goes." style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);font-family:Georgia,serif;font-size:0.78rem;line-height:1.55;resize:vertical;border-radius:0;color:var(--text);background:var(--bg);"></textarea>
+        <div class="llm-save-row" style="margin-top:10px;display:flex;gap:8px;align-items:center;justify-content:flex-end;">
+          <span id="heroDefaultPromptStatus" style="font-size:0.66rem;color:var(--text-muted);"></span>
+          <button class="btn btn-outline btn-sm" onclick="restoreHeroPromptDefault()">Restore default</button>
+          <button class="btn btn-orange btn-sm" onclick="saveHeroPromptDefault()">Save default prompt</button>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;" />
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <label style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--vance-dark);">Saved presets</label>
+          <button type="button" class="btn btn-outline btn-sm" onclick="addHeroPreset()">+ Add preset</button>
+        </div>
+        <p style="font-size:0.6rem;color:var(--text-muted);margin:0 0 10px;">Reusable hero prompts you can apply to any category from the category editor. Editing a preset here does not retroactively change categories already using its text.</p>
+        <div id="heroPresetsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+
     <!-- Section B: API Keys -->
     <div class="llm-section">
       <div class="llm-section-header">
@@ -4842,6 +4871,14 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
               <div id="catEditorHeroPreview" style="margin-top:8px;min-height:60px;"></div>
             </div>
 
+            <div class="ced-section">
+              <div class="ced-section-title">Hero Image Prompt</div>
+              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">The AI image prompt used when generating a hero image for this category — in the generator and in automation. Leave on <strong>Global default</strong> to inherit the prompt set on the LLM page, or override it here. Use <code>{topic}</code> where the article subject should be inserted.</p>
+              <label class="ced-label">Prompt source</label>
+              <select id="catEditorHeroPromptPreset" class="ced-input" style="appearance:none;-webkit-appearance:none;background:var(--bg);cursor:pointer;margin-bottom:8px;" onchange="onCatHeroPromptPresetChange()"></select>
+              <textarea id="catEditorHeroPrompt" class="ced-input" rows="6" placeholder="Leave blank to use the global default prompt." style="font-family:Georgia,serif;line-height:1.5;resize:vertical;"></textarea>
+            </div>
+
             <!-- Hidden inputs used by saveCategoryConfig -->
             <textarea id="catEditorPrompt" style="display:none;"></textarea>
           </div><!-- /cedPane-settings -->
@@ -5851,6 +5888,13 @@ async function _xlsxExtractEntries(buffer, wantedPaths) {
   return entries;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Multi-column xlsx parsing.
+// Reads columns A–D from sheet 1. When the header row contains recognised
+// labels (Title, Notes, Sub-Category / Subcategory, Tag / Tags), the parser
+// extracts structured rows; otherwise it falls back to the legacy Column-A
+// behaviour (titles + hyperlinks).
+// ─────────────────────────────────────────────────────────────────────────────
 async function parseXlsxColumnA(file) {
   var buf = await file.arrayBuffer();
   var entries = await _xlsxExtractEntries(buf, [
@@ -5894,45 +5938,141 @@ async function parseXlsxColumnA(file) {
     if (url) refToUrl[refM[1]] = url;
   });
 
-  // Walk every column-A cell and extract its text + URL. We include A1: when the file is a
-  // plain title list (no hyperlinks) there's often no header row. Header detection happens
-  // later via the HEADER_WORDS heuristic — only the most obvious "Title"/"URL" labels are skipped.
-  var HEADER_WORDS = new Set(['title', 'titles', 'topic', 'topics', 'subject', 'heading', 'url', 'urls', 'link', 'links', 'source', 'sources', 'publication title & link']);
-  var items = [];
-  var cellRegex = /<c[^>]*\sr="(A[0-9]+)"([^>]*?)>([\s\S]*?)<\/c>/g;
-  var m;
-  while ((m = cellRegex.exec(sheetXml)) !== null) {
-    var ref = m[1];
-    var attrs = m[2];
-    var body = m[3];
-    var rowNum = parseInt(ref.substring(1), 10);
-    var typeMatch = attrs.match(/\st="([^"]+)"/);
-    var typeAttr = typeMatch ? typeMatch[1] : '';
-    var title = '';
-    if (typeAttr === 's') {
-      var vm = body.match(/<v>([0-9]+)<\/v>/);
-      if (vm) title = sharedStrings[parseInt(vm[1], 10)] || '';
-    } else if (typeAttr === 'inlineStr' || typeAttr === 'str') {
-      var im = body.match(/<t[^>]*>([^<]*)<\/t>/);
-      if (im) title = im[1];
-    } else {
-      // Numeric or untyped — try to read text anyway, else fall back to the raw <v>
-      var tm = body.match(/<t[^>]*>([^<]*)<\/t>/);
-      if (tm) title = tm[1];
-      else {
-        var vm2 = body.match(/<v>([^<]*)<\/v>/);
-        if (vm2) title = vm2[1];
-      }
-    }
-    title = (title || '').trim();
-    if (!title) continue;
-    var url = refToUrl[ref] || null;
-    // Skip A1 only when it has no URL AND looks like a header label.
-    if (rowNum === 1 && !url && HEADER_WORDS.has(title.toLowerCase())) continue;
-    items.push({ title: title, url: url });
+  // ── XML-entity decoder ─────────────────────────────────────────────────────
+  // XLSX cell text comes in escaped (e.g. "Diagnosis &amp; Treatment").
+  // We decode so downstream code (LLM prompts, WP category lookups) sees the
+  // human-readable form. Without this, a sub-category cell like "Diagnosis &
+  // Treatment" would search WP for literal "Diagnosis &amp; Treatment" and fail.
+  function decodeXmlEntities(s) {
+    return String(s || '')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&#(\d+);/g, function(_, n) { return String.fromCharCode(parseInt(n, 10)); })
+      .replace(/&#x([0-9a-fA-F]+);/g, function(_, n) { return String.fromCharCode(parseInt(n, 16)); });
   }
 
-  // De-dupe by url-or-title
+  // ── Cell extraction helper ─────────────────────────────────────────────────
+  // Returns the human-readable string for ANY column (A–D) cell, resolving
+  // shared-string references and inline strings the same way as Column A.
+  function readCellText(attrs, body) {
+    var typeMatch = attrs.match(/\st="([^"]+)"/);
+    var typeAttr = typeMatch ? typeMatch[1] : '';
+    if (typeAttr === 's') {
+      var vm = body.match(/<v>([0-9]+)<\/v>/);
+      // Shared strings table is decoded above; index lookup returns final text.
+      return vm ? decodeXmlEntities(sharedStrings[parseInt(vm[1], 10)] || '') : '';
+    }
+    if (typeAttr === 'inlineStr' || typeAttr === 'str') {
+      // Inline string: concatenate all <t> nodes (rich-text runs).
+      var parts = body.match(/<t[^>]*>([\s\S]*?)<\/t>/g) || [];
+      return decodeXmlEntities(parts.map(function(t) {
+        return t.replace(/<t[^>]*>/, '').replace(/<\/t>/, '');
+      }).join(''));
+    }
+    var tm = body.match(/<t[^>]*>([^<]*)<\/t>/);
+    if (tm) return decodeXmlEntities(tm[1]);
+    var vm2 = body.match(/<v>([^<]*)<\/v>/);
+    return vm2 ? decodeXmlEntities(vm2[1]) : '';
+  }
+
+  // ── Walk all cells in columns A–D, indexing by row number → column letter ──
+  var allCellRegex = /<c[^>]*\sr="([A-D])([0-9]+)"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
+  var rowsByNum = {}; // { 2: { A: 'title', B: 'note', C: 'subcat', D: 'tag' }, ... }
+  var ac;
+  while ((ac = allCellRegex.exec(sheetXml)) !== null) {
+    var col = ac[1];
+    var rowNum = parseInt(ac[2], 10);
+    var attrs = ac[3] || '';
+    var bodyChunk = ac[4] || '';
+    var txt = readCellText(attrs, bodyChunk).trim();
+    if (!rowsByNum[rowNum]) rowsByNum[rowNum] = {};
+    rowsByNum[rowNum][col] = txt;
+  }
+
+  // ── Header detection ───────────────────────────────────────────────────────
+  // Look at row 1. If A1 names a title column AND any of B1/C1/D1 names one of
+  // the structured columns (notes / sub-category / tag), treat the sheet as a
+  // multi-column structured upload and skip row 1 from the data set. Otherwise
+  // fall back to the legacy Column-A-only behaviour.
+  var HEADER_WORDS = new Set(['title', 'titles', 'topic', 'topics', 'subject', 'heading', 'url', 'urls', 'link', 'links', 'source', 'sources', 'publication title & link']);
+  var NOTE_HEADERS = new Set(['note', 'notes', 'description', 'brief', 'guidance', 'angle']);
+  var SUBCAT_HEADERS = new Set(['sub-category', 'subcategory', 'sub category', 'category', 'sub-cat', 'subcat', 'wp sub-category', 'wp category']);
+  var TAG_HEADERS = new Set(['tag', 'tags', 'wp tags', 'wp tag']);
+
+  function normHeader(s) { return String(s || '').trim().toLowerCase(); }
+  var header = rowsByNum[1] || {};
+  var aHdr = normHeader(header.A);
+  var bHdr = normHeader(header.B);
+  var cHdr = normHeader(header.C);
+  var dHdr = normHeader(header.D);
+
+  // Which column carries which field — defaults to the canonical A/B/C/D order
+  // but reassigns if the user happened to rearrange columns.
+  var colMap = { title: 'A', notes: null, subCategory: null, tags: null };
+  function pickColForSet(set) {
+    if (set.has(aHdr)) return 'A';
+    if (set.has(bHdr)) return 'B';
+    if (set.has(cHdr)) return 'C';
+    if (set.has(dHdr)) return 'D';
+    return null;
+  }
+  var titleCol = HEADER_WORDS.has(aHdr) ? 'A'
+               : HEADER_WORDS.has(bHdr) ? 'B'
+               : HEADER_WORDS.has(cHdr) ? 'C'
+               : HEADER_WORDS.has(dHdr) ? 'D'
+               : null;
+  var notesCol  = pickColForSet(NOTE_HEADERS);
+  var subCol    = pickColForSet(SUBCAT_HEADERS);
+  var tagCol    = pickColForSet(TAG_HEADERS);
+
+  // Structured mode = header row names the title column AND at least one
+  // additional structured column (notes / sub-category / tag).
+  var structuredMode = !!(titleCol && (notesCol || subCol || tagCol));
+  if (structuredMode) {
+    colMap.title       = titleCol;
+    colMap.notes       = notesCol;
+    colMap.subCategory = subCol;
+    colMap.tags        = tagCol;
+  }
+
+  // ── Build the rows array ───────────────────────────────────────────────────
+  var rows = [];           // structured per-row records (for the new pipeline)
+  var items = [];          // legacy { title, url } items (column A only)
+  var sortedRowNums = Object.keys(rowsByNum).map(function(s) { return parseInt(s, 10); }).sort(function(a, b) { return a - b; });
+
+  sortedRowNums.forEach(function(rowNum) {
+    var cells = rowsByNum[rowNum] || {};
+    // Skip header row in structured mode.
+    if (structuredMode && rowNum === 1) return;
+
+    // Column-A-only legacy path: keep the old logic intact so existing rules
+    // (single-column uploads) still work. The legacy items array drives the
+    // back-compat return shape.
+    var aTitle = (cells.A || '').trim();
+    var aUrl = refToUrl['A' + rowNum] || null;
+    if (aTitle) {
+      // Skip A1 only when it has no URL AND looks like a header label.
+      var isHeaderCell = (rowNum === 1 && !aUrl && HEADER_WORDS.has(aTitle.toLowerCase()));
+      if (!isHeaderCell) items.push({ title: aTitle, url: aUrl });
+    }
+
+    // Structured row: only populated when the header row says so.
+    if (structuredMode) {
+      var rowTitle = (cells[colMap.title] || '').trim();
+      if (!rowTitle) return;
+      rows.push({
+        title:       rowTitle,
+        notes:       colMap.notes       ? (cells[colMap.notes]       || '').trim() : '',
+        subCategory: colMap.subCategory ? (cells[colMap.subCategory] || '').trim() : '',
+        tags:        colMap.tags        ? (cells[colMap.tags]        || '').trim() : '',
+      });
+    }
+  });
+
+  // De-dupe legacy items by url-or-title
   var seen = {};
   var deduped = items.filter(function(it) {
     var k = it.url || it.title;
@@ -5941,9 +6081,31 @@ async function parseXlsxColumnA(file) {
     return true;
   });
 
+  // De-dupe structured rows by title (case-sensitive — exact spreadsheet title wins)
+  var seenRows = {};
+  var dedupedRows = rows.filter(function(r) {
+    if (seenRows[r.title]) return false;
+    seenRows[r.title] = 1;
+    return true;
+  });
+
   var urls = deduped.filter(function(it) { return it.url; }).map(function(it) { return it.url; });
   var titlesOnly = deduped.filter(function(it) { return !it.url; }).map(function(it) { return it.title; });
-  return { items: deduped, urls: urls, titlesOnly: titlesOnly };
+
+  // In structured mode, populate titlesOnly from the structured rows so the
+  // back-compat surface (counts, legacy fetchers) still sees them.
+  if (structuredMode) {
+    titlesOnly = dedupedRows.map(function(r) { return r.title; });
+  }
+
+  return {
+    items: deduped,
+    urls: urls,
+    titlesOnly: titlesOnly,
+    rows: dedupedRows,                // NEW: structured per-row records (or [] for legacy uploads)
+    structured: structuredMode,       // NEW: true when the header row enabled multi-column mode
+    columnMap: structuredMode ? colMap : null,
+  };
 }
 
 // Back-compat shim — existing call site reads urls only
@@ -5974,38 +6136,76 @@ async function handleUploadSourceFile(evt, sourceId) {
     var parsed = await parseXlsxColumnA(file);
     var urls = parsed.urls;
     var titlesOnly = parsed.titlesOnly;
+    var rows = Array.isArray(parsed.rows) ? parsed.rows : [];
+    var isStructured = !!parsed.structured;
 
-    if (!urls.length && !titlesOnly.length) {
-      src.urls = []; src.titlesOnly = [];
-      if (statusEl) statusEl.innerHTML = '<span style="font-size:0.7rem;color:#ef4444;">⚠ Column A is empty. Cells must contain either hyperlinked sources or plain-text article titles.</span>';
+    if (!urls.length && !titlesOnly.length && !rows.length) {
+      src.urls = []; src.titlesOnly = []; src.rows = [];
+      if (statusEl) statusEl.innerHTML = '<span style="font-size:0.7rem;color:#ef4444;">⚠ No rows found. Expected a Title column (with optional Notes / Sub-Category / Tag columns), or hyperlinked URLs in Column A.</span>';
       return;
     }
 
     src.urls = urls;
     src.titlesOnly = titlesOnly;
+    src.rows = rows;                      // NEW: structured per-row records (or [] for legacy)
     src.url = file.name;
 
     if (statusEl) {
       var lines = [];
-      if (urls.length) {
-        lines.push('<div style="font-size:0.7rem;color:var(--vance-dark);font-weight:700;">✓ ' + escHtml(file.name) + ' &middot; ' + urls.length + ' URL' + (urls.length === 1 ? '' : 's') + ' to fetch</div>');
-        urls.slice(0, 2).forEach(function(u) {
-          lines.push('<div style="font-size:0.65rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(u) + '</div>');
+
+      // Structured mode: surface notes / sub-categories / tags found.
+      if (isStructured) {
+        var uniqueSubs = {};
+        var uniqueTags = {};
+        var rowsWithNotes = 0;
+        rows.forEach(function(r) {
+          if (r.subCategory) uniqueSubs[r.subCategory] = (uniqueSubs[r.subCategory] || 0) + 1;
+          if (r.notes && r.notes.length) rowsWithNotes++;
+          if (r.tags) {
+            String(r.tags).split(/[,;]/).map(function(t) { return t.trim(); }).filter(Boolean).forEach(function(t) {
+              uniqueTags[t] = (uniqueTags[t] || 0) + 1;
+            });
+          }
         });
-      }
-      if (titlesOnly.length) {
-        lines.push('<div style="font-size:0.7rem;color:var(--vance-dark);font-weight:700;">✓ ' + (urls.length ? '' : escHtml(file.name) + ' &middot; ') + titlesOnly.length + ' title' + (titlesOnly.length === 1 ? '' : 's') + ' to research (LLM will write from each title)</div>');
-        titlesOnly.slice(0, 2).forEach(function(t) {
-          lines.push('<div style="font-size:0.65rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">• ' + escHtml(t) + '</div>');
+        var subList = Object.keys(uniqueSubs);
+        var tagList = Object.keys(uniqueTags);
+
+        lines.push('<div style="font-size:0.72rem;color:var(--vance-dark);font-weight:700;">✓ ' + escHtml(file.name) + ' &middot; ' + rows.length + ' structured row' + (rows.length === 1 ? '' : 's') + '</div>');
+        lines.push('<div style="font-size:0.65rem;color:var(--text-muted);margin-top:2px;">' + rowsWithNotes + ' with editorial notes &middot; ' + subList.length + ' sub-categor' + (subList.length === 1 ? 'y' : 'ies') + ' &middot; ' + tagList.length + ' unique tag' + (tagList.length === 1 ? '' : 's') + '</div>');
+        if (subList.length) {
+          lines.push('<div style="font-size:0.62rem;color:var(--text-muted);margin-top:3px;"><strong>Sub-categories:</strong> ' + subList.slice(0, 6).map(function(s) { return escHtml(s) + ' (' + uniqueSubs[s] + ')'; }).join(', ') + (subList.length > 6 ? ', …' : '') + '</div>');
+        }
+        if (tagList.length) {
+          lines.push('<div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px;"><strong>Tags:</strong> ' + tagList.slice(0, 8).map(function(t) { return escHtml(t); }).join(', ') + (tagList.length > 8 ? ', …' : '') + '</div>');
+        }
+        // Preview the first couple of titles so the user can sanity-check the parse.
+        rows.slice(0, 2).forEach(function(r) {
+          lines.push('<div style="font-size:0.62rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;">• ' + escHtml(r.title) + (r.subCategory ? ' <span style="opacity:0.7;">[' + escHtml(r.subCategory) + ']</span>' : '') + '</div>');
         });
+        if (rows.length > 2) lines.push('<div style="font-size:0.62rem;color:var(--text-muted);">+ ' + (rows.length - 2) + ' more</div>');
+      } else {
+        // Legacy single-column path (back-compat with existing uploads).
+        if (urls.length) {
+          lines.push('<div style="font-size:0.7rem;color:var(--vance-dark);font-weight:700;">✓ ' + escHtml(file.name) + ' &middot; ' + urls.length + ' URL' + (urls.length === 1 ? '' : 's') + ' to fetch</div>');
+          urls.slice(0, 2).forEach(function(u) {
+            lines.push('<div style="font-size:0.65rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(u) + '</div>');
+          });
+        }
+        if (titlesOnly.length) {
+          lines.push('<div style="font-size:0.7rem;color:var(--vance-dark);font-weight:700;">✓ ' + (urls.length ? '' : escHtml(file.name) + ' &middot; ') + titlesOnly.length + ' title' + (titlesOnly.length === 1 ? '' : 's') + ' to research (LLM will write from each title)</div>');
+          titlesOnly.slice(0, 2).forEach(function(t) {
+            lines.push('<div style="font-size:0.65rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">• ' + escHtml(t) + '</div>');
+          });
+        }
+        var totalShown = Math.min(urls.length, 2) + Math.min(titlesOnly.length, 2);
+        var totalRemaining = (urls.length + titlesOnly.length) - totalShown;
+        if (totalRemaining > 0) lines.push('<div style="font-size:0.65rem;color:var(--text-muted);">+ ' + totalRemaining + ' more</div>');
       }
-      var totalShown = Math.min(urls.length, 2) + Math.min(titlesOnly.length, 2);
-      var totalRemaining = (urls.length + titlesOnly.length) - totalShown;
-      if (totalRemaining > 0) lines.push('<div style="font-size:0.65rem;color:var(--text-muted);">+ ' + totalRemaining + ' more</div>');
+
       statusEl.innerHTML = lines.join('');
     }
   } catch (err) {
-    src.urls = null; src.titlesOnly = null;
+    src.urls = null; src.titlesOnly = null; src.rows = null;
     if (statusEl) statusEl.innerHTML = '<span style="font-size:0.7rem;color:#ef4444;">⚠ Parse failed: ' + escHtml(err.message) + '</span>';
   }
 }
@@ -6884,6 +7084,134 @@ function resetMasterPromptDefault() {
 // Route them to the new save so old buttons/handlers still function if any survive.
 function saveGodPrompt() { return saveMasterPrompt(); }
 
+// ── Hero Image Prompts (server-backed: vance:hero-prompts) ───────────────────
+// Drives AI hero image generation for the in-app generator AND automation runs.
+// {topic} in a prompt is replaced with the article subject at generation time.
+var HERO_PROMPT_DEFAULT = 'Professional editorial hero image for a clinical medical article about: {topic}. ' +
+  'Right-weighted composition: all visual elements (medical imagery, abstract scientific elements, soft patterns) on the RIGHT 60% of the frame; ' +
+  'LEFT 40% kept clean with a subtle navy-to-teal gradient for text overlay. ' +
+  'Style: clean modern medical/scientific aesthetic, professional photography or soft medical illustration, ' +
+  'navy (#0a1929) and teal (#00c9a7) brand palette, soft natural lighting, calm authoritative mood, no people’s faces, ' +
+  'widescreen 16:9 cinematic. ' +
+  'STRICTLY NO molecular imagery, chemical structures, atoms, molecules, DNA helices, ball-and-stick models, lab-glassware close-ups, or any cliche "science-y" molecule illustrations. ' +
+  'Absolutely no text, words, letters, numbers, labels, captions, watermarks, logos, or typography anywhere in the image.';
+
+// In-memory + localStorage cache so the generator and category editor can read synchronously.
+var heroPromptsConfig = (function() {
+  try { return JSON.parse(localStorage.getItem('vance_hero_prompts') || 'null') || { default: '', presets: [], categories: {} }; }
+  catch (_) { return { default: '', presets: [], categories: {} }; }
+})();
+
+function cacheHeroPromptsConfig(rec) {
+  heroPromptsConfig = {
+    default: typeof rec.default === 'string' ? rec.default : '',
+    presets: Array.isArray(rec.presets) ? rec.presets : [],
+    categories: (rec.categories && typeof rec.categories === 'object') ? rec.categories : {},
+  };
+  try { localStorage.setItem('vance_hero_prompts', JSON.stringify(heroPromptsConfig)); } catch (_) {}
+}
+
+async function loadHeroPrompts() {
+  try {
+    var rec = await apiFetch('/api/content/hero-prompts');
+    if (rec) cacheHeroPromptsConfig(rec);
+  } catch (_) { /* keep cached copy */ }
+  // Populate LLM-page UI if present
+  var ta = document.getElementById('heroDefaultPromptTextarea');
+  if (ta) ta.value = heroPromptsConfig.default || HERO_PROMPT_DEFAULT;
+  var status = document.getElementById('heroDefaultPromptStatus');
+  if (status) status.textContent = heroPromptsConfig.default ? '' : 'Built-in default shown — Save to store it.';
+  renderHeroPresets();
+}
+
+// Resolve the effective hero prompt for a category, with {topic} substituted.
+function getResolvedHeroPrompt(catId, topic) {
+  var perCat = heroPromptsConfig.categories && heroPromptsConfig.categories[catId];
+  var tmpl = (perCat && perCat.trim()) ? perCat : (heroPromptsConfig.default || HERO_PROMPT_DEFAULT);
+  var t = (topic || '').trim() || 'healthcare clinical medicine';
+  var hasToken = /\{topic\}|\{title\}/i.test(tmpl);
+  var filled = tmpl.replace(/\{topic\}/gi, t).replace(/\{title\}/gi, t);
+  return hasToken ? filled : (filled + ' Subject: ' + t + '.');
+}
+
+async function saveHeroPromptDefault() {
+  var ta = document.getElementById('heroDefaultPromptTextarea');
+  if (!ta) return;
+  var status = document.getElementById('heroDefaultPromptStatus');
+  var text = (ta.value || '').trim();
+  if (status) status.textContent = 'Saving…';
+  try {
+    var rec = await apiFetch('/api/content/hero-prompts', { method: 'PUT', body: JSON.stringify({ default: text }) });
+    cacheHeroPromptsConfig(rec);
+    if (status) status.textContent = 'Saved ' + new Date(rec.updatedAt).toLocaleString('en-GB');
+    showToast('✓ Hero image default prompt saved');
+  } catch (err) {
+    if (status) status.textContent = 'Save failed: ' + err.message;
+    showToast('Save failed: ' + err.message);
+  }
+}
+
+function restoreHeroPromptDefault() {
+  if (!confirm('Replace the hero image default prompt with the built-in template?\n\nClick Save afterwards to commit it.')) return;
+  var ta = document.getElementById('heroDefaultPromptTextarea');
+  if (ta) ta.value = HERO_PROMPT_DEFAULT;
+  var status = document.getElementById('heroDefaultPromptStatus');
+  if (status) status.textContent = 'Built-in template restored — click Save to commit';
+}
+
+function renderHeroPresets() {
+  var el = document.getElementById('heroPresetsList');
+  if (!el) return;
+  var presets = heroPromptsConfig.presets || [];
+  if (!presets.length) {
+    el.innerHTML = '<div style="font-size:0.7rem;color:var(--text-muted);font-style:italic;padding:6px 2px;">No presets yet. Add one to build a reusable library.</div>';
+    return;
+  }
+  el.innerHTML = presets.map(function(p, i) {
+    return '<div style="border:1px solid var(--border);padding:10px 12px;background:var(--bg);">' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">' +
+        '<input type="text" id="heroPresetName-' + i + '" value="' + escapeHtml(p.name || '') + '" placeholder="Preset name" style="flex:1;padding:6px 8px;border:1px solid var(--border);font-family:\'Montserrat\',sans-serif;font-size:0.72rem;background:var(--bg);color:var(--text);" />' +
+        '<button class="btn btn-orange btn-xs" onclick="saveHeroPreset(' + i + ')">Save</button>' +
+        '<button class="btn btn-outline btn-xs" style="color:var(--error);" onclick="deleteHeroPreset(' + i + ')" title="Delete preset">✕</button>' +
+      '</div>' +
+      '<textarea id="heroPresetText-' + i + '" rows="4" placeholder="Prompt text… use {topic} for the article subject." style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);font-family:Georgia,serif;font-size:0.74rem;line-height:1.5;resize:vertical;background:var(--bg);color:var(--text);">' + escapeHtml(p.text || '') + '</textarea>' +
+    '</div>';
+  }).join('');
+}
+
+async function persistHeroPresets() {
+  try {
+    var rec = await apiFetch('/api/content/hero-prompts', { method: 'PUT', body: JSON.stringify({ presets: heroPromptsConfig.presets }) });
+    cacheHeroPromptsConfig(rec);
+    return true;
+  } catch (err) {
+    showToast('Save failed: ' + err.message);
+    return false;
+  }
+}
+
+function addHeroPreset() {
+  heroPromptsConfig.presets = heroPromptsConfig.presets || [];
+  heroPromptsConfig.presets.push({ id: 'hp_' + Date.now().toString(36), name: 'New preset', text: '' });
+  renderHeroPresets();
+}
+
+async function saveHeroPreset(i) {
+  var nameEl = document.getElementById('heroPresetName-' + i);
+  var textEl = document.getElementById('heroPresetText-' + i);
+  if (!heroPromptsConfig.presets || !heroPromptsConfig.presets[i]) return;
+  heroPromptsConfig.presets[i].name = (nameEl && nameEl.value.trim()) || 'Untitled preset';
+  heroPromptsConfig.presets[i].text = textEl ? textEl.value.trim() : '';
+  if (await persistHeroPresets()) { renderHeroPresets(); showToast('✓ Preset saved'); }
+}
+
+async function deleteHeroPreset(i) {
+  if (!heroPromptsConfig.presets || !heroPromptsConfig.presets[i]) return;
+  if (!confirm('Delete the preset "' + (heroPromptsConfig.presets[i].name || '') + '"?')) return;
+  heroPromptsConfig.presets.splice(i, 1);
+  if (await persistHeroPresets()) { renderHeroPresets(); showToast('Preset deleted'); }
+}
+
 function getPriorityProvider() { return localStorage.getItem('vance_llm_priority') || 'openrouter'; }
 function setPriorityProvider(p) {
   localStorage.setItem('vance_llm_priority', p);
@@ -7621,8 +7949,12 @@ async function openRuleWizard(editId) {
             bibId: s.bibId || '', mode: s.mode || 'daily',
             // Upload-specific fields — must be carried through on load so the
             // wizard can show what was previously uploaded (filename + counts)
+            // and so the per-row metadata (rows[]) survives a save round-trip.
             urls: Array.isArray(s.urls) ? s.urls.slice() : [],
             titlesOnly: Array.isArray(s.titlesOnly) ? s.titlesOnly.slice() : [],
+            rows: Array.isArray(s.rows) ? s.rows.slice() : [],
+            consumedUrls: Array.isArray(s.consumedUrls) ? s.consumedUrls.slice() : [],
+            consumedTitles: Array.isArray(s.consumedTitles) ? s.consumedTitles.slice() : [],
             originalFilename: s.originalFilename || (s.type === 'upload' ? s.url : '') || '',
           };
         });
@@ -8063,7 +8395,7 @@ async function _wizSubmit() {
   var payload = {
     name: document.getElementById('wizName').value.trim(),
     category: document.getElementById('wizCategory').value,
-    sources: _wizSources.map(function(s) { var o = {type:s.type}; if(s.url)o.url=s.url; if(s.repo)o.repo=s.repo; if(s.path)o.path=s.path; if(s.branch)o.branch=s.branch; if(s.folderId)o.folderId=s.folderId; if(s.folderPath!==undefined)o.folderPath=s.folderPath; if(s.type==='upload'){o.urls=Array.isArray(s.urls)?s.urls:[];o.titlesOnly=Array.isArray(s.titlesOnly)?s.titlesOnly:[];if(s.originalFilename)o.originalFilename=s.originalFilename;} if(s.type==='gmail'){if(s.from!==undefined)o.from=s.from;if(s.subjectContains!==undefined)o.subjectContains=s.subjectContains;if(s.labelIds)o.labelIds=s.labelIds;if(s.maxResults)o.maxResults=s.maxResults;} if(s.type==='google_sheets'){if(s.sheetId)o.sheetId=s.sheetId;if(s.sheetName)o.sheetName=s.sheetName;if(s.urlColumn)o.urlColumn=s.urlColumn;if(s.notesColumn)o.notesColumn=s.notesColumn;if(s.wpLinkColumn)o.wpLinkColumn=s.wpLinkColumn;} if(s.type==='bibliography'){if(s.bibId)o.bibId=s.bibId;if(s.mode)o.mode=s.mode;} return o; }),
+    sources: _wizSources.map(function(s) { var o = {type:s.type}; if(s.url)o.url=s.url; if(s.repo)o.repo=s.repo; if(s.path)o.path=s.path; if(s.branch)o.branch=s.branch; if(s.folderId)o.folderId=s.folderId; if(s.folderPath!==undefined)o.folderPath=s.folderPath; if(s.type==='upload'){o.urls=Array.isArray(s.urls)?s.urls:[];o.titlesOnly=Array.isArray(s.titlesOnly)?s.titlesOnly:[];o.rows=Array.isArray(s.rows)?s.rows:[];if(Array.isArray(s.consumedUrls))o.consumedUrls=s.consumedUrls;if(Array.isArray(s.consumedTitles))o.consumedTitles=s.consumedTitles;if(s.originalFilename)o.originalFilename=s.originalFilename;} if(s.type==='gmail'){if(s.from!==undefined)o.from=s.from;if(s.subjectContains!==undefined)o.subjectContains=s.subjectContains;if(s.labelIds)o.labelIds=s.labelIds;if(s.maxResults)o.maxResults=s.maxResults;} if(s.type==='google_sheets'){if(s.sheetId)o.sheetId=s.sheetId;if(s.sheetName)o.sheetName=s.sheetName;if(s.urlColumn)o.urlColumn=s.urlColumn;if(s.notesColumn)o.notesColumn=s.notesColumn;if(s.wpLinkColumn)o.wpLinkColumn=s.wpLinkColumn;} if(s.type==='bibliography'){if(s.bibId)o.bibId=s.bibId;if(s.mode)o.mode=s.mode;} return o; }),
     trigger: {
       type: trigType,
       cron: trigType === 'schedule' ? cronExpr : null,
@@ -9265,6 +9597,8 @@ function loadLLMPage() {
   if (typeof loadAbConfig === 'function') loadAbConfig().catch(() => {});
   // Master Prompt (server-backed, single textarea — replaces old structured Global Context)
   if (typeof loadMasterPrompt === 'function') loadMasterPrompt().catch(() => {});
+  // Hero Image Prompts (server-backed library + per-category overrides)
+  if (typeof loadHeroPrompts === 'function') loadHeroPrompts().catch(() => {});
 
   // OpenRouter key (sync with API key card)
   var apiKey = localStorage.getItem('vance_openrouter_key');
@@ -11182,8 +11516,13 @@ async function generateHeroImage() {
   }
   if (!userPrompt) userPrompt = 'healthcare medical professional clinical';
 
-  // Keep prompt concise — very long URLs can fail
-  const imagePrompt = `${userPrompt}, professional medical photography, clean clinical aesthetic`.substring(0, 180);
+  // Resolve the hero prompt for the active category (per-category override →
+  // global default → built-in), substituting the user's topic. Capped because
+  // very long Pollinations URLs can fail.
+  const resolvedHero = (typeof getResolvedHeroPrompt === 'function')
+    ? getResolvedHeroPrompt(currentCategory, userPrompt)
+    : `${userPrompt}, professional medical photography, clean clinical aesthetic`;
+  const imagePrompt = resolvedHero.substring(0, 380);
   const seed = Math.floor(Math.random() * 99999);
   const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=1200&height=400&model=flux&seed=${seed}`;
 
@@ -11394,6 +11733,67 @@ function renderCatHeroPreview() {
   if (!box) return;
   if (!url) { box.innerHTML = '<div style="font-size:0.65rem;color:var(--text-muted);font-style:italic;">No image set — articles without their own hero image will be published without one.</div>'; return; }
   box.innerHTML = '<img src="' + url.replace(/"/g, '&quot;') + '" alt="Category hero preview" style="max-width:100%;max-height:140px;border:1px solid var(--border);border-radius:0;display:block;" onerror="this.outerHTML=\'<div style=&quot;font-size:0.65rem;color:#ef4444;&quot;>⚠ Failed to load image at that URL.</div>\'" />';
+}
+
+// ── Per-category hero image prompt control (category editor → Settings) ───────
+// Populates the preset dropdown + textarea from heroPromptsConfig. The stored
+// override is the textarea value ('' = inherit the global default).
+function renderCatHeroPromptControls(catId) {
+  var sel = document.getElementById('catEditorHeroPromptPreset');
+  var ta  = document.getElementById('catEditorHeroPrompt');
+  if (!sel || !ta) return;
+  var presets = (typeof heroPromptsConfig !== 'undefined' && heroPromptsConfig.presets) ? heroPromptsConfig.presets : [];
+  var current = (typeof heroPromptsConfig !== 'undefined' && heroPromptsConfig.categories && heroPromptsConfig.categories[catId]) || '';
+  var opts = '<option value="__default">Global default (inherit from LLM page)</option>';
+  presets.forEach(function(p, i) { opts += '<option value="preset:' + i + '">Preset: ' + escapeHtml(p.name || ('Preset ' + (i + 1))) + '</option>'; });
+  opts += '<option value="__custom">Custom (edit below)</option>';
+  sel.innerHTML = opts;
+  ta.value = current;
+  // Pick the dropdown state that matches the stored value.
+  if (!current.trim()) {
+    sel.value = '__default';
+    ta.disabled = true;
+  } else {
+    var matchIdx = presets.findIndex(function(p) { return (p.text || '').trim() === current.trim(); });
+    sel.value = matchIdx >= 0 ? ('preset:' + matchIdx) : '__custom';
+    ta.disabled = false;
+  }
+}
+
+function onCatHeroPromptPresetChange() {
+  var sel = document.getElementById('catEditorHeroPromptPreset');
+  var ta  = document.getElementById('catEditorHeroPrompt');
+  if (!sel || !ta) return;
+  var v = sel.value;
+  if (v === '__default') {
+    ta.value = '';
+    ta.disabled = true;
+  } else if (v === '__custom') {
+    ta.disabled = false;
+    ta.focus();
+  } else if (v.indexOf('preset:') === 0) {
+    var i = parseInt(v.slice(7), 10);
+    var p = (heroPromptsConfig.presets || [])[i];
+    ta.value = p ? (p.text || '') : '';
+    ta.disabled = false;
+  }
+}
+
+// Persist the per-category override into heroPromptsConfig + KV. Called from
+// saveCategoryConfig once the (possibly newly generated) catId is known.
+async function persistCategoryHeroPrompt(catId, text) {
+  if (!catId) return;
+  if (typeof heroPromptsConfig === 'undefined') return;
+  heroPromptsConfig.categories = heroPromptsConfig.categories || {};
+  var t = (text || '').trim();
+  if (t) heroPromptsConfig.categories[catId] = t;
+  else delete heroPromptsConfig.categories[catId];
+  try {
+    var rec = await apiFetch('/api/content/hero-prompts', { method: 'PUT', body: JSON.stringify({ categories: heroPromptsConfig.categories }) });
+    if (typeof cacheHeroPromptsConfig === 'function' && rec) cacheHeroPromptsConfig(rec);
+  } catch (err) {
+    showToast('Hero prompt save failed: ' + err.message);
+  }
 }
 
 function activateCustomCategories() {
@@ -11692,6 +12092,7 @@ function openCategoryEditor(id) {
       if (el) { el.checked = eid === 'csrc-paste'; el.disabled = false; }
     });
     populateCatEditorLlm('');
+    renderCatHeroPromptControls('');
 
   } else if (id.startsWith('builtin:')) {
     // ── Edit built-in category ──
@@ -11711,6 +12112,7 @@ function openCategoryEditor(id) {
     const promptTA = document.getElementById('catEditorPrompt');
     if (promptTA) promptTA.value = config.prompt || '';
     populateCatEditorLlm(config.llm || getCategoryModel(catId) || '');
+    renderCatHeroPromptControls(catId);
     // Load prompt panel for this category
     renderCatPromptPanel(catId);
 
@@ -11735,6 +12137,7 @@ function openCategoryEditor(id) {
       if (el) { el.checked = (cat.sources || []).includes(val); el.disabled = false; }
     });
     populateCatEditorLlm(cat.llm || '');
+    renderCatHeroPromptControls(id);
     // Load prompt panel for this category
     renderCatPromptPanel(id);
   }
@@ -11758,6 +12161,7 @@ function saveCategoryConfig() {
   const prompt  = document.getElementById('catEditorPrompt').value.trim();
   const llm     = document.getElementById('catEditorLlm').value;
   const heroImage = (document.getElementById('catEditorHeroImage')?.value || '').trim();
+  const heroPrompt = (document.getElementById('catEditorHeroPrompt')?.value || '').trim();
 
   if (!editingCategoryId && !name) { alert('Please enter a category name.'); document.getElementById('catEditorName').focus(); return; }
 
@@ -11776,6 +12180,7 @@ function saveCategoryConfig() {
     customCategories.push(newCat);
     saveCustomCategories();
     activateCustomCategories();
+    persistCategoryHeroPrompt(newCat.id, heroPrompt);
     // Load the default prompt into the generator when this category is active
     renderCategoriesPage();
     loadDashboard();
@@ -11791,6 +12196,7 @@ function saveCategoryConfig() {
     saveBuiltinOverrides(overrides);
     // Update per-category LLM if set
     if (llm) { const cm = JSON.parse(localStorage.getItem('vance_cat_models') || '{}'); cm[catId] = llm; localStorage.setItem('vance_cat_models', JSON.stringify(cm)); }
+    persistCategoryHeroPrompt(catId, heroPrompt);
     renderCategoriesPage();
     closeCategoryEditor();
     showAlert('generateAlert', '✓ Category updated', 'success');
@@ -11807,6 +12213,7 @@ function saveCategoryConfig() {
     if (catEntry) catEntry.label = name;
     saveCustomCategories();
     activateCustomCategories();
+    persistCategoryHeroPrompt(editingCategoryId, heroPrompt);
     renderCategoriesPage();
     closeCategoryEditor();
     showAlert('generateAlert', '✓ Category updated', 'success');
@@ -12266,6 +12673,9 @@ window.addEventListener('DOMContentLoaded', () => {
     updateCategoryHeader(currentCategory);
     loadDashboard();
   });
+  // Hero image prompt library — needed by the generator + category editor before
+  // the LLM page is opened. Refreshes the localStorage-cached copy from KV.
+  if (typeof loadHeroPrompts === 'function') loadHeroPrompts().catch(function() {});
   // Populate in-memory publishingQueue cache via the slim endpoint — drops
   // body/excerpt/rejectionComments which carry most of the bytes. Brings the
   // boot fetch from ~38 MB / 18 s down to ~500 KB / ~2 s and removes the
@@ -12476,7 +12886,7 @@ async function callOpenRouter(prompt, apiKey, model) {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': window.location.href,
-      'X-Title': 'Gastro Health Hub Content Generator',
+      'X-Title': 'Vance Content Generator',
     },
     body: JSON.stringify({
       model,
@@ -13143,7 +13553,7 @@ async function heroLeftGenerate() {
   const model = (document.getElementById('heroAiModelSelect') || {}).value || 'google/gemini-3.1-flash-image-preview-20260226';
   showHeroLeftStatus('info', 'Generating image with AI… this can take 15–30 seconds');
   const kws = extractKeywordsFromText(text, 6);
-  const prompt = kws.join(', ') + ', medical healthcare professional, clinical setting, high quality, Gastro Health Hub brand navy and teal. Absolutely no text, words, letters, numbers, or typography anywhere in the image.';
+  const prompt = kws.join(', ') + ', medical healthcare professional, clinical setting, high quality, Vance Medical Foods brand navy and teal. Absolutely no text, words, letters, numbers, or typography anywhere in the image.';
   try {
     const resp = await fetch('/api/social/image', {
       method: 'POST',
