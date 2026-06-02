@@ -12476,7 +12476,7 @@ async function callOpenRouter(prompt, apiKey, model) {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': window.location.href,
-      'X-Title': 'Gastro Health Hub Content Generator',
+      'X-Title': 'Vance Content Generator',
     },
     body: JSON.stringify({
       model,
@@ -13143,7 +13143,7 @@ async function heroLeftGenerate() {
   const model = (document.getElementById('heroAiModelSelect') || {}).value || 'google/gemini-3.1-flash-image-preview-20260226';
   showHeroLeftStatus('info', 'Generating image with AI… this can take 15–30 seconds');
   const kws = extractKeywordsFromText(text, 6);
-  const prompt = kws.join(', ') + ', medical healthcare professional, clinical setting, high quality, Gastro Health Hub brand navy and teal. Absolutely no text, words, letters, numbers, or typography anywhere in the image.';
+  const prompt = kws.join(', ') + ', medical healthcare professional, clinical setting, high quality, Vance Medical Foods brand navy and teal. Absolutely no text, words, letters, numbers, or typography anywhere in the image.';
   try {
     const resp = await fetch('/api/social/image', {
       method: 'POST',
