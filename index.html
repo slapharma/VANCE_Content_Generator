@@ -10066,6 +10066,7 @@ async function saveReviewToArchive() {
   if (!rawArticleText) { alert('No content to save. Generate content first.'); return; }
   const title = extractTitleFromArticle(rawArticleText) || `${CATEGORIES.find(c=>c.id===currentCategory)?.label} — ${new Date().toLocaleDateString('en-GB')}`;
   const model = document.getElementById('modelUsedBadge').textContent.replace('✓ ','');
+  const subCat = subCategoryForActivePrompt(currentCategory);
   const entry = {
     id: 'r_' + Date.now(),
     category: currentCategory,
@@ -10074,6 +10075,7 @@ async function saveReviewToArchive() {
     model,
     createdAt: new Date().toISOString(),
     wordCount: rawArticleText.split(/\s+/).filter(w=>w).length,
+    ...(subCat ? { subCategory: subCat } : {}),
     ...(heroImageUrl ? { heroImageUrl, heroImageType } : {}),
   };
   ghData[currentCategory].reviews.unshift(entry);
@@ -11133,6 +11135,52 @@ function escapeHtml(str) {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ═══════════════════════════════════════════════════════════
+//  PROMPT → SUB-CATEGORY ROUTING ("by prompt")
+// ═══════════════════════════════════════════════════════════
+// When a category's content is generated using one of these named prompt
+// presets, the resulting article is published into the mapped WP sub-category
+// (a child term under the category's parent WP category). Keyed by app category,
+// then by prompt name (lower-cased, trimmed). The sub-category VALUE is a
+// human-readable name whose WP slug (via WP's sanitize_title) must match the
+// term already created in WordPress — the publish endpoint resolves it by slug
+// first, then name (see lib/wp-taxonomy.js → resolveOrCreateWpCategory):
+//   "Patients Overview"      -> patients-overview
+//   "Practitioners Overview" -> practitioners-overview
+const PROMPT_SUBCATEGORY_MAP = {
+  'clinical-reviews': {
+    'clinical abstract patient':      'Patients Overview',
+    'clinical abstract practitioner': 'Practitioners Overview',
+  },
+};
+
+// The name of the currently-loaded prompt preset, or '' if none is active.
+// Mirrors the active-prompt badge (set by showActiveBadge / cleared by reset).
+function getActivePromptName() {
+  var badge = document.getElementById('activePromptBadge');
+  if (!badge || badge.classList.contains('hidden')) return '';
+  var nameEl = document.getElementById('activePromptName');
+  return nameEl ? (nameEl.textContent || '').trim() : '';
+}
+
+// Resolve the WP sub-category name implied by the active prompt for a category.
+// Returns the sub-category display name, or null when no prompt-based routing
+// applies. Exact map match first; for clinical-reviews, fall back to a forgiving
+// patient/practitioner heuristic so minor preset-name variants still route
+// (e.g. "Clinical Abstract - Patient").
+function subCategoryForActivePrompt(catId) {
+  catId = catId || currentCategory;
+  var name = getActivePromptName().toLowerCase();
+  if (!name) return null;
+  var map = PROMPT_SUBCATEGORY_MAP[catId];
+  if (map && map[name]) return map[name];
+  if (catId === 'clinical-reviews') {
+    if (name.indexOf('practitioner') !== -1) return 'Practitioners Overview';
+    if (name.indexOf('patient') !== -1) return 'Patients Overview';
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════
 //  PUBLISHING QUEUE & REVIEW WORKFLOW
 // ═══════════════════════════════════════════════════════════
 
@@ -11155,6 +11203,7 @@ async function toggleApproved(id, checked) {
         body: item.text || '',
         excerpt: (item.text || '').split(/\s+/).slice(0, 30).join(' ') + '…',
         category: item.category,
+        ...(item.subCategory ? { subCategory: item.subCategory } : {}),
         sourceId: id,
       });
       if (created) publishingQueue.push({ ...created, sourceId: id });
@@ -11180,6 +11229,7 @@ async function toggleQueueItem(id, btnEl) {
       body: item.text || item.body || item.content || '',
       excerpt: (item.text || '').split(/\s+/).slice(0, 30).join(' ') + '…',
       category: item.category,
+      ...(item.subCategory ? { subCategory: item.subCategory } : {}),
       sourceId: id,
     });
     if (created) {
@@ -11227,11 +11277,13 @@ async function queueCurrentForPublishing() {
   const wordCount = rawArticleText.split(/\s+/).filter(w=>w).length;
   const catCfg = getCatConfig(currentCategory);
   const wpSlug = catCfg?.wpCategorySlug || catCfg?.wpSlug || null;
+  const subCat = subCategoryForActivePrompt(currentCategory);
   const created = await contentApi.create({
     title,
     body: rawArticleText,
     excerpt: rawArticleText.split(/\s+/).slice(0, 30).join(' ') + '…',
     category: currentCategory,
+    ...(subCat ? { subCategory: subCat } : {}),
     ...(heroImageUrl ? { heroImageUrl, heroImageType } : {}),
     ...(wpSlug ? { wpCategorySlug: wpSlug } : {}),
     ...(currentSourceLabel ? { sourceDocName: currentSourceLabel } : {}),
