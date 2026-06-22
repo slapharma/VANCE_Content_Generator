@@ -91,20 +91,41 @@ function markdownToWpHtml(text) {
   const lines = text.split('\n');
   const html = [];
   let subtitleDone = false;
+  let listType = null; // 'ul' | 'ol' | null — tracks an open list block
+
+  const closeList = () => { if (listType) { html.push(`</${listType}>`); listType = null; } };
+
+  // Inline markdown → HTML: **bold** and *italic* (italic guarded against word-internal *)
+  const inline = (s) => s
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(?<!\w)\*([^*]+?)\*(?!\w)/g, '<em>$1</em>');
 
   for (const line of lines) {
     const trimmed = line.trim();
-    if (!trimmed) { html.push(''); continue; }
+    if (!trimmed) { closeList(); html.push(''); continue; }
 
     // Drop the "Reading Time" meta line — it's an editorial label, not published body.
     // Matches "Reading Time: 6 minutes" with optional ** bold wrappers.
     if (/^\**\s*reading time\b/i.test(trimmed)) continue;
 
+    // List items: "- "/"* "/"• " → <ul>, "1. "/"1) " → <ol>. Consecutive items group
+    // into one list; any other line (or blank) closes it.
+    const ulMatch = trimmed.match(/^[-*•]\s+(.*)$/);
+    const olMatch = trimmed.match(/^\d+[.)]\s+(.*)$/);
+    if (ulMatch || olMatch) {
+      const wantType = ulMatch ? 'ul' : 'ol';
+      if (listType && listType !== wantType) closeList();
+      if (!listType) { listType = wantType; html.push(`<${wantType}>`); }
+      html.push(`<li>${inline((ulMatch ? ulMatch[1] : olMatch[1]).trim())}</li>`);
+      continue;
+    }
+    closeList();
+
     // Strip ** wrappers from standalone heading lines (e.g. "**Background & Rationale**")
     const boldOnly = trimmed.match(/^\*\*(.+?)\*\*$/);
 
-    // Markdown headings → <h2>; first body "# " is the subtitle and becomes <h1>
-    if (trimmed.startsWith('### '))     { html.push(`<h2>${trimmed.slice(4).replace(/\*\*/g, '')}</h2>`); continue; }
+    // Markdown headings → first body "# " is the subtitle (<h1>); "## " → <h2>; "### " → <h3>
+    if (trimmed.startsWith('### '))     { html.push(`<h3>${trimmed.slice(4).replace(/\*\*/g, '')}</h3>`); continue; }
     if (trimmed.startsWith('## '))      { html.push(`<h2>${trimmed.slice(3).replace(/\*\*/g, '')}</h2>`); continue; }
     if (trimmed.startsWith('# '))       {
       const txt = trimmed.slice(2).replace(/\*\*/g, '');
@@ -119,13 +140,9 @@ function markdownToWpHtml(text) {
       if (isHeader) { html.push(`<h2>${inner}</h2>`); continue; }
     }
 
-    // Inline bold: **text** → <strong>text</strong>
-    let p = trimmed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    // Inline italic: *text* → <em>text</em> (but not inside tags)
-    p = p.replace(/(?<!\w)\*([^*]+?)\*(?!\w)/g, '<em>$1</em>');
-
-    html.push(`<p>${p}</p>`);
+    html.push(`<p>${inline(trimmed)}</p>`);
   }
+  closeList();
 
   return html.filter(l => l !== '').join('\n');
 }
