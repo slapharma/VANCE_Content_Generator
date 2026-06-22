@@ -596,6 +596,15 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 #articleHighlightsPanel .ahp-quote { font-style: italic; color: #6b7a8d; font-size: 0.72rem; margin-bottom: 3px; line-height: 1.4; }
 #articleHighlightsPanel .ahp-comment { color: #1e2d40; line-height: 1.5; white-space: pre-wrap; }
 #articleHighlightsPanel .ahp-meta { font-size: 0.65rem; color: #9aa5b4; margin-top: 4px; }
+#articleHighlightsPanel .ahp-subhead { font-size: 0.62rem; font-weight: 800; color: #9a6a00; text-transform: uppercase; letter-spacing: 0.6px; margin: 10px 0 6px; }
+#articleHighlightsPanel .ahp-subhead:first-of-type { margin-top: 0; }
+#articleHighlightsPanel .ahp-overall { background: #fff; border-left: 3px solid #1e2d40; padding: 8px 10px; margin-bottom: 6px; border-radius: 0 4px 4px 0; font-size: 0.78rem; }
+#articleHighlightsPanel .ahp-resolved { opacity: 0.5; border-left-color: #10b981 !important; }
+#articleHighlightsPanel .ahp-actions { display: flex; gap: 5px; margin-top: 7px; }
+#articleHighlightsPanel .ahp-action-btn { background: none; border: 1px solid var(--border,#e0e4ea); color: var(--text-muted,#9aa5b4); font-size: 0.58rem; font-weight: 700; letter-spacing: 0.5px; padding: 2px 7px; cursor: pointer; font-family: inherit; text-transform: uppercase; }
+#articleHighlightsPanel .ahp-action-btn:hover { background: var(--hover-bg,#f5f5f5); color: var(--text,#1e2d40); }
+#articleHighlightsPanel .ahp-action-btn.resolve { color: #10b981; border-color: rgba(16,185,129,0.4); }
+#articleHighlightsPanel .ahp-action-btn.delete { color: #c0392b; border-color: rgba(192,57,43,0.3); }
 
 /* Hover popover for inline highlights — Google-Docs-style comment card. */
 #articleHighlightPopover { position: fixed; z-index: 9000; max-width: 340px; min-width: 240px; background: #fff; border: 1px solid #006868; border-left: 3px solid #f0ad4e; box-shadow: 0 8px 24px rgba(30,45,64,0.18); border-radius: 6px; padding: 12px 14px; font-family: Arial, sans-serif; pointer-events: none; opacity: 0; transition: opacity 0.12s; }
@@ -672,7 +681,7 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .cat-card:hover .cat-card-arrow, .cat-card.active .cat-card-arrow { opacity:1; color:var(--vance-primary); }
 
 /* Editor panel */
-.cats-editor { background:var(--card); border:1px solid var(--border); border-radius:0; box-shadow:var(--shadow); overflow:hidden; position:sticky; top:0; max-height:calc(100vh - 20px); display:flex; flex-direction:column; }
+.cats-editor { min-width:0; background:var(--card); border:1px solid var(--border); border-radius:0; box-shadow:var(--shadow); overflow:hidden; position:sticky; top:0; max-height:calc(100vh - 20px); display:flex; flex-direction:column; }
 .cats-editor-header { display:flex; align-items:center; gap:0; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--vance-dark); }
 .cats-editor-title { flex:1; font-size:0.75rem; font-weight:800; color:#fff; padding:10px 14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .cats-editor-close { background:none; border:none; cursor:pointer; color:rgba(255,255,255,0.7); padding:10px 12px; font-size:0.9rem; transition:color 0.12s; flex-shrink:0; }
@@ -841,6 +850,46 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .analysis-content h2:first-child { margin-top: 0; }
 .analysis-content p { font-size: 0.85rem; line-height: 1.75; color: var(--text); margin-bottom: 10px; }
 .analysis-content strong { color: var(--vance-dark); font-weight: 700; }
+
+/* ══════════════════════════════════════════════════
+   APPROVAL LOG + DOCUMENT DIFF
+══════════════════════════════════════════════════ */
+.al-empty { font-size: 0.8rem; color: var(--text-muted); padding: 12px; }
+.al-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.al-summary { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; list-style: none; }
+.al-summary::-webkit-details-marker { display: none; }
+.al-summary::marker { content: ''; }
+.al-title { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.82rem; color: var(--vance-dark); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.al-date { font-size: 0.65rem; color: var(--text-muted); white-space: nowrap; }
+.al-timeline { padding: 8px 16px 12px; border-top: 1px solid var(--border); }
+.al-event { display: flex; gap: 10px; padding: 7px 0; }
+.al-ev-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--vance-primary); margin-top: 4px; flex-shrink: 0; }
+.al-event.al-approve .al-ev-dot { background: #1a7245; }
+.al-event.al-change_request .al-ev-dot { background: #c0392b; }
+.al-event.al-compress .al-ev-dot { background: #8e44ad; }
+.al-event.al-ai_revise .al-ev-dot { background: var(--vance-dark); }
+.al-event.al-created .al-ev-dot { background: #9aa5b4; }
+.al-ev-body { flex: 1; min-width: 0; }
+.al-ev-label { font-size: 0.76rem; font-weight: 700; color: var(--vance-dark); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.al-ev-detail { font-size: 0.7rem; color: var(--text); margin-top: 2px; }
+.al-ev-meta { font-size: 0.63rem; color: var(--text-muted); margin-top: 2px; }
+
+.diff-colheads { display: grid; grid-template-columns: 1fr 1fr; background: var(--vance-dark); }
+.diff-colheads > div { padding: 6px 10px; color: #fff; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; }
+.diff-colheads > div:first-child { border-right: 1px solid rgba(255,255,255,0.15); }
+.diff-body { overflow-y: auto; }
+.diff-row { display: grid; grid-template-columns: 1fr 1fr; }
+.diff-cell { padding: 2px 10px; font-family: 'Georgia', serif; font-size: 0.78rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); color: var(--text); }
+.diff-cell.del { background: #ffecec; }
+.diff-cell.ins { background: #e6ffed; }
+
+/* Article toolbar metadata badges (source / prompt) on the dedicated view page */
+.tb-meta { font-size: 0.62rem; font-weight: 700; color: rgba(255,255,255,0.88); background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-meta a { color: #fff; }
+#articleContent.commenting { cursor: text; }
+#articleTitleDisplay.title-editing { outline: 2px solid var(--vance-primary); outline-offset: 3px; border-radius: 2px; background: rgba(0,104,104,0.05); }
+.al-event.al-comment .al-ev-dot { background: #1a5276; }
+.al-event.al-title .al-ev-dot { background: #9aa5b4; }
 
 /* ══════════════════════════════════════════════════
    COMPARISON REPORTS ARCHIVE (Tab 4)
@@ -2379,6 +2428,10 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <span>Pipeline</span>
       <span class="nav-badge" id="nav-badge-pipeline"></span>
     </button>
+    <button class="nav-item" onclick="switchTab('approval-log')" id="tab-approval-log">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>Approval Log</span>
+    </button>
     <button class="nav-item" onclick="switchTab('distribution')" id="tab-distribution">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       <span>Social</span>
@@ -2505,7 +2558,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     </div>
   </div>
 </div>
-<div class="app-container">
+<div class="app-container" id="genLayout">
 
   <!-- LEFT PANEL -->
   <div style="display:flex;flex-direction:column;gap:1.25rem;">
@@ -2891,16 +2944,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
       <div class="tb-divider"></div>
 
-      <!-- WORKFLOW — move it forward. Save to Library is the primary CTA (solid); the rest are secondary; Approve actions use the success treatment. -->
+      <!-- WORKFLOW — move it forward. Approve actions use the success treatment. -->
       <div class="tb-group" id="tbGroupWorkflow">
-        <button class="btn btn-orange btn-xs" onclick="saveReviewToArchive()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-          Save to Library
-        </button>
-        <button class="btn btn-tb btn-xs" onclick="queueCurrentForPublishing()" id="queueForPublishBtn" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          Add to Pipeline
-        </button>
         <button class="btn btn-tb btn-xs" id="sendForReviewBtn" onclick="sendForReviewFromToolbar()" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           Send for Review
@@ -2961,6 +3006,35 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
 </div>
 </div><!-- /tab-view generator -->
+
+<!-- ══════════════════════════════ VIEW ARTICLE (dedicated, sidebar-less) ══════════════════════════════ -->
+<div class="tab-view" id="view-article">
+  <div style="padding:1rem 1.5rem 0;display:flex;align-items:center;gap:10px;">
+    <button class="btn btn-outline btn-sm" onclick="backFromArticleView()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <span style="font-size:0.72rem;color:var(--text-muted);">Read, comment, edit &amp; review — generation stays on the Generate tab.</span>
+  </div>
+  <!-- The shared .article-panel (#articlePanel) is relocated here on view and moved back to the
+       Generate tab for generation, so all toolbar / edit / highlight logic is reused, not duplicated. -->
+  <div id="articleViewMount" style="padding:0 1.5rem 1.5rem;max-width:1100px;margin:0 auto;width:100%;"></div>
+</div><!-- /tab-view article -->
+
+<!-- Replace-hero modal — hosts the relocated sidebar hero panel (#heroLeftCard) on the view page -->
+<div id="heroModal" onclick="if(event.target===this)closeHeroModal()" style="display:none;position:fixed;inset:0;background:rgba(15,23,34,0.6);z-index:9700;align-items:center;justify-content:center;font-family:Montserrat,sans-serif;padding:20px;">
+  <div style="background:var(--card,#fff);border-radius:10px;width:min(560px,100%);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <h3 style="font-size:0.92rem;margin:0;color:var(--vance-dark);">Replace hero image</h3>
+      <button class="btn btn-outline btn-xs" onclick="closeHeroModal()">Cancel</button>
+    </div>
+    <div id="heroModalMount" style="padding:16px 18px;overflow-y:auto;"></div>
+    <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn btn-outline btn-sm" onclick="closeHeroModal()">Cancel</button>
+      <button class="btn btn-orange btn-sm" onclick="saveHeroFromModal()">Use this hero image</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════ TAB: MONITORING ══════════════════════════════ -->
 <div class="tab-view" id="view-monitoring">
@@ -3127,7 +3201,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <div style="font-size:0.58rem;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Article</div>
         <div style="position:relative;">
           <select id="kitArticleSelect" onchange="onKitArticleChange(this.value)" style="width:100%;padding:8px 32px 8px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif;font-size:0.78rem;font-weight:600;appearance:none;">
-            <option value="">— Choose a published article —</option>
+            <option value="">— Choose an article —</option>
           </select>
           <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
@@ -3453,6 +3527,23 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     </div>
   </div>
 </div><!-- /tab-view comparison -->
+
+<!-- ══════════════════════════════ APPROVAL LOG ══════════════════════════════ -->
+<div class="tab-view" id="view-approval-log">
+  <div class="comparison-container">
+    <div class="comparison-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+      <div>
+        <h1 class="page-header-title">Approval Log</h1>
+        <p class="page-header-subtitle">Full review, edit and approval history for every article. Expand an article to see its timeline and compare versions before/after each change.</p>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="loadApprovalLog()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh
+      </button>
+    </div>
+    <div id="approvalLogList" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+</div><!-- /tab-view approval-log -->
 
 <!-- ══════════════════════════════ TAB 4: REPORTS ══════════════════════════════ -->
 <div class="tab-view" id="view-reports">
@@ -4402,6 +4493,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           <option value="">— Use category default —</option>
         </select>
         <p style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">Add or edit prompts on the <a href="#" onclick="event.preventDefault();switchTab('categories');">Categories page</a>; pick one here to use it for this rule.</p>
+        <div id="wizSubCatRoute" style="font-size:0.7rem;margin-top:6px;"></div>
         <details style="margin-top:8px;">
           <summary style="font-size:0.72rem;color:var(--text-muted);cursor:pointer;">Preview selected prompt</summary>
           <pre id="wizPromptPreview" style="white-space:pre-wrap;background:var(--bg-2,#f6f7f9);padding:10px;font-size:0.72rem;max-height:240px;overflow-y:auto;border:1px solid var(--border);margin-top:6px;color:var(--text);font-family:Georgia,serif;line-height:1.5;"></pre>
@@ -4909,6 +5001,19 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             </div>
 
             <div class="ced-section">
+              <div class="ced-section-title">Content Length</div>
+              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">Maximum word count for articles generated in this category. If a draft exceeds the limit, generation runs one automatic compression pass to bring it under. This applies to both the generator and automation.</p>
+              <label class="ced-label">Maximum words</label>
+              <select id="catEditorWordLimitMode" class="ced-input" style="appearance:none;-webkit-appearance:none;background:var(--bg);cursor:pointer;margin-bottom:8px;" onchange="onCatWordLimitModeChange()">
+                <option value="default">System default</option>
+                <option value="custom">Set a limit…</option>
+                <option value="uncapped">Uncapped (no limit)</option>
+              </select>
+              <input type="number" id="catEditorWordLimit" class="ced-input" min="100" max="100000" step="50" placeholder="e.g. 1000" style="display:none;" />
+              <div id="catEditorWordLimitHint" style="font-size:0.66rem;color:var(--text-muted);min-height:14px;margin-top:4px;"></div>
+            </div>
+
+            <div class="ced-section">
               <div class="ced-section-title">Category Hero Image</div>
               <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">Fallback image used for articles in this category that don't have their own hero image. Paste a publicly accessible image URL.</p>
               <label class="ced-label">Hero Image URL</label>
@@ -5070,11 +5175,94 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 //  API CLIENT — content pipeline (replaces localStorage queue)
 // ═══════════════════════════════════════════════════════════
 const contentApi = {
-  async getAll()      { try { const r = await fetch('/api/content'); if (!r.ok) return []; return r.json(); } catch { return []; } },
-  async create(data)  { try { const r = await fetch('/api/content', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); return r.ok ? r.json() : null; } catch { return null; } },
-  async update(id, d) { try { const r = await fetch(`/api/content/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) }); return r.ok ? r.json() : null; } catch { return null; } },
-  async remove(id)    { try { await fetch(`/api/content/${id}`, { method:'DELETE' }); } catch {} },
+  // getAll() returns the shared SLIM list (bodies/versions/auditLog stripped)
+  // via the cache — deduped and reused across callers. Every remaining caller
+  // needs only metadata (dropdown options, title hydration, status counts,
+  // wpPostUrl); anything needing a body fetches the single record via
+  // /api/content/:id (see getArticleBody / viewArticleFromPipeline).
+  async getAll()      { try { return await contentCache.refresh(); } catch { return []; } },
+  async create(data)  { try { const r = await fetch('/api/content', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); const out = r.ok ? await r.json() : null; if (out) contentCache.refresh(); return out; } catch { return null; } },
+  async update(id, d) { try { const r = await fetch(`/api/content/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) }); const out = r.ok ? await r.json() : null; if (out) contentCache.refresh(); return out; } catch { return null; } },
+  async remove(id)    { try { await fetch(`/api/content/${id}`, { method:'DELETE' }); contentCache.refresh(); } catch {} },
 };
+
+// ═══════════════════════════════════════════════════════════
+//  SHARED CONTENT CACHE — one slim list, reused across every list
+//  tab (Pipeline / Distribution / Monitoring / Trash / Library /
+//  Approval Log). Stale-while-revalidate: render instantly from the
+//  cached list, kick a deduped background refresh, repaint only if the
+//  data actually changed. Replaces the per-tab full /api/content fetch
+//  (~38 MB) with one small ?slim=1 payload.
+// ═══════════════════════════════════════════════════════════
+const contentCache = {
+  list: null, sig: '', fetchedAt: 0, inflight: null,
+  _sig(items) { return items.length + ':' + items.reduce((m, i) => (i.updatedAt > m ? i.updatedAt : m), ''); },
+  async refresh() {
+    if (this.inflight) return this.inflight;
+    this.inflight = fetch('/api/content?slim=1', { credentials: 'same-origin' })
+      .then(r => r.ok ? r.json() : (this.list || []))
+      .then(items => {
+        this.list = Array.isArray(items) ? items : [];
+        this.sig = this._sig(this.list);
+        this.fetchedAt = Date.now();
+        return this.list;
+      })
+      .catch(() => this.list || [])
+      .finally(() => { this.inflight = null; });
+    return this.inflight;
+  },
+};
+
+// Render now from cache (if present) for an instant paint, then again after the
+// background refresh resolves IF the data changed (or the cache was cold).
+async function withContent(render) {
+  if (contentCache.list) render(contentCache.list, false);
+  const before = contentCache.sig;
+  const fresh = await contentCache.refresh();
+  if (!before || contentCache.sig !== before) render(fresh, true);
+}
+
+// The render fn for the currently-visible content tab, so the ~15s live-sync
+// poll (see initContentPolling) can repaint it in place when another user's
+// change lands. Cleared by switchTab for tabs that don't use the content list.
+let activeContentRender = null;
+
+// Near-instant cross-user sync: while the user is sitting on a content tab,
+// quietly re-fetch the small slim list every ~15s and repaint ONLY if the data
+// actually changed (the cache signature differs). Pauses while the tab is
+// hidden (no wasted requests) and fires one immediate refresh on refocus so a
+// returning user is current at once. Reuses the same tiny ?slim=1 payload, so
+// it does not reintroduce the heavy fetch the cache work removed.
+const CONTENT_POLL_MS = 15000;
+let _contentPollTimer = null;
+
+async function _contentPollTick() {
+  if (document.visibilityState === 'visible' && activeContentRender) {
+    const render = activeContentRender;
+    const before = contentCache.sig;
+    await contentCache.refresh();
+    // Only repaint if the active tab hasn't changed under us AND data changed.
+    if (activeContentRender === render && contentCache.sig !== before) {
+      render(contentCache.list);
+    }
+  }
+  _contentPollTimer = setTimeout(_contentPollTick, CONTENT_POLL_MS);
+}
+
+function initContentPolling() {
+  if (_contentPollTimer) return; // already running
+  _contentPollTimer = setTimeout(_contentPollTick, CONTENT_POLL_MS);
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && activeContentRender) {
+      // Returning to the tab — refresh now rather than waiting up to ~15s.
+      const render = activeContentRender;
+      const before = contentCache.sig;
+      contentCache.refresh().then(function() {
+        if (activeContentRender === render && contentCache.sig !== before) render(contentCache.list);
+      });
+    }
+  });
+}
 
 // ═══════════════════════════════════════════════════════════
 //  CONSTANTS
@@ -5350,9 +5538,7 @@ Choose the style that reads most naturally for each term. Never include pronunci
 After explaining a term once, you may use it without re-explaining it. The goal is that a motivated non-specialist can follow every sentence without needing to look anything up.
 
 LENGTH AND READING TIME
-Target 650 to 1000 words (body only)
-Aim for a 3, 4, 5 or 6 minute read
-Use approximately 200 words per minute to calculate reading time
+STRICT MAXIMUM: 1000 words for the complete article. Do NOT exceed 1000 words under any circumstances. Aim for 800–1000 words. Stop writing at 1000 words if needed. Do not pad to reach the minimum.
 
 STRUCTURE (MANDATORY)
 1. Title
@@ -5584,8 +5770,28 @@ async function ghGetFile(path) {
   if (res.status === 404) return { content: [], sha: null };
   if (!res.ok) throw new Error(`GitHub GET ${path}: ${res.status}`);
   const data = await res.json();
-  const decoded = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g,'')))));
-  return { content: decoded, sha: data.sha };
+  // Decode the file to a UTF-8 JS string. Two paths, two encodings:
+  //  • Inline base64 (files ≤1MB): atob() yields a binary (Latin-1) string, so
+  //    we must run it through decodeURIComponent(escape()) to recover UTF-8.
+  //  • download_url fallback (GitHub returns content:"" for files >1MB): res.text()
+  //    is ALREADY UTF-8-decoded — passing it through decodeURIComponent(escape())
+  //    double-decodes and throws "URI malformed" on any non-ASCII (em dash, curly
+  //    quotes, accents). So that path takes the text verbatim.
+  let text = '';
+  if (data.content && data.content.trim()) {
+    text = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+  } else if (data.download_url) {
+    const dlRes = await fetch(data.download_url, { cache: 'no-store' });
+    if (!dlRes.ok) throw new Error(`GitHub download ${path}: ${dlRes.status}`);
+    text = await dlRes.text();
+  }
+  if (!text || !text.trim()) return { content: [], sha: data.sha };
+  try {
+    const decoded = JSON.parse(text);
+    return { content: Array.isArray(decoded) ? decoded : [], sha: data.sha };
+  } catch(e) {
+    throw new Error(`Corrupt JSON in ${path}: ${e.message}`);
+  }
 }
 
 async function ghPutFile(path, content, sha, message) {
@@ -6426,6 +6632,8 @@ const TAB_TITLES = {
   comparison:   'Comparison',
   reports:      'Reports',
   pipeline:     'Content Pipeline',
+  article:      'View Article',
+  'approval-log': 'Approval Log',
   distribution: 'Social',
   calendar:     'Content Calendar',
   monitoring:   'Monitoring',
@@ -6532,29 +6740,35 @@ function loadKitArticleSelect() {
   if (!sel) return;
 
   function _populate(items) {
-    var filtered = items.filter(function(i) { return i && i.id && i.status !== 'trash' && i.status !== 'published'; });
+    var filtered = items.filter(function(i) { return i && i.id && i.status !== 'trash'; });
     var seen = new Set();
     var unique = filtered.filter(function(i) { if (seen.has(i.id)) return false; seen.add(i.id); return true; });
     var sorted = unique.slice().sort(function(a, b) { return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0); });
-    sel.innerHTML = '<option value="">— Choose a pipeline article —</option>' +
+    var prevVal = sel.value;
+    sel.innerHTML = '<option value="">— Choose an article —</option>' +
       sorted.map(function(i) {
         return '<option value="' + escHtml(i.id) + '">' + escHtml((i.title || i.id).slice(0, 80)) + '</option>';
       }).join('');
+    if (prevVal && sorted.some(function(i) { return i.id === prevVal; })) sel.value = prevVal;
   }
 
-  // If we already have articles loaded, populate immediately
+  // Populate immediately from cache (if any) for instant paint…
   if (typeof allSocialItems !== 'undefined' && allSocialItems && allSocialItems.length) {
     _populate(allSocialItems);
-    return;
+  } else {
+    sel.innerHTML = '<option value="">Loading articles…</option>';
   }
 
-  // Otherwise fetch directly — loadDistribution may not have run yet
-  sel.innerHTML = '<option value="">Loading articles…</option>';
+  // …then always fetch fresh so newly created articles appear.
+  // contentApi.getAll() resolves to [] on failure — don't wipe a good cache paint with it.
+  var hadCache = typeof allSocialItems !== 'undefined' && allSocialItems && allSocialItems.length;
   contentApi.getAll().then(function(items) {
-    if (typeof allSocialItems !== 'undefined') allSocialItems = items;
-    _populate(items);
-  }).catch(function() {
-    sel.innerHTML = '<option value="">— Failed to load articles —</option>';
+    if (items && items.length) {
+      if (typeof allSocialItems !== 'undefined') allSocialItems = items;
+      _populate(items);
+    } else if (!hadCache) {
+      sel.innerHTML = '<option value="">— No articles found —</option>';
+    }
   });
 }
 
@@ -6932,13 +7146,17 @@ function updateSocialPromptsStats() {
   }
 }
 
-function switchTab(tab) {
+function switchTab(tab, fromHistory) {
   // 'prompts' is a legacy route — redirect to Social → Prompt Library
   if (tab === 'prompts') {
-    switchTab('distribution');
+    switchTab('distribution', fromHistory);
     setTimeout(function() { switchSocialTab('prompts'); }, 80);
     return;
   }
+  // Reset the live-sync target — content tabs re-assign their own renderer in
+  // their loader below; tabs that don't use the content list leave it null so
+  // the poll skips them.
+  activeContentRender = null;
   // Close any open popovers/overlays whose state would otherwise leak across tabs
   // and silently intercept mouse clicks on the destination tab.
   ['calEventPopupOverlay', 'calEventPopup'].forEach(function(elId) {
@@ -6946,7 +7164,7 @@ function switchTab(tab) {
     if (el && el.style.display !== 'none') el.style.display = 'none';
   });
   // automation-new: show flat form, populate category dropdown
-  var allTabs = ['dashboard','generator','archive','comparison','reports','pipeline','distribution','calendar','monitoring','settings','llm','automation','automation-new','automation-rules','automation-inbox','bibliography','bibliography-new','categories','trash','category-articles'];
+  var allTabs = ['dashboard','generator','article','archive','comparison','reports','pipeline','approval-log','distribution','calendar','monitoring','settings','llm','automation','automation-new','automation-rules','automation-inbox','bibliography','bibliography-new','categories','trash','category-articles'];
   allTabs.forEach(t => {
     const v = document.getElementById('view-' + t);
     const b = document.getElementById('tab-' + t);
@@ -6956,6 +7174,21 @@ function switchTab(tab) {
   if (tab === 'archive')           renderArchive();
   if (tab === 'reports')           renderReports();
   if (tab === 'pipeline')          loadPipeline();
+  if (tab === 'approval-log')      loadApprovalLog();
+  // The shared article panel lives on the Generate tab; relocate it into the
+  // dedicated view-article page when that tab is shown, and move it back for
+  // generation. Guarded so other tab switches leave it where it is.
+  if (tab === 'generator') {
+    moveArticlePanel('genLayout');
+    // The view-only controls + metadata badges belong to the dedicated view page.
+    ['editTitleBtn','commentModeBtn','viewChangesBtn','replaceHeroBtn','articleSourceBadge','articlePromptBadge'].forEach(function(bid) {
+      var b = document.getElementById(bid); if (b) b.style.display = 'none';
+    });
+    if (typeof _setArticleCommentMode === 'function') _setArticleCommentMode(false);
+    // Safety: ensure the hero panel + its modal are reset back to the sidebar.
+    if (typeof closeHeroModal === 'function') closeHeroModal();
+  }
+  if (tab === 'article')           moveArticlePanel('articleViewMount');
   if (tab === 'settings')          loadSettings();
   if (tab === 'llm')               loadLLMPage();
   if (tab === 'dashboard')         loadDashboard();
@@ -6975,9 +7208,26 @@ function switchTab(tab) {
 
   // Hide category header on non-content tabs
   const catHdr = document.getElementById('categoryHeader');
-  const hideCat = ['dashboard','calendar','pipeline','monitoring','distribution','reports','settings','prompts','llm','automation','automation-new','automation-rules','automation-inbox','bibliography','bibliography-new','categories','trash'].includes(tab);
+  const hideCat = ['dashboard','calendar','pipeline','article','approval-log','monitoring','distribution','reports','settings','prompts','llm','automation','automation-new','automation-rules','automation-inbox','bibliography','bibliography-new','categories','trash'].includes(tab);
   if (catHdr) catHdr.style.display = hideCat ? 'none' : '';
+
+  // Push the tab to the URL so browser Back/Forward and Refresh land here
+  // instead of resetting to the dashboard. fromHistory=true means we're already
+  // responding to a popstate/initial-load, so don't push again.
+  if (!fromHistory && location.hash.slice(1) !== tab) {
+    history.pushState({ tab: tab }, '', '#' + tab);
+  }
 }
+
+// Resolve a valid tab from the URL hash; falls back to dashboard. A tab is valid
+// if its view element exists, so we don't have to duplicate the allTabs list.
+function tabFromHash() {
+  const t = (location.hash || '').slice(1);
+  return (t && document.getElementById('view-' + t)) ? t : 'dashboard';
+}
+
+// Browser Back/Forward → switch tabs without pushing a new history entry.
+window.addEventListener('popstate', function() { switchTab(tabFromHash(), true); });
 
 // ═══════════════════════════════════════════════════════════
 //  API KEY MANAGEMENT
@@ -7491,10 +7741,22 @@ function renderRuleCard(rule) {
 
   var rId = jsAttr(rule.id);
   var rName = jsAttr(rule.name);
+
+  // WP sub-category routing badge — shows where a clinical-review rule's output
+  // will land (patient/practitioner child term), or flags that it'll post under
+  // the parent only because no patient/practitioner prompt is selected.
+  var routeSubCat = (typeof subCategoryForRule === 'function') ? subCategoryForRule(rule) : null;
+  var badgeBase = 'display:inline-block;margin-left:8px;padding:1px 7px;color:#fff;font-size:0.6rem;font-weight:700;vertical-align:middle;letter-spacing:0.02em;';
+  var subCatBadge = routeSubCat
+    ? '<span style="' + badgeBase + 'background:var(--vance-dark);" title="Automation publishes this rule\'s articles into the WP sub-category &quot;' + escHtml(routeSubCat) + '&quot;.">WP: ' + escHtml(routeSubCat) + '</span>'
+    : (rule.category === 'clinical-reviews'
+        ? '<span style="' + badgeBase + 'background:#9aa3af;" title="No patient/practitioner prompt selected — articles post under the parent category only. Edit the rule and choose a patient or practitioner prompt to route them.">WP: parent only</span>'
+        : '');
+
   return '<div class="auto-rule-card" id="ruleCard-' + escHtml(rule.id) + '">' +
     '<div class="auto-rule-dot ' + (rule.enabled ? 'enabled' : 'disabled') + '" title="' + (rule.enabled ? 'Active' : 'Paused') + '"></div>' +
     '<div class="auto-rule-info">' +
-      '<div class="auto-rule-name">' + escHtml(rule.name) + '</div>' +
+      '<div class="auto-rule-name">' + escHtml(rule.name) + subCatBadge + '</div>' +
       '<div class="auto-rule-meta">' + escHtml(rule.category) + ' &middot; ' + triggerLabel + ' &middot; ' +
         '<a href="#" onclick="event.preventDefault();openSourcesFilesModal(\'' + rId + '\',\'' + rName + '\');" style="color:var(--vance-dark);font-weight:700;text-decoration:underline;">' +
           sources.length + ' source' + (sources.length !== 1 ? 's' : '') +
@@ -7783,7 +8045,7 @@ async function viewRuleGenerated(ruleId, ruleName) {
     var rows = slice.map(function(job, i) {
       var c = contents[i];
       var title = (c && c.title) || job.contentId;
-      var words = c && c.body ? c.body.trim().split(/\s+/).filter(Boolean).length : 0;
+      var words = c && c.body ? countBodyProse(c.body) : 0;
       var model = (c && c.model) ? c.model.split('/').pop() : '—';
       var status = job.status || 'unknown';
       var color = statusColor[status] || 'var(--text-muted)';
@@ -7905,6 +8167,30 @@ function _wizUpdatePromptPreview() {
     text = (p && p.text) || sel._defaultText || '';
   }
   pre.textContent = text;
+  _wizUpdateSubCatRoute();
+}
+
+// Live "where will this publish" indicator under the prompt selector. Mirrors the
+// rule-card badge: derives the WP sub-category from the selected prompt name +
+// chosen category, so the operator sees patient/practitioner routing before saving.
+function _wizUpdateSubCatRoute() {
+  var el = document.getElementById('wizSubCatRoute');
+  if (!el) return;
+  var catSel = document.getElementById('wizCategory');
+  var catId = catSel ? catSel.value : '';
+  var name = (typeof _wizGetSelectedPromptName === 'function' ? _wizGetSelectedPromptName() : '').trim();
+  // Reuse the saved-rule resolver by faking the rule shape it expects.
+  var subCat = (typeof subCategoryForRule === 'function')
+    ? subCategoryForRule({ category: catId, generation: { promptName: name } })
+    : null;
+  if (subCat) {
+    el.innerHTML = '<span style="color:var(--vance-dark);font-weight:700;">WP sub-category:</span> ' +
+      '<span style="display:inline-block;padding:1px 7px;background:var(--vance-dark);color:#fff;font-size:0.62rem;font-weight:700;">' + escHtml(subCat) + '</span>';
+  } else if (catId === 'clinical-reviews') {
+    el.innerHTML = '<span style="color:#b45309;">⚠ Posts under the parent category only. Pick a patient or practitioner prompt to route it to a sub-category.</span>';
+  } else {
+    el.innerHTML = '';
+  }
 }
 
 function _wizGetSelectedPromptText() {
@@ -7914,6 +8200,20 @@ function _wizGetSelectedPromptText() {
   if (idx === '') return ''; // empty → server uses categoryDefaultPrompt() at run time
   var p = (sel._prompts || [])[parseInt(idx, 10)];
   return (p && p.text) || '';
+}
+
+// The NAME of the selected prompt preset (or '' for "— Use category default —").
+// Persisted on the rule as generation.promptName so the cron path (run.js) can
+// derive the WP sub-category from it — mirroring subCategoryForActivePrompt()
+// in the in-browser generator. Without this, automation-generated clinical
+// reviews reach WordPress with no patient/practitioner sub-category.
+function _wizGetSelectedPromptName() {
+  var sel = document.getElementById('wizPromptSelect');
+  if (!sel) return '';
+  var idx = sel.value;
+  if (idx === '') return '';
+  var p = (sel._prompts || [])[parseInt(idx, 10)];
+  return (p && p.name) || '';
 }
 var _wizScheduleFreq = 'weekly'; // 'daily' | 'weekly' | 'biweekly' | 'monthly'
 var _wizScheduleDow  = 1;        // 0=Sun, 1=Mon … 6=Sat (cron day-of-week)
@@ -7950,7 +8250,10 @@ async function openRuleWizard(editId) {
   }
   // Template is locked to the selected category — sync on change and on first render.
   if (catSel && tplSel) {
-    var syncTpl = function() { tplSel.value = catSel.value; };
+    var syncTpl = function() {
+      tplSel.value = catSel.value;
+      if (typeof _wizUpdateSubCatRoute === 'function') _wizUpdateSubCatRoute();
+    };
     catSel.addEventListener('change', syncTpl);
     syncTpl();
   }
@@ -8450,6 +8753,9 @@ async function _wizSubmit() {
       template: document.getElementById('wizTemplate').value,
       maxArticlesPerRun: parseInt(document.getElementById('wizMaxArticles').value || '3'),
       prompt: (typeof _wizGetSelectedPromptText === 'function' ? _wizGetSelectedPromptText() : ''),
+      // Prompt preset NAME — used by run.js to route the WP sub-category
+      // (patient/practitioner) for clinical reviews. '' for category default.
+      promptName: (typeof _wizGetSelectedPromptName === 'function' ? _wizGetSelectedPromptName() : ''),
       combineMode: combineEl ? combineEl.value : 'one-per-item',
       model: document.getElementById('wizModel').value || null,
       heroImage: document.getElementById('wizHeroImage').checked,
@@ -9480,7 +9786,7 @@ function renderAutoInboxDetail(job, content, rule) {
   var title = (content && content.title) || job.contentId || 'Article';
   var body = (content && content.body) || '';
   var ruleName = (rule && rule.name) || job.ruleId || '';
-  var words = body ? body.trim().split(/\s+/).filter(Boolean).length : 0;
+  var words = body ? countBodyProse(body) : 0;
   var model = (content && content.model) ? content.model.split('/').pop() : null;
 
   var statusMap = {
@@ -9644,6 +9950,8 @@ function loadLLMPage() {
   if (typeof loadMasterPrompt === 'function') loadMasterPrompt().catch(() => {});
   // Hero Image Prompts (server-backed library + per-category overrides)
   if (typeof loadHeroPrompts === 'function') loadHeroPrompts().catch(() => {});
+  // Per-category word limits (server-backed; enforced during generation)
+  if (typeof loadCategoryWordLimits === 'function') loadCategoryWordLimits().catch(() => {});
 
   // OpenRouter key (sync with API key card)
   var apiKey = localStorage.getItem('vance_openrouter_key');
@@ -9816,7 +10124,7 @@ async function generateReview() {
       const result = await attemptGeneration(model, systemPrompt, sourceText);
       rawArticleText = result.text;
       document.getElementById('articleContent').innerHTML = formatArticleHTML(rawArticleText);
-      document.getElementById('wordCount').textContent = rawArticleText.split(/\s+/).filter(w=>w).length.toLocaleString() + ' words';
+      document.getElementById('wordCount').textContent = countBodyProse(rawArticleText).toLocaleString() + ' words';
       const badge = document.getElementById('modelUsedBadge');
       badge.textContent = '✓ ' + result.model.split('/').pop().replace(':free','');
       badge.style.display = 'inline-flex';
@@ -10112,6 +10420,39 @@ async function saveReviewToArchive() {
   const title = extractTitleFromArticle(rawArticleText) || `${CATEGORIES.find(c=>c.id===currentCategory)?.label} — ${new Date().toLocaleDateString('en-GB')}`;
   const model = document.getElementById('modelUsedBadge').textContent.replace('✓ ','');
   const subCat = subCategoryForActivePrompt(currentCategory);
+  const wc = countBodyProse(rawArticleText);
+
+  // Persist to the KV content store so the item appears in the Library tab
+  // (the Library reads /api/content, not the GitHub archive). We ALSO keep the
+  // GitHub archive write below so dashboard/category counts and the AI
+  // Comparison pool — which still read ghData — stay intact.
+  const catCfg = (typeof getCatConfig === 'function') ? getCatConfig(currentCategory) : null;
+  const wpSlug = catCfg ? (catCfg.wpCategorySlug || catCfg.wpSlug || null) : null;
+  const promptName = ((document.getElementById('activePromptName') || {}).textContent || '').trim();
+  let created = null;
+  try {
+    created = await contentApi.create({
+      title,
+      body: rawArticleText,
+      excerpt: rawArticleText.split(/\s+/).slice(0, 30).join(' ') + '…',
+      category: currentCategory,
+      ...(subCat ? { subCategory: subCat } : {}),
+      ...(heroImageUrl ? { heroImageUrl, heroImageType } : {}),
+      ...(wpSlug ? { wpCategorySlug: wpSlug } : {}),
+      ...(typeof currentSourceLabel !== 'undefined' && currentSourceLabel ? { sourceDocName: currentSourceLabel } : {}),
+      ...(typeof currentSourceUrl !== 'undefined' && currentSourceUrl ? { sourceDocUrl: currentSourceUrl } : {}),
+      ...(promptName ? { promptName } : {}),
+    });
+  } catch (_) { /* KV create failed — fall through to GitHub-only save */ }
+  if (created) {
+    currentContentId = created.id;
+    publishingQueue.push({ ...created, model, wordCount: wc, queuedAt: created.createdAt });
+    if (typeof renderQueuePanel === 'function') renderQueuePanel();
+    if (typeof updateQueueHeaderBtn === 'function') updateQueueHeaderBtn();
+    if (typeof loadReviewRequestCard === 'function') loadReviewRequestCard();
+  }
+
+  // GitHub archive (powers counts + AI Comparison pool).
   const entry = {
     id: 'r_' + Date.now(),
     category: currentCategory,
@@ -10119,19 +10460,22 @@ async function saveReviewToArchive() {
     text: rawArticleText,
     model,
     createdAt: new Date().toISOString(),
-    wordCount: rawArticleText.split(/\s+/).filter(w=>w).length,
+    wordCount: wc,
     ...(subCat ? { subCategory: subCat } : {}),
     ...(heroImageUrl ? { heroImageUrl, heroImageType } : {}),
+    ...(created ? { contentId: created.id } : {}),
   };
   ghData[currentCategory].reviews.unshift(entry);
   if (ghData[currentCategory].reviews.length > 100) ghData[currentCategory].reviews = ghData[currentCategory].reviews.slice(0, 100);
   updateAllCounts();
   try {
     await ghSaveReviews(currentCategory, `Save ${currentCategory} item: ${title.slice(0,60)}`);
-    showAlert('generateAlert', `\u2713 Saved to ${CATEGORIES.find(c=>c.id===currentCategory)?.label} Library`, 'success');
+    showAlert('generateAlert', created ? '✓ Saved to Library' : '✓ Saved to archive (Library save failed — try again)', created ? 'success' : 'warning');
     setTimeout(() => hideAlert('generateAlert'), 3000);
   } catch(e) {
-    showAlert('generateAlert', 'Saved locally but GitHub sync failed: ' + e.message, 'warning');
+    showAlert('generateAlert', created
+      ? '✓ Saved to Library (GitHub archive sync failed: ' + e.message + ')'
+      : 'Save failed: ' + e.message, created ? 'success' : 'warning');
   }
 }
 
@@ -10141,61 +10485,6 @@ function renderArchive() {
   // no longer mounted on this tab.
   if (typeof loadLibrary === 'function') loadLibrary().catch(() => {});
   return;
-}
-
-// Kept for any legacy callers — operates on the hidden #view-archive-legacy grid if present.
-function renderArchiveLegacy() {
-  const archive = getArchive().filter(r => !r.trashed);
-  const grid    = document.getElementById('archiveGrid');
-  const empty   = document.getElementById('archiveEmpty');
-  if (!grid) return;
-  grid.innerHTML = '';
-  if (archive.length === 0) { empty.style.display = ''; return; }
-  empty.style.display = 'none';
-  archive.forEach(r => {
-    const isSelected = selectedArchiveIds.has(r.id);
-    const date = new Date(r.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
-    const modelShort = (r.model || 'Unknown').replace(':free','');
-    const preview = r.text.replace(/<[^>]+>/g,'').slice(0, 160).replace(/#+\s*/g,'').trim() + '…';
-    const card = document.createElement('div');
-    card.className = 'archive-card' + (isSelected ? ' selected' : '');
-    const isApproved = r.approved === true;
-    const isQueued = publishingQueue.some(q => q.sourceId === r.id || q.title === r.title);
-    card.innerHTML = `
-      <div class="archive-card-header">
-        <input type="checkbox" class="archive-checkbox" ${isSelected ? 'checked' : ''} onchange="toggleArchiveSelect('${r.id}', this.checked)" />
-        <div class="archive-card-title">${escapeHtml(r.title.slice(0,80))}${r.title.length>80?'\u2026':''}</div>
-        ${isApproved ? '<span class="approved-badge">\u2713 Approved</span>' : ''}
-        ${isQueued ? '<span class="queued-badge">\u25b6 Queued</span>' : ''}
-      </div>
-      <div class="archive-card-body">
-        <div class="archive-card-preview">${escapeHtml(preview)}</div>
-        <div class="archive-card-meta">
-          <span class="archive-meta-tag tag-date">${date}</span>
-          <span class="archive-meta-tag tag-model">${escapeHtml(modelShort)}</span>
-          <span class="archive-meta-tag tag-words">${(r.wordCount||0).toLocaleString()} words</span>
-        </div>
-      </div>
-      <div class="archive-card-actions">
-        <button class="btn btn-xs ${isApproved ? 'btn-approved-on' : 'btn-approve'}" onclick="toggleApproved('${r.id}', ${!isApproved})" title="${isApproved ? 'Click to unapprove' : 'Approve this article'}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="20 6 9 17 4 12"/></svg>
-          ${isApproved ? 'Approved' : 'Approve'}
-        </button>
-        <button class="btn btn-orange btn-xs" onclick="loadArchiveItem('${r.id}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="5 12 12 5 19 12"/><line x1="12" y1="5" x2="12" y2="19"/></svg>Load
-        </button>
-        <button class="btn btn-outline btn-xs" onclick="downloadArchivePDF('${r.id}')">PDF</button>
-        <button class="btn btn-outline btn-xs" style="${isQueued ? 'color:var(--vance-primary);border-color:rgba(244,121,32,0.5);' : ''}" onclick="toggleQueueItem('${r.id}', this)" title="${isQueued ? 'Remove from review queue' : 'Send for review'}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          ${isQueued ? 'In Review' : 'Send for Review'}
-        </button>
-        <button class="btn btn-trash-sm" onclick="moveArchiveToTrash('${r.id}')" title="Move to Trash">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
-        </button>
-      </div>`;
-    grid.appendChild(card);
-  });
-  updateAllCounts();
 }
 
 function toggleArchiveSelect(id, checked) {
@@ -10240,32 +10529,43 @@ function updateCompareBar() {
   }
 }
 
-function loadArchiveItem(id) {
-  const r = getArchive().find(x => x.id === id);
-  if (!r) return;
-  rawArticleText = r.text;
-  document.getElementById('articleContent').innerHTML = formatArticleHTML(r.text);
-  document.getElementById('articleOutput').classList.add('visible');
-  document.getElementById('emptyState').style.display = 'none';
-  document.getElementById('wordCount').textContent = (r.wordCount||0).toLocaleString() + ' words';
-  const badge = document.getElementById('modelUsedBadge');
-  badge.textContent = '✓ ' + (r.model||'').replace(':free','');
-  badge.style.display = 'inline-flex';
-
-  // Cross-reference with pipeline to restore currentContentId and show Review Requests card
-  const pipelineMatch = (publishingQueue || []).find(function(q) {
-    return q.sourceId === r.id || q.title === r.title;
-  });
-  currentContentId = pipelineMatch ? pipelineMatch.id : null;
-  loadReviewRequestCard();
-
-  switchTab('generator');
+// Body-prose word count — client mirror of lib/word-count.js (server). Excludes the
+// title line, "Reading Time" line, headings, references/disclaimer sections, and a
+// standalone italic disclaimer, so every displayed count matches the generation limit.
+function countBodyProse(text) {
+  if (!text) return 0;
+  var lines = String(text).split('\n');
+  if (lines[0] && /^#\s+/.test(lines[0].trim())) lines = lines.slice(1);
+  var words = 0, inExcluded = false;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+    var hd = line.match(/^#{1,6}\s+(.*)$/);
+    if (hd) {
+      var h = hd[1].replace(/[*_`#]/g, '').trim().toLowerCase();
+      inExcluded = /^(references?|sources?|bibliography|citations?|further reading|disclaimer)\b/.test(h);
+      continue;
+    }
+    if (inExcluded) continue;
+    if (/^reading time\b/i.test(line)) continue;
+    var noEmph = line.replace(/^[*_]+|[*_]+$/g, '').trim();
+    if (/^[*_].+[*_]$/.test(line) && /\b(disclaimer|informational purposes|not (constitute |a )?(clinical|medical) advice|journalistic summary)\b/i.test(noEmph)) continue;
+    if (/^disclaimer\b[:\-]/i.test(noEmph)) continue;
+    var plain = line.replace(/[*_`>]/g, ' ').replace(/^\s*[-•]\s+/, ' ').replace(/^\s*\d+[.)]\s+/, ' ');
+    words += plain.trim().split(/\s+/).filter(Boolean).length;
+  }
+  return words;
 }
 
 async function viewArticleFromPipeline(itemId) {
   let item = null;
-  try { item = (await contentApi.getAll()).find(function(i) { return i.id === itemId; }); } catch(e) {}
-  if (!item) { item = (publishingQueue || []).find(function(i) { return i.id === itemId; }); }
+  // Fetch the single full record (carries the body) instead of the whole
+  // unslimmed list — far lighter than contentApi.getAll().
+  try {
+    const r = await fetch('/api/content/' + itemId, { credentials: 'same-origin' });
+    if (r.ok) item = await r.json();
+  } catch(e) {}
+  if (!item) { item = (contentCache.list || publishingQueue || []).find(function(i) { return i.id === itemId; }); }
   if (!item) return;
 
   // Set category context so prompts / buttons are correct
@@ -10286,20 +10586,11 @@ async function viewArticleFromPipeline(itemId) {
     titleEl.textContent = item.title || 'Untitled article';
     titleEl.style.display = 'block';
   }
-  // Source-document line — shown beneath the title when the article was
-  // generated from a traceable file/URL/sheet row. Clickable when we have a URL.
+  // Source + prompt now live in the toolbar (the dedicated view has no sidebar).
+  // Hide the legacy in-body source line.
   const srcWrap = document.getElementById('articleSourceDisplay');
-  const srcText = document.getElementById('articleSourceText');
-  if (srcWrap && srcText) {
-    if (item.sourceDocName) {
-      srcText.innerHTML = item.sourceDocUrl
-        ? '<a href="' + escapeHtml(item.sourceDocUrl) + '" target="_blank" rel="noopener" style="color:var(--vance-primary);text-decoration:underline;">' + escapeHtml(item.sourceDocName) + '</a>'
-        : escapeHtml(item.sourceDocName);
-      srcWrap.style.display = '';
-    } else {
-      srcWrap.style.display = 'none';
-    }
-  }
+  if (srcWrap) srcWrap.style.display = 'none';
+  populateArticleToolbarMeta(item);
   // Hero image: restore from saved item so it shows on view
   heroImageUrl  = item.heroImageUrl || null;
   heroImageType = item.heroImageType || null;
@@ -10313,7 +10604,7 @@ async function viewArticleFromPipeline(itemId) {
   document.getElementById('articleOutput').classList.add('visible');
   const emptyEl = document.getElementById('emptyState');
   if (emptyEl) emptyEl.style.display = 'none';
-  const wc = text.split(/\s+/).filter(Boolean).length;
+  const wc = countBodyProse(text);
   const wcEl = document.getElementById('wordCount');
   if (wcEl) wcEl.textContent = wc.toLocaleString() + ' words';
   const badge = document.getElementById('modelUsedBadge');
@@ -10350,11 +10641,22 @@ async function viewArticleFromPipeline(itemId) {
     approveTbBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="20 6 9 17 4 12"/></svg> Approve';
   }
 
+  // Show the view-only toolbar controls (edit title, comment, view changes, replace hero).
+  ['editTitleBtn','commentModeBtn','viewChangesBtn','replaceHeroBtn'].forEach(function(bid) {
+    var b = document.getElementById(bid); if (b) b.style.display = '';
+  });
+  // Reset comment mode each time an article is opened.
+  if (typeof _setArticleCommentMode === 'function') _setArticleCommentMode(false);
+
   // Link the pipeline record so the Review Requests card can load
   currentContentId = item.id;
   loadReviewRequestCard();
 
-  switchTab('generator');
+  switchTab('article');
+  // Open the article scrolled to the top — otherwise it inherits the scroll
+  // position of whatever tab we came from and lands mid-page.
+  var scrollArea = document.querySelector('.scroll-area');
+  if (scrollArea) scrollArea.scrollTop = 0;
 }
 
 // Plain Approve from the article toolbar — flips status to 'approved' without
@@ -10895,7 +11197,7 @@ function _ahShowPopover(mark) {
   if (!note) return;
   var pop = _ahEnsurePopover();
   if (_ahHideTimer) { clearTimeout(_ahHideTimer); _ahHideTimer = null; }
-  var who  = (typeof reviewerName === 'function' && note.reviewerId) ? reviewerName(note.reviewerId) : (note.reviewerId || 'Reviewer');
+  var who  = note.author || ((typeof reviewerName === 'function' && note.reviewerId) ? reviewerName(note.reviewerId) : (note.reviewerId || 'Reviewer'));
   var when = note.at ? new Date(note.at).toLocaleString('en-GB') : '';
   pop.innerHTML =
     '<div class="ahpop-author">' +
@@ -10928,9 +11230,14 @@ function _ahWrapMatch(root, needle, note) {
     concat += t;
     nodes.push(n);
   }
-  // Whitespace-flexible match: collapse runs of whitespace in needle to \s+
+  // Whitespace-flexible, case-insensitive match: collapse runs of whitespace in
+  // needle to \s+. Case-insensitivity matters for section subheadings — the
+  // review email styles them text-transform:uppercase, and Chromium's
+  // Selection.toString() returns the UPPERCASED text, so the stored quote is
+  // uppercase while the article body renders mixed-case. A case-sensitive match
+  // would silently fail and leave the note with no <mark> to scroll to.
   var pattern = needle.trim().split(/\s+/).map(_ahEscRe).join('\\s+');
-  var re = new RegExp(pattern);
+  var re = new RegExp(pattern, 'i');
   var m = re.exec(concat);
   if (!m) return false;
   var startGlobal = m.index, endGlobal = m.index + m[0].length;
@@ -10972,74 +11279,126 @@ function _ahWrapMatch(root, needle, note) {
 function applyArticleHighlights(item) {
   var articleEl = document.getElementById('articleContent');
   if (!articleEl) return;
-  // Clear any prior panel from a previous article view
   var prev = document.getElementById('articleHighlightsPanel');
   if (prev) prev.remove();
 
   var rcs = (item && Array.isArray(item.rejectionComments)) ? item.rejectionComments : [];
   if (!rcs.length) return;
 
-  // Flatten { quote, comment, reviewerId, at } with stable numbering
+  var itemId = (item && item.id) ? String(item.id) : '';
+
+  // Overall feedback — skip soft-deleted entries
+  var overalls = [];
+  rcs.forEach(function(rc, rcIdx) {
+    if (rc && rc.deleted) return;
+    var txt = (rc && rc.overall != null)
+      ? String(rc.overall).trim()
+      : ((rc && (!Array.isArray(rc.highlights) || !rc.highlights.length)) ? String((rc && rc.comment) || '').trim() : '');
+    if (txt) overalls.push({ text: txt, reviewerId: (rc && rc.reviewerId) || '', author: (rc && rc.authorName) || '', at: (rc && rc.at) || '', rcIndex: rcIdx, resolved: !!(rc && rc.resolved) });
+  });
+
+  // Flatten highlights — skip soft-deleted entries
   var notes = [];
-  rcs.forEach(function(rc) {
+  rcs.forEach(function(rc, rcIdx) {
+    if (rc && rc.deleted) return;
     if (!Array.isArray(rc.highlights)) return;
     rc.highlights.forEach(function(h) {
       if (!h || !h.quote || !h.comment) return;
-      notes.push({
-        id: notes.length + 1,
-        quote: h.quote,
-        comment: h.comment,
-        reviewerId: rc.reviewerId || '',
-        at: rc.at || '',
-      });
+      notes.push({ id: notes.length + 1, quote: h.quote, comment: h.comment, reviewerId: rc.reviewerId || '', author: rc.authorName || '', at: rc.at || '', rcIndex: rcIdx, resolved: !!(rc && rc.resolved) });
     });
   });
-  if (!notes.length) return;
+  if (!notes.length && !overalls.length) return;
 
-  // Rebuild the id→note lookup for hover popovers
   _ahNotesById = {};
   notes.forEach(function(note) { _ahNotesById[note.id] = note; });
-
-  // Wrap each note's quote on the article body
   notes.forEach(function(note) { _ahWrapMatch(articleEl, note.quote, note); });
 
-  // Bind hover handlers once per article render via delegation. Removing and
-  // re-adding the listener ensures we don't double-bind across view switches.
   articleEl.removeEventListener('mouseover', _ahDelegatedOver);
   articleEl.removeEventListener('mouseout',  _ahDelegatedOut);
   articleEl.addEventListener('mouseover', _ahDelegatedOver);
   articleEl.addEventListener('mouseout',  _ahDelegatedOut);
 
-  // Render summary panel above the body
+  function actionBtns(rcIndex, resolved) {
+    var id = _ahEscHtml(itemId);
+    return '<div class="ahp-actions">' +
+      '<button class="ahp-action-btn' + (resolved ? '' : ' resolve') + '" onclick="event.stopPropagation();_ahResolveComment(\'' + id + '\',' + rcIndex + ',' + (resolved ? 'true' : 'false') + ')">' + (resolved ? 'Unresolve' : '✓ Resolve') + '</button>' +
+      '<button class="ahp-action-btn delete" onclick="event.stopPropagation();_ahDeleteComment(\'' + id + '\',' + rcIndex + ')">Delete</button>' +
+    '</div>';
+  }
+
   var panel = document.createElement('div');
   panel.id = 'articleHighlightsPanel';
+
   var rows = notes.map(function(n) {
-    var who = (typeof reviewerName === 'function' && n.reviewerId) ? reviewerName(n.reviewerId) : (n.reviewerId || '');
+    var who = n.author || ((typeof reviewerName === 'function' && n.reviewerId) ? reviewerName(n.reviewerId) : (n.reviewerId || ''));
     var when = n.at ? new Date(n.at).toLocaleString('en-GB') : '';
     var qShort = n.quote.length > 200 ? n.quote.slice(0, 200) + '…' : n.quote;
     var meta = (who || when) ? ('<div class="ahp-meta">' + _ahEscHtml(who) + (who && when ? ' &middot; ' : '') + _ahEscHtml(when) + '</div>') : '';
-    return '<div class="ahp-note" data-jump="' + n.id + '">' +
+    return '<div class="ahp-note' + (n.resolved ? ' ahp-resolved' : '') + '" data-jump="' + n.id + '">' +
       '<div class="ahp-quote">"' + _ahEscHtml(qShort) + '"</div>' +
       '<div class="ahp-comment">' + _ahEscHtml(n.comment) + '</div>' +
-      meta +
+      meta + actionBtns(n.rcIndex, n.resolved) +
     '</div>';
   }).join('');
+
+  var overallHtml = overalls.map(function(o) {
+    var who = o.author || ((typeof reviewerName === 'function' && o.reviewerId) ? reviewerName(o.reviewerId) : (o.reviewerId || ''));
+    var when = o.at ? new Date(o.at).toLocaleString('en-GB') : '';
+    var meta = (who || when) ? ('<div class="ahp-meta">' + _ahEscHtml(who) + (who && when ? ' &middot; ' : '') + _ahEscHtml(when) + '</div>') : '';
+    return '<div class="ahp-overall' + (o.resolved ? ' ahp-resolved' : '') + '">' +
+      '<div class="ahp-comment">' + _ahEscHtml(o.text) + '</div>' + meta + actionBtns(o.rcIndex, o.resolved) +
+    '</div>';
+  }).join('');
+
+  var activeCount = notes.filter(function(n){return !n.resolved;}).length + overalls.filter(function(o){return !o.resolved;}).length;
+  var totalCount  = notes.length + overalls.length;
+  var countLabel  = totalCount ? ' (' + (activeCount < totalCount ? activeCount + ' open' : totalCount) + ')' : '';
+
   panel.innerHTML =
-    '<div class="ahp-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Reviewer notes (' + notes.length + ')</div>' + rows;
+    '<div class="ahp-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments' + countLabel + '</div>' +
+    (overallHtml ? '<div class="ahp-subhead">Overall feedback</div>' + overallHtml : '') +
+    (notes.length && overallHtml ? '<div class="ahp-subhead">Inline notes</div>' : '') +
+    rows;
   articleEl.parentNode.insertBefore(panel, articleEl);
 
-  // Click a note to scroll its highlight into view
   panel.querySelectorAll('[data-jump]').forEach(function(el) {
-    el.addEventListener('click', function() {
+    el.addEventListener('click', function(e) {
+      if (e.target.closest && e.target.closest('.ahp-actions')) return;
       var id = el.getAttribute('data-jump');
       var mark = articleEl.querySelector('mark.article-highlight[data-note-id="' + id + '"]');
       if (!mark) return;
       mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
       mark.classList.remove('highlight-pulse');
-      void mark.offsetWidth; // force reflow to restart the animation
+      void mark.offsetWidth;
       mark.classList.add('highlight-pulse');
     });
   });
+}
+
+async function _ahResolveComment(articleId, rcIndex, isCurrentlyResolved) {
+  const action = isCurrentlyResolved ? 'unresolve' : 'resolve';
+  try {
+    const res = await fetch('/api/content/' + articleId + '/comment', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, index: rcIndex }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    applyArticleHighlights(await res.json());
+  } catch(e) { alert('Failed to update comment: ' + e.message); }
+}
+
+async function _ahDeleteComment(articleId, rcIndex) {
+  if (!confirm('Remove this comment from view? It will be retained in the article log.')) return;
+  try {
+    const res = await fetch('/api/content/' + articleId + '/comment', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', index: rcIndex }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    applyArticleHighlights(await res.json());
+  } catch(e) { alert('Failed to delete comment: ' + e.message); }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -11225,6 +11584,24 @@ function subCategoryForActivePrompt(catId) {
   return null;
 }
 
+// WP sub-category a SAVED rule will route to — mirrors run.js subCategoryForRulePrompt().
+// Reads the prompt preset NAME persisted on the rule (generation.promptName), not the
+// live editor state. Used to surface patient/practitioner routing in the rule list and
+// wizard so operators can see where a rule's output will land before it runs.
+function subCategoryForRule(rule) {
+  if (!rule) return null;
+  var catId = rule.category;
+  var name = ((rule.generation && rule.generation.promptName) || '').trim().toLowerCase();
+  if (!name) return null;
+  var map = PROMPT_SUBCATEGORY_MAP[catId];
+  if (map && map[name]) return map[name];
+  if (catId === 'clinical-reviews') {
+    if (name.indexOf('practitioner') !== -1) return 'Practitioners Overview';
+    if (name.indexOf('patient') !== -1) return 'Patients Overview';
+  }
+  return null;
+}
+
 // ═══════════════════════════════════════════════════════════
 //  PUBLISHING QUEUE & REVIEW WORKFLOW
 // ═══════════════════════════════════════════════════════════
@@ -11319,7 +11696,7 @@ async function queueCurrentForPublishing() {
     ? (extractTitleFromArticle(rawArticleText) || 'Untitled Article')
     : 'Untitled Article';
   const model = document.getElementById('modelUsedBadge').textContent.replace('\u2713 ','');
-  const wordCount = rawArticleText.split(/\s+/).filter(w=>w).length;
+  const wordCount = countBodyProse(rawArticleText);
   const catCfg = getCatConfig(currentCategory);
   const wpSlug = catCfg?.wpCategorySlug || catCfg?.wpSlug || null;
   const subCat = subCategoryForActivePrompt(currentCategory);
@@ -11333,6 +11710,11 @@ async function queueCurrentForPublishing() {
     ...(wpSlug ? { wpCategorySlug: wpSlug } : {}),
     ...(currentSourceLabel ? { sourceDocName: currentSourceLabel } : {}),
     ...(currentSourceUrl ? { sourceDocUrl: currentSourceUrl } : {}),
+    ...(function() {
+      var n = (document.getElementById('activePromptName') || {}).textContent;
+      n = (n || '').trim();
+      return n ? { promptName: n } : {};
+    })(),
   });
   if (created) {
     currentContentId = created.id;
@@ -11893,6 +12275,102 @@ async function persistCategoryHeroPrompt(catId, text) {
   }
 }
 
+// ── Per-category word limit (category editor → Settings) ──────────────────────
+// Mirrors the hero-prompt mechanism: a vance:category-word-limits KV record with a
+// { categories: { [catId]: number } } map (0 = explicitly uncapped, absent = inherit
+// the system default). Read server-side by lib/automation/handlers/run.js.
+var WORD_LIMIT_DEFAULT_UNCAPPED = ['white-papers', 'infographics'];
+
+var categoryWordLimits = (function() {
+  try { return JSON.parse(localStorage.getItem('vance_cat_word_limits') || 'null') || { categories: {} }; }
+  catch (_) { return { categories: {} }; }
+})();
+
+function cacheCategoryWordLimits(rec) {
+  categoryWordLimits = { categories: (rec && rec.categories && typeof rec.categories === 'object') ? rec.categories : {} };
+  try { localStorage.setItem('vance_cat_word_limits', JSON.stringify(categoryWordLimits)); } catch (_) {}
+}
+
+async function loadCategoryWordLimits() {
+  try {
+    var rec = await apiFetch('/api/content/word-limits');
+    if (rec) cacheCategoryWordLimits(rec);
+  } catch (_) { /* keep cached copy */ }
+}
+
+function updateCatWordLimitHint(catId) {
+  var sel  = document.getElementById('catEditorWordLimitMode');
+  var hint = document.getElementById('catEditorWordLimitHint');
+  if (!sel || !hint) return;
+  if (sel.value === 'uncapped') {
+    hint.textContent = 'No limit — drafts in this category will not be compressed for length.';
+  } else if (sel.value === 'custom') {
+    hint.textContent = 'Drafts over this many words get one automatic compression pass.';
+  } else {
+    hint.textContent = (catId && WORD_LIMIT_DEFAULT_UNCAPPED.indexOf(catId) >= 0)
+      ? 'System default for this category: uncapped.'
+      : 'System default: 1000 words.';
+  }
+}
+
+// Populate the Settings-tab control from the stored per-category value.
+function renderCatWordLimitControls(catId) {
+  var sel = document.getElementById('catEditorWordLimitMode');
+  var inp = document.getElementById('catEditorWordLimit');
+  if (!sel || !inp) return;
+  var map = (categoryWordLimits && categoryWordLimits.categories) || {};
+  var has = catId && Object.prototype.hasOwnProperty.call(map, catId);
+  var val = has ? Number(map[catId]) : null;
+  if (!has) {
+    sel.value = 'default'; inp.style.display = 'none'; inp.value = '';
+  } else if (val === 0) {
+    sel.value = 'uncapped'; inp.style.display = 'none'; inp.value = '';
+  } else {
+    sel.value = 'custom'; inp.style.display = ''; inp.value = val;
+  }
+  updateCatWordLimitHint(catId);
+}
+
+function onCatWordLimitModeChange() {
+  var sel = document.getElementById('catEditorWordLimitMode');
+  var inp = document.getElementById('catEditorWordLimit');
+  if (!sel || !inp) return;
+  if (sel.value === 'custom') {
+    inp.style.display = '';
+    if (!inp.value) inp.value = '1000';
+    inp.focus();
+  } else {
+    inp.style.display = 'none';
+  }
+  var catId = editingCategoryId ? editingCategoryId.replace('builtin:', '') : null;
+  updateCatWordLimitHint(catId);
+}
+
+// Read the control into a normalized value and persist to KV. Called from
+// saveCategoryConfig once the (possibly newly generated) catId is known.
+async function persistCategoryWordLimit(catId) {
+  if (!catId) return;
+  var sel = document.getElementById('catEditorWordLimitMode');
+  var inp = document.getElementById('catEditorWordLimit');
+  if (!sel) return;
+  categoryWordLimits.categories = categoryWordLimits.categories || {};
+  if (sel.value === 'uncapped') {
+    categoryWordLimits.categories[catId] = 0;
+  } else if (sel.value === 'custom') {
+    var n = Math.round(Number(inp && inp.value));
+    if (!isFinite(n) || n < 100) delete categoryWordLimits.categories[catId];
+    else categoryWordLimits.categories[catId] = Math.min(n, 100000);
+  } else {
+    delete categoryWordLimits.categories[catId]; // 'default' → inherit system default
+  }
+  try {
+    var rec = await apiFetch('/api/content/word-limits', { method: 'PUT', body: JSON.stringify({ categories: categoryWordLimits.categories }) });
+    if (rec) cacheCategoryWordLimits(rec);
+  } catch (err) {
+    showToast('Word limit save failed: ' + err.message);
+  }
+}
+
 function activateCustomCategories() {
   customCategories.forEach(cat => {
     // Add to CATEGORIES if not already present
@@ -12190,6 +12668,7 @@ function openCategoryEditor(id) {
     });
     populateCatEditorLlm('');
     renderCatHeroPromptControls('');
+    renderCatWordLimitControls(null);
 
   } else if (id.startsWith('builtin:')) {
     // ── Edit built-in category ──
@@ -12210,6 +12689,7 @@ function openCategoryEditor(id) {
     if (promptTA) promptTA.value = config.prompt || '';
     populateCatEditorLlm(config.llm || getCategoryModel(catId) || '');
     renderCatHeroPromptControls(catId);
+    renderCatWordLimitControls(catId);
     // Load prompt panel for this category
     renderCatPromptPanel(catId);
 
@@ -12235,6 +12715,7 @@ function openCategoryEditor(id) {
     });
     populateCatEditorLlm(cat.llm || '');
     renderCatHeroPromptControls(id);
+    renderCatWordLimitControls(id);
     // Load prompt panel for this category
     renderCatPromptPanel(id);
   }
@@ -12278,6 +12759,7 @@ function saveCategoryConfig() {
     saveCustomCategories();
     activateCustomCategories();
     persistCategoryHeroPrompt(newCat.id, heroPrompt);
+    persistCategoryWordLimit(newCat.id);
     // Load the default prompt into the generator when this category is active
     renderCategoriesPage();
     loadDashboard();
@@ -12294,6 +12776,7 @@ function saveCategoryConfig() {
     // Update per-category LLM if set
     if (llm) { const cm = JSON.parse(localStorage.getItem('vance_cat_models') || '{}'); cm[catId] = llm; localStorage.setItem('vance_cat_models', JSON.stringify(cm)); }
     persistCategoryHeroPrompt(catId, heroPrompt);
+    persistCategoryWordLimit(catId);
     renderCategoriesPage();
     closeCategoryEditor();
     showAlert('generateAlert', '✓ Category updated', 'success');
@@ -12311,6 +12794,7 @@ function saveCategoryConfig() {
     saveCustomCategories();
     activateCustomCategories();
     persistCategoryHeroPrompt(editingCategoryId, heroPrompt);
+    persistCategoryWordLimit(editingCategoryId);
     renderCategoriesPage();
     closeCategoryEditor();
     showAlert('generateAlert', '✓ Category updated', 'success');
@@ -12773,16 +13257,20 @@ window.addEventListener('DOMContentLoaded', () => {
   // Hero image prompt library — needed by the generator + category editor before
   // the LLM page is opened. Refreshes the localStorage-cached copy from KV.
   if (typeof loadHeroPrompts === 'function') loadHeroPrompts().catch(function() {});
-  // Populate in-memory publishingQueue cache via the slim endpoint — drops
-  // body/excerpt/rejectionComments which carry most of the bytes. Brings the
-  // boot fetch from ~38 MB / 18 s down to ~500 KB / ~2 s and removes the
-  // JSON.parse main-thread freeze that was making the dashboard look blank.
-  // Individual article views (viewArticleFromPipeline) fetch the full record
-  // via /api/content/:id when they actually need the body.
-  fetch('/api/content?slim=1', { credentials: 'same-origin' })
-    .then(r => r.ok ? r.json() : [])
-    .then(items => {
-      const list = Array.isArray(items) ? items : [];
+  // Per-category word limits — shared via KV; populates the category editor control.
+  if (typeof loadCategoryWordLimits === 'function') loadCategoryWordLimits().catch(function() {});
+  // Article prompt library — shared across all users via KV (vance:article-prompts).
+  // Refreshes the localStorage-cached copy and migrates any local-only prompts up.
+  if (typeof loadArticlePrompts === 'function') loadArticlePrompts().catch(function() {});
+  // Populate the shared contentCache via the slim endpoint — drops only the
+  // byte-heavy `body` (and inline base64 hero images), bringing the boot fetch
+  // from ~38 MB / 18 s down to ~500 KB / ~2 s and removing the JSON.parse
+  // main-thread freeze. This one fetch feeds BOTH the queue panel and every
+  // list tab's cache, so the first tab open paints instantly. Individual
+  // article views fetch the full record via /api/content/:id when they need
+  // the body.
+  contentCache.refresh()
+    .then(list => {
       window._publishedCount = list.filter(i => i.status === 'published').length;
       publishingQueue = list.filter(i => i.status !== 'published');
       renderQueuePanel();
@@ -12793,6 +13281,14 @@ window.addEventListener('DOMContentLoaded', () => {
     .catch(() => { /* network down — leave caches empty */ });
   renderQueuePanel();
   updateQueueHeaderBtn();
+  initContentPolling();
+
+  // Restore the tab from the URL hash on load (refresh / deep link) instead of
+  // defaulting to the dashboard, and seed the initial history entry so Back
+  // works from the first navigation.
+  var _bootTab = tabFromHash();
+  history.replaceState({ tab: _bootTab }, '', '#' + _bootTab);
+  if (_bootTab !== 'dashboard') switchTab(_bootTab, true);
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -12843,10 +13339,14 @@ function renderMonRow(item) {
 async function loadMonitoring() {
   const container = document.getElementById('monitoringCards');
   if (!container) return;
-  container.innerHTML = '<div class="mon-table-empty">Loading…</div>';
+  activeContentRender = renderMonitoring;
+  if (!contentCache.list) container.innerHTML = '<div class="mon-table-empty">Loading…</div>';
+  withContent(renderMonitoring);
+}
 
-  let items = [];
-  try { items = await contentApi.getAll(); } catch(e) { items = publishingQueue || []; }
+function renderMonitoring(items) {
+  const container = document.getElementById('monitoringCards');
+  if (!container) return;
 
   if (!items.length) {
     container.innerHTML = '<div class="mon-table-empty">No content in library yet. Generate and save an article to get started.</div>';
@@ -13141,15 +13641,21 @@ async function generateSocialFromControl(allPlatforms) {
 
 async function loadDistribution() {
   const listEl = document.getElementById('socialArticleList');
-  const select = document.getElementById('socialArticleSelect');
   if (!listEl) return;
-
   // Render platform chips in control panel
   renderSocialCpChips();
+  activeContentRender = renderDistribution;
+  if (!contentCache.list) listEl.innerHTML = '<div class="social-empty">Loading…</div>';
+  withContent(renderDistribution);
+}
 
-  // Load ALL articles from storage (not just pipeline)
-  let items = [];
-  try { items = await contentApi.getAll(); } catch(e) { items = publishingQueue || []; }
+// Renders the social distribution list from the shared content cache. Article
+// bodies/excerpts are NOT needed here — social-post generation lazy-fetches the
+// full record by id when the user clicks Generate.
+function renderDistribution(items) {
+  const listEl = document.getElementById('socialArticleList');
+  const select = document.getElementById('socialArticleSelect');
+  if (!listEl) return;
   allSocialItems = items;
   // Refresh Kit Builder article select now that data is loaded
   if (typeof loadKitArticleSelect === 'function') loadKitArticleSelect();
@@ -13325,6 +13831,21 @@ function copySocialPost(articleId, platId, idx) {
   }).catch(function() { alert('Copy failed — please copy manually.'); });
 }
 
+// The content cache omits article bodies (they're the heavy field). Social-post
+// generation needs the body, so fetch the full record on demand and cache it
+// per id so repeated generations for the same article don't refetch.
+const _fullBodyCache = {};
+async function getArticleBody(id) {
+  if (_fullBodyCache[id] != null) return _fullBodyCache[id];
+  try {
+    const r = await fetch('/api/content/' + id, { credentials: 'same-origin' });
+    if (!r.ok) return '';
+    const full = await r.json();
+    _fullBodyCache[id] = (full && full.body) || '';
+    return _fullBodyCache[id];
+  } catch { return ''; }
+}
+
 async function regenSocialPost(articleId, platId, idx) {
   const item = allSocialItems.find(function(i) { return i.id === articleId; });
   if (!item) return;
@@ -13344,7 +13865,8 @@ async function regenSocialPost(articleId, platId, idx) {
     'Summarise in one powerful sentence then expand briefly.',
   ];
   const angle = angles[idx % angles.length];
-  const excerpt = (item.body || item.content || item.excerpt || '').replace(/<[^>]+>/g, '').trim().slice(0, 1500);
+  const body = item.body || await getArticleBody(articleId);
+  const excerpt = (body || item.content || item.excerpt || '').replace(/<[^>]+>/g, '').trim().slice(0, 1500);
   const prompt = getEffectiveSocialPrompt(platId) + '\n\n' +
     'Write post ' + (idx+1) + ' of ' + plat.postCount + ' for ' + plat.label + '.\n' +
     'Maximum characters: ' + plat.maxChars + '\n' +
@@ -13403,7 +13925,8 @@ async function generateSocialForArticle(articleId, allPlatforms) {
   const row = document.getElementById('social-row-' + articleId);
   if (row && !row.classList.contains('open')) row.classList.add('open');
 
-  const excerpt = (item.body || item.content || item.excerpt || '')
+  const body = item.body || await getArticleBody(articleId);
+  const excerpt = (body || item.content || item.excerpt || '')
     .replace(/<[^>]+>/g, '').trim().slice(0, 1500);
 
   const btn = row && row.querySelector('.social-article-head .btn');
@@ -13649,8 +14172,20 @@ async function heroLeftGenerate() {
   if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
   const model = (document.getElementById('heroAiModelSelect') || {}).value || 'google/gemini-3.1-flash-image-preview-20260226';
   showHeroLeftStatus('info', 'Generating image with AI… this can take 15–30 seconds');
-  const kws = extractKeywordsFromText(text, 6);
-  const prompt = kws.join(', ') + ', medical healthcare professional, clinical setting, high quality, Vance Medical Foods brand navy and teal. Absolutely no text, words, letters, numbers, or typography anywhere in the image.';
+
+  // Use the same hero prompt template as the automation flow (right-weighted composition,
+  // left side clean with gradient overlay, no-text enforcement, etc.)
+  const titleEl = document.getElementById('articleTitleDisplay');
+  const rawTitle = (titleEl ? (titleEl.innerText || titleEl.textContent || '') : '').trim();
+  const topic = rawTitle.replace(/^Clinical Review:\s*/i, '').trim()
+    || extractKeywordsFromText(text, 6).join(', ');
+  const template = (heroPromptsConfig && heroPromptsConfig.default) || HERO_PROMPT_DEFAULT;
+  let prompt;
+  if (/\{topic\}|\{title\}/i.test(template)) {
+    prompt = template.replace(/\{topic\}/gi, topic).replace(/\{title\}/gi, topic);
+  } else {
+    prompt = template + ' (Subject: ' + topic + '.)';
+  }
   try {
     const resp = await fetch('/api/social/image', {
       method: 'POST',
@@ -13841,14 +14376,17 @@ function libToggleAllCategories(on) {
 async function loadLibrary() {
   const listEl = document.getElementById('libraryList');
   if (!listEl) return;
-  listEl.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:14px;">Loading…</div>';
-  try {
-    const r = await fetch('/api/content', { credentials: 'same-origin' });
-    _libCache = r.ok ? await r.json() : [];
-  } catch {
-    listEl.innerHTML = '<div style="font-size:0.72rem;color:#c0392b;padding:14px;">Could not load library.</div>';
-    return;
+  activeContentRender = libRenderFromCache;
+  if (!contentCache.list) {
+    listEl.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:14px;">Loading…</div>';
   }
+  withContent(libRenderFromCache);
+}
+
+// Adapts the shared content cache to the library's existing _libCache-driven
+// render (filters, sort, chips). Word counts come from the slim `wordCount`.
+function libRenderFromCache(items) {
+  _libCache = items;
   libRenderCategoryChips();
   libRenderStatusChips();
   renderLibrary();
@@ -13882,7 +14420,7 @@ function renderLibrary() {
         const stLabel = _STATUS_LABELS[st] || st;
         const stColor = _STATUS_COLORS[st] || _STATUS_COLORS.draft;
         const date = it.createdAt ? new Date(it.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
-        const words = it.body ? it.body.split(/\s+/).filter(Boolean).length : 0;
+        const words = (it.wordCount != null) ? it.wordCount : (it.body ? countBodyProse(it.body) : 0);
         const catLabel = (typeof CATEGORY_LABELS !== 'undefined' && CATEGORY_LABELS[it.category]) || it.category || '';
         return ''
           + '<div style="display:flex;align-items:center;gap:12px;background:var(--card-bg,#fff);border:1px solid var(--border);padding:10px 14px;">'
@@ -14009,7 +14547,7 @@ function renderCategoryArticles() {
         const stLabel = _STATUS_LABELS[st] || st;
         const stColor = _STATUS_COLORS[st] || _STATUS_COLORS.draft;
         const date = it.createdAt ? new Date(it.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
-        const words = it.body ? it.body.split(/\s+/).filter(Boolean).length : 0;
+        const words = (it.wordCount != null) ? it.wordCount : (it.body ? countBodyProse(it.body) : 0);
         return ''
           + '<div style="display:flex;align-items:center;gap:12px;background:var(--card-bg,#fff);border:1px solid var(--border);padding:10px 14px;">'
           +   '<div style="flex:1;min-width:0;">'
@@ -14321,11 +14859,6 @@ function loadDashboard() {
   // above so it includes automation-generated items, not just manual ghData saves.
 }
 
-function loadArchiveItemFromDash(id, catId) {
-  switchCategory(catId);
-  loadArchiveItem(id);
-}
-
 function startGeneratorForCategory(catId) {
   switchCategory(catId);
   switchTab('generator');
@@ -14567,17 +15100,24 @@ function pipelineNewArticle(catId) {
 }
 
 async function loadPipeline() {
-  const board = document.getElementById('pipelineBoard');
-  board.innerHTML = '<div class="pipeline-loading">Loading…</div>';
-
   // Restore active layout button
   const layout = getPipelineLayout();
   ['kanban-h','kanban-v','list'].forEach(function(l) {
     const btn = document.getElementById('layout-btn-' + l);
     if (btn) btn.classList.toggle('active', l === layout);
   });
+  activeContentRender = renderPipeline;
+  if (!contentCache.list) {
+    const board = document.getElementById('pipelineBoard');
+    if (board) board.innerHTML = '<div class="pipeline-loading">Loading…</div>';
+  }
+  withContent(renderPipeline);
+}
 
-  const items = await contentApi.getAll();
+function renderPipeline(items) {
+  const board = document.getElementById('pipelineBoard');
+  if (!board) return;
+  const layout = getPipelineLayout();
   const cols = {};
   STATUS_COLS.forEach(c => { cols[c.id] = []; });
   items.forEach(item => {
@@ -14585,8 +15125,8 @@ async function loadPipeline() {
   });
 
   const total = items.length;
-  document.getElementById('pipelineSubtitle').textContent =
-    `${total} article${total !== 1 ? 's' : ''} across all stages`;
+  const sub = document.getElementById('pipelineSubtitle');
+  if (sub) sub.textContent = `${total} article${total !== 1 ? 's' : ''} across all stages`;
 
   if (layout === 'list') {
     board.className = 'pipeline-board layout-list';
@@ -14691,7 +15231,7 @@ function renderListRow(item) {
 function renderKanbanCard(item) {
   const catLabel = CATEGORY_LABELS[item.category] || item.category;
   const dateStr  = item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'2-digit' }) + ' ' + new Date(item.createdAt).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }) : '';
-  const wordCount = item.body ? item.body.split(/\s+/).filter(Boolean).length : 0;
+  const wordCount = (item.wordCount != null) ? item.wordCount : (item.body ? countBodyProse(item.body) : 0);
   const ruleChip = item.automationRuleName
     ? `<span title="Generated by automation rule: ${escapeHtml(item.automationRuleName)}" style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,104,104,0.10);color:#006868;border:1px solid rgba(0,104,104,0.25);padding:2px 6px;font-size:0.6rem;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;margin-top:6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>${escapeHtml(item.automationRuleName)}</span>`
     : '';
@@ -15132,6 +15672,16 @@ function enterEditMode() {
   document.getElementById('articleOutput').classList.add('edit-mode');
   const editBtn = document.getElementById('editArticleBtn');
   if (editBtn) editBtn.style.display = 'none';
+  // Keep reviewer highlights + comments visible while editing. The Reviewer
+  // notes panel sits above the textarea (edit-mode only hides #articleContent),
+  // so the editor can see the flagged passages and comments. If the panel
+  // wasn't rendered yet, fetch the record and apply it so it's never lost.
+  if (currentContentId && !document.getElementById('articleHighlightsPanel') && typeof applyArticleHighlights === 'function') {
+    fetch('/api/content/' + currentContentId)
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(it) { if (it) applyArticleHighlights(it); })
+      .catch(function() {});
+  }
   ta.focus();
 }
 
@@ -15146,10 +15696,11 @@ async function saveArticleEdits(replace) {
   if (!ta) return;
   const newText = ta.value.trim();
   if (!newText) return;
+  const prevBody = rawArticleText; // pre-edit body, for the before/after diff
   rawArticleText = newText;
   document.getElementById('articleContent').innerHTML = formatArticleHTML(rawArticleText);
   document.getElementById('wordCount').textContent =
-    rawArticleText.split(/\s+/).filter(function(w){return w;}).length.toLocaleString() + ' words';
+    countBodyProse(rawArticleText).toLocaleString() + ' words';
   exitEditMode();
   if (currentContentId) {
     try {
@@ -15164,8 +15715,18 @@ async function saveArticleEdits(replace) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!r.ok) throw new Error((await r.json()).error || r.statusText);
-      showAlert('generateAlert', '✓ Article updated in pipeline', 'success');
+      const data = await r.json().catch(function() { return {}; });
+      if (!r.ok) throw new Error((data && data.error) || r.statusText);
+      // Re-apply reviewer highlights to the freshly-rendered body (so marks
+      // return after editing), and offer a before/after view of the edit.
+      if (typeof applyArticleHighlights === 'function') applyArticleHighlights(data);
+      _lastEditDiff = { before: prevBody, after: newText, title: ((document.getElementById('articleTitleDisplay') || {}).textContent) || 'Article' };
+      const alertEl = document.getElementById('generateAlert');
+      if (alertEl) {
+        alertEl.className = 'alert alert-success';
+        alertEl.innerHTML = '✓ Article updated in pipeline ' +
+          '<button class="btn btn-outline btn-xs" style="margin-left:8px;vertical-align:middle;" onclick="openLastEditDiff()">View changes</button>';
+      }
     } catch(e) {
       showAlert('generateAlert', 'Update failed: ' + e.message, 'error');
     }
@@ -15199,11 +15760,21 @@ async function loadReviewRequestCard() {
       var aiBtn = canAiEdit
         ? '<button onclick="openAiRevise(\'' + item.id + '\',[' + idx + '])" title="Use AI to revise the article based on this comment" style="background:#1e2d40;color:#fff;border:none;padding:3px 8px;font-size:0.58rem;font-weight:700;letter-spacing:0.4px;cursor:pointer;font-family:inherit;">✨ AI REVISE</button>'
         : '';
+      // Summary only — the actual feedback text is shown on the article view
+      // (Reviewer notes panel), not duplicated here in the sidebar.
+      var noteCount = (c.highlights && c.highlights.length) ? c.highlights.length : 0;
+      var hasOverall = (c.overall != null)
+        ? !!String(c.overall).trim()
+        : (!noteCount && !!String(c.comment || '').trim());
+      var bits = [];
+      if (hasOverall) bits.push('overall feedback');
+      if (noteCount) bits.push(noteCount + ' inline note' + (noteCount === 1 ? '' : 's'));
+      var summary = bits.length ? bits.join(' &middot; ') : 'feedback recorded';
       return '<div class="review-req-log-item">' +
         '<div class="rr-label" style="display:flex;align-items:center;justify-content:space-between;gap:6px;">' +
           '<span>Changes Requested</span>' + aiBtn +
         '</div>' +
-        '<div class="rr-comment">' + escapeHtml(c.comment) + '</div>' +
+        '<div class="rr-ts" style="margin-top:2px;">' + summary + ' &mdash; open the article to read</div>' +
         '<div class="rr-ts">' + (c.at ? new Date(c.at).toLocaleString('en-GB') : '') + '</div>' +
         '</div>';
     }).join('');
@@ -15278,6 +15849,536 @@ async function resendReview() {
   if (!currentContentId) return;
   await sendForReview(currentContentId);
   setTimeout(loadReviewRequestCard, 1200);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DOCUMENT DIFF — before/after comparison modal
+// ═══════════════════════════════════════════════════════════
+// Line-level LCS diff between two article bodies. Surfaced from the Approval Log
+// timeline (pre/post compress, pre/post edit, pre/post AI-revise) and from the
+// "View changes" affordance after a manual edit.
+
+var _lastEditDiff = null;
+function openLastEditDiff() {
+  if (!_lastEditDiff) return;
+  openDiffModal(_lastEditDiff.before, _lastEditDiff.after,
+    { title: _lastEditDiff.title + ' — your edit', leftLabel: 'Before edit', rightLabel: 'After edit' });
+}
+
+function _diffLines(t) { return String(t == null ? '' : t).replace(/\r\n/g, '\n').split('\n'); }
+
+function computeLineDiff(before, after) {
+  var a = _diffLines(before), b = _diffLines(after);
+  var n = a.length, m = b.length;
+  var dp = [];
+  for (var i = 0; i <= n; i++) { var row = new Array(m + 1); row[m] = 0; dp.push(row); }
+  for (var j0 = 0; j0 <= m; j0++) dp[n][j0] = 0;
+  for (var i1 = n - 1; i1 >= 0; i1--) {
+    for (var j1 = m - 1; j1 >= 0; j1--) {
+      dp[i1][j1] = (a[i1] === b[j1]) ? dp[i1 + 1][j1 + 1] + 1 : Math.max(dp[i1 + 1][j1], dp[i1][j1 + 1]);
+    }
+  }
+  var ops = [], i = 0, j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { ops.push({ t: 'eq', a: a[i], b: b[j] }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { ops.push({ t: 'del', a: a[i] }); i++; }
+    else { ops.push({ t: 'ins', b: b[j] }); j++; }
+  }
+  while (i < n) { ops.push({ t: 'del', a: a[i] }); i++; }
+  while (j < m) { ops.push({ t: 'ins', b: b[j] }); j++; }
+  return ops;
+}
+
+function openDiffModal(beforeText, afterText, opts) {
+  opts = opts || {};
+  var existing = document.getElementById('docDiffModal');
+  if (existing) existing.remove();
+  var ops = computeLineDiff(beforeText || '', afterText || '');
+  var dels = 0, inss = 0;
+  var rowsHtml = ops.map(function(op) {
+    var l, r, lc = '', rc = '';
+    if (op.t === 'eq') { l = op.a; r = op.b; }
+    else if (op.t === 'del') { l = op.a; r = ''; lc = 'del'; dels++; }
+    else { l = ''; r = op.b; rc = 'ins'; inss++; }
+    return '<div class="diff-row">' +
+      '<div class="diff-cell ' + lc + '">' + (l === '' ? '&nbsp;' : escapeHtml(l)) + '</div>' +
+      '<div class="diff-cell ' + rc + '">' + (r === '' ? '&nbsp;' : escapeHtml(r)) + '</div>' +
+      '</div>';
+  }).join('');
+  var leftLabel = escapeHtml(opts.leftLabel || 'Before');
+  var rightLabel = escapeHtml(opts.rightLabel || 'After');
+  var title = escapeHtml(opts.title || 'Compare changes');
+  var wrap = document.createElement('div');
+  wrap.id = 'docDiffModal';
+  wrap.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,34,0.6);z-index:9700;display:flex;align-items:center;justify-content:center;font-family:Montserrat,sans-serif;padding:20px;';
+  wrap.innerHTML =
+    '<div style="background:#fff;border-radius:10px;width:min(1100px,100%);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;">' +
+      '<div style="padding:16px 22px;border-bottom:1px solid #dde3ea;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">' +
+        '<div><h3 style="font-size:0.92rem;margin:0 0 3px;color:#1e2d40;">' + title + '</h3>' +
+        '<p style="font-size:0.68rem;color:#6b7a8d;margin:0;"><span style="color:#1a7245;font-weight:700;">+' + inss + ' added</span> &middot; <span style="color:#c0392b;font-weight:700;">-' + dels + ' removed</span> &middot; line-level</p></div>' +
+        '<button type="button" id="docDiffClose" style="padding:8px 14px;background:#f0f2f5;color:#1e2d40;border:1px solid #dde3ea;font-weight:600;font-size:0.76rem;cursor:pointer;font-family:inherit;border-radius:4px;flex-shrink:0;">Close</button>' +
+      '</div>' +
+      '<div class="diff-colheads"><div>' + leftLabel + '</div><div>' + rightLabel + '</div></div>' +
+      '<div class="diff-body">' + (rowsHtml || '<div style="padding:20px;color:#6b7a8d;font-size:0.8rem;">No differences.</div>') + '</div>' +
+    '</div>';
+  document.body.appendChild(wrap);
+  var cleanup = function() { wrap.remove(); };
+  wrap.addEventListener('click', function(e) { if (e.target === wrap) cleanup(); });
+  wrap.querySelector('#docDiffClose').onclick = cleanup;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DEDICATED VIEW-ARTICLE PAGE — relocation, toolbar meta, title edit
+// ═══════════════════════════════════════════════════════════
+// The article display + toolbar (#articlePanel) is a single shared component.
+// It lives on the Generate tab for generation and is relocated into the
+// sidebar-less view-article page when viewing an existing article, so all the
+// edit / highlight / diff logic is reused rather than duplicated.
+function moveArticlePanel(targetId) {
+  var panel = document.getElementById('articlePanel');
+  var target = document.getElementById(targetId);
+  if (panel && target && panel.parentNode !== target) target.appendChild(panel);
+}
+
+function backFromArticleView() {
+  if (typeof _setArticleCommentMode === 'function') _setArticleCommentMode(false);
+  switchTab('pipeline');
+}
+
+// ── Replace hero image — relocate the sidebar hero panel into a modal ──
+// The hero panel (#heroLeftCard) lives in the Generate sidebar; the view page
+// has no sidebar, so we move the live panel into a modal on demand (reusing all
+// its search / AI-generate / select wiring) and move it back on close.
+var _heroHomeParent = null, _heroHomeNext = null;
+function moveHeroCardToModal() {
+  var card = document.getElementById('heroLeftCard');
+  var mount = document.getElementById('heroModalMount');
+  if (!card || !mount) return;
+  if (!_heroHomeParent) { _heroHomeParent = card.parentNode; _heroHomeNext = card.nextSibling; }
+  if (card.parentNode !== mount) mount.appendChild(card);
+}
+function restoreHeroCardHome() {
+  var card = document.getElementById('heroLeftCard');
+  if (card && _heroHomeParent && card.parentNode !== _heroHomeParent) {
+    _heroHomeParent.insertBefore(card, _heroHomeNext);
+  }
+}
+function openHeroModal() {
+  if (!currentContentId) { if (typeof showAlert === 'function') showAlert('generateAlert', 'Open an article first.', 'error'); return; }
+  moveHeroCardToModal();
+  // Reflect the article's current hero in the panel preview, if any.
+  if (typeof heroImageUrl !== 'undefined' && heroImageUrl && typeof heroLeftSelectImageDirect === 'function') {
+    heroLeftSelectImageDirect(heroImageUrl, 'Current hero image', null);
+  }
+  var m = document.getElementById('heroModal'); if (m) m.style.display = 'flex';
+}
+function closeHeroModal() {
+  var m = document.getElementById('heroModal'); if (m) m.style.display = 'none';
+  restoreHeroCardHome();
+}
+async function saveHeroFromModal() {
+  if (!currentContentId) { closeHeroModal(); return; }
+  var payload = {
+    heroImageUrl: (typeof heroImageUrl !== 'undefined' ? heroImageUrl : null) || null,
+    heroImageType: (typeof heroImageType !== 'undefined' ? heroImageType : null) || null,
+  };
+  try {
+    var r = await fetch('/api/content/' + currentContentId, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+      body: JSON.stringify(payload),
+    });
+    var data = await r.json().catch(function() { return {}; });
+    if (!r.ok) throw new Error(data.error || r.statusText);
+    var q = (publishingQueue || []).find(function(i) { return i.id === currentContentId; });
+    if (q) { q.heroImageUrl = payload.heroImageUrl; q.heroImageType = payload.heroImageType; }
+    if (typeof updateArticleHeroPreview === 'function') updateArticleHeroPreview();
+    if (typeof showToast === 'function') showToast('Hero image updated');
+    closeHeroModal();
+  } catch (e) {
+    if (typeof showAlert === 'function') showAlert('generateAlert', 'Hero update failed: ' + e.message, 'error');
+  }
+}
+
+// Source (filename only in-app, per spec) + prompt name in the toolbar.
+function populateArticleToolbarMeta(item) {
+  item = item || {};
+  var srcBadge = document.getElementById('articleSourceBadge');
+  if (srcBadge) {
+    var name = item.sourceDocName ? String(item.sourceDocName).split(' — ')[0].trim() : '';
+    if (name) {
+      srcBadge.innerHTML = item.sourceDocUrl
+        ? 'Source: <a href="' + escapeHtml(item.sourceDocUrl) + '" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline;">' + escapeHtml(name) + '</a>'
+        : 'Source: ' + escapeHtml(name);
+      srcBadge.style.display = 'inline-flex';
+    } else { srcBadge.style.display = 'none'; }
+  }
+  var pBadge = document.getElementById('articlePromptBadge');
+  if (pBadge) {
+    var pn = (item.promptName || '').trim();
+    if (pn) { pBadge.textContent = 'Prompt: ' + pn; pBadge.style.display = 'inline-flex'; }
+    else { pBadge.style.display = 'none'; }
+  }
+}
+
+// ── Editable title (#5) ──────────────────────────────────────
+function editArticleTitle() {
+  var h = document.getElementById('articleTitleDisplay');
+  if (!h || !currentContentId) return;
+  h.dataset.orig = (h.textContent || '').trim();
+  h.setAttribute('contenteditable', 'plaintext-only');
+  h.classList.add('title-editing');
+  h.focus();
+  try { var rng = document.createRange(); rng.selectNodeContents(h); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rng); } catch (_) {}
+  h.onkeydown = function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); h.blur(); }
+    else if (e.key === 'Escape') { e.preventDefault(); h.textContent = h.dataset.orig || ''; h.blur(); }
+  };
+  h.onblur = function() { _saveArticleTitle(); };
+}
+async function _saveArticleTitle() {
+  var h = document.getElementById('articleTitleDisplay');
+  if (!h) return;
+  var orig = h.dataset.orig || '';
+  h.removeAttribute('contenteditable'); h.classList.remove('title-editing'); h.onblur = null; h.onkeydown = null;
+  var next = (h.textContent || '').trim();
+  if (!next) { h.textContent = orig; return; }
+  if (next === orig || !currentContentId) { h.textContent = next; return; }
+  try {
+    var r = await fetch('/api/content/' + currentContentId, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+      body: JSON.stringify({ title: next }),
+    });
+    var data = await r.json().catch(function() { return {}; });
+    if (!r.ok) throw new Error(data.error || r.statusText);
+    var q = (publishingQueue || []).find(function(i) { return i.id === currentContentId; });
+    if (q) q.title = next;
+    if (typeof showToast === 'function') showToast('Title updated');
+  } catch (e) {
+    h.textContent = orig;
+    if (typeof showAlert === 'function') showAlert('generateAlert', 'Title update failed: ' + e.message, 'error');
+  }
+}
+
+// ── In-app commenting (#1/#10) — select text → comment, mirrors the review email ──
+var _articleCommentMode = false, _acPill = null, _acPopover = null, _acPending = null;
+
+function toggleArticleCommentMode() { _setArticleCommentMode(!_articleCommentMode); }
+function _setArticleCommentMode(on) {
+  _articleCommentMode = !!on;
+  var btn = document.getElementById('commentModeBtn');
+  var art = document.getElementById('articleContent');
+  if (btn) {
+    btn.style.background = _articleCommentMode ? 'var(--vance-primary)' : 'rgba(255,255,255,0.08)';
+    btn.style.borderColor = _articleCommentMode ? 'var(--vance-primary)' : 'rgba(255,255,255,0.15)';
+    btn.style.color = '#fff';
+  }
+  if (art) {
+    art.removeEventListener('mouseup', _acOnMouseUp);
+    if (_articleCommentMode) { art.classList.add('commenting'); art.addEventListener('mouseup', _acOnMouseUp); }
+    else { art.classList.remove('commenting'); _acClearPill(); _acClearPopover(); }
+  }
+}
+function _acClearPill() { if (_acPill) { _acPill.remove(); _acPill = null; } }
+function _acClearPopover() { if (_acPopover) { _acPopover.remove(); _acPopover = null; } _acPending = null; }
+function _acOnMouseUp() {
+  setTimeout(function() {
+    var art = document.getElementById('articleContent');
+    var sel = window.getSelection();
+    if (!art || !sel || sel.isCollapsed) { _acClearPill(); return; }
+    var text = sel.toString().trim();
+    if (!text || !art.contains(sel.anchorNode) || !art.contains(sel.focusNode)) { _acClearPill(); return; }
+    var rect = sel.getRangeAt(0).getBoundingClientRect();
+    _acPending = { quote: text };
+    _acClearPill();
+    _acPill = document.createElement('button');
+    _acPill.type = 'button'; _acPill.textContent = '💬 Add comment';
+    _acPill.style.cssText = 'position:fixed;background:#1e2d40;color:#fff;border:none;padding:6px 12px;font-size:0.7rem;font-weight:700;cursor:pointer;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.25);border-radius:4px;';
+    _acPill.style.left = Math.max(8, Math.min(window.innerWidth - 150, rect.left + rect.width / 2 - 60)) + 'px';
+    _acPill.style.top = Math.max(8, rect.top - 38) + 'px';
+    _acPill.onclick = _acOpenPopover;
+    document.body.appendChild(_acPill);
+  }, 10);
+}
+function _acOpenPopover() {
+  if (!_acPending) return;
+  var quote = _acPending.quote;
+  _acClearPill(); _acClearPopover();
+  _acPending = { quote: quote };
+  _acPopover = document.createElement('div');
+  _acPopover.style.cssText = 'position:fixed;background:#fff;border:1px solid var(--vance-primary,#006868);padding:14px;width:340px;max-width:92vw;z-index:10000;box-shadow:0 12px 32px rgba(0,0,0,0.22);border-radius:6px;left:50%;top:28%;transform:translateX(-50%);font-family:Montserrat,sans-serif;';
+  _acPopover.innerHTML =
+    '<div style="font-size:0.66rem;color:#6b7a8d;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">Quoting</div>' +
+    '<div style="font-size:0.8rem;color:#1e2d40;font-style:italic;background:#fff3cd;padding:6px 8px;margin-bottom:10px;max-height:90px;overflow-y:auto;border-left:3px solid #f0ad4e;">' + _ahEscHtml(quote) + '</div>' +
+    '<textarea id="_acText" placeholder="Your comment on this passage…" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #dde3ea;font-size:0.8rem;min-height:80px;resize:vertical;border-radius:4px;font-family:inherit;"></textarea>' +
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">' +
+      '<button type="button" id="_acCancel" style="padding:6px 14px;background:#f0f2f5;color:#1e2d40;border:1px solid #dde3ea;font-size:0.72rem;cursor:pointer;border-radius:4px;font-family:inherit;">Cancel</button>' +
+      '<button type="button" id="_acSave" style="padding:6px 14px;background:var(--vance-primary,#006868);color:#fff;border:none;font-size:0.72rem;cursor:pointer;font-weight:700;border-radius:4px;font-family:inherit;">Save comment</button>' +
+    '</div>';
+  document.body.appendChild(_acPopover);
+  var ta = _acPopover.querySelector('#_acText'); setTimeout(function() { ta.focus(); }, 0);
+  _acPopover.querySelector('#_acCancel').onclick = function() { _acClearPopover(); };
+  _acPopover.querySelector('#_acSave').onclick = function() { _acSaveComment(quote, ta.value.trim()); };
+}
+async function _acSaveComment(quote, comment) {
+  if (!comment) return;
+  if (!currentContentId) { _acClearPopover(); return; }
+  var saveBtn = _acPopover && _acPopover.querySelector('#_acSave');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+  try {
+    var r = await fetch('/api/content/' + currentContentId + '/comment', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+      body: JSON.stringify({ highlights: [{ quote: quote, comment: comment }] }),
+    });
+    var data = await r.json().catch(function() { return {}; });
+    if (!r.ok) throw new Error(data.error || r.statusText);
+    _acClearPopover();
+    if (window.getSelection) window.getSelection().removeAllRanges();
+    // Re-render the body from clean markdown first so re-wrapping highlights
+    // doesn't nest inside existing <mark>s, then re-apply notes + marks.
+    var artEl = document.getElementById('articleContent');
+    if (artEl) artEl.innerHTML = formatArticleHTML(data.body || rawArticleText || '');
+    if (typeof applyArticleHighlights === 'function') applyArticleHighlights(data);
+    if (typeof loadReviewRequestCard === 'function') loadReviewRequestCard();
+    if (typeof showToast === 'function') showToast('Comment added');
+  } catch (e) {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save comment'; }
+    if (typeof showAlert === 'function') showAlert('generateAlert', 'Comment failed: ' + e.message, 'error');
+  }
+}
+
+// ── View changes (#6/#8) — toggle Compression vs User edits, with attribution ──
+var _changesItem = null, _changesMode = 'edits';
+async function openArticleChanges() {
+  if (!currentContentId) { if (typeof showAlert === 'function') showAlert('generateAlert', 'Open an article first.', 'error'); return; }
+  var item;
+  try {
+    var r = await fetch('/api/content/' + currentContentId, { credentials: 'same-origin' });
+    if (!r.ok) throw new Error(r.statusText);
+    item = await r.json();
+  } catch (e) { if (typeof showAlert === 'function') showAlert('generateAlert', 'Could not load changes: ' + e.message, 'error'); return; }
+  _changesItem = item;
+  _changesMode = _changesData(item, 'edits') ? 'edits' : (_changesData(item, 'compress') ? 'compress' : 'edits');
+  _renderChangesModal();
+}
+function _changesEvents(item, types) {
+  var log = Array.isArray(item.auditLog) ? item.auditLog : [];
+  return log.filter(function(e) { return types.indexOf(e.type) >= 0; })
+    .map(function(e) { return { type: e.type, actor: e.actor, at: e.at }; });
+}
+function _changesData(item, mode) {
+  var versions = Array.isArray(item.versions) ? item.versions : [];
+  if (!versions.length) return null;
+  if (mode === 'compress') {
+    var idx = -1;
+    for (var i = versions.length - 1; i >= 0; i--) { if (versions[i].reason === 'pre-compress') { idx = i; break; } }
+    if (idx === -1) return null;
+    return {
+      before: versions[idx].body || '',
+      after: (idx + 1 < versions.length) ? (versions[idx + 1].body || '') : (item.body || ''),
+      events: _changesEvents(item, ['compress']),
+    };
+  }
+  var first = -1;
+  for (var j = 0; j < versions.length; j++) { if (versions[j].reason === 'edit' || versions[j].reason === 'pre-ai-revise') { first = j; break; } }
+  if (first === -1) return null;
+  return { before: versions[first].body || '', after: item.body || '', events: _changesEvents(item, ['edit', 'ai_revise', 'title']) };
+}
+function _switchChangesMode(mode) { _changesMode = mode; _renderChangesModal(); }
+function _renderChangesModal() {
+  var item = _changesItem; if (!item) return;
+  var existing = document.getElementById('articleChangesModal'); if (existing) existing.remove();
+  var data = _changesData(item, _changesMode);
+  var bodyHtml;
+  if (!data) {
+    bodyHtml = '<div style="padding:24px;color:#6b7a8d;font-size:0.82rem;">No ' + (_changesMode === 'compress' ? 'compression' : 'user edit') + ' changes recorded for this article yet.</div>';
+  } else {
+    var ops = computeLineDiff(data.before || '', data.after || '');
+    var dels = 0, inss = 0;
+    var rows = ops.map(function(op) {
+      var l, r, lc = '', rc = '';
+      if (op.t === 'eq') { l = op.a; r = op.b; }
+      else if (op.t === 'del') { l = op.a; r = ''; lc = 'del'; dels++; }
+      else { l = ''; r = op.b; rc = 'ins'; inss++; }
+      return '<div class="diff-row"><div class="diff-cell ' + lc + '">' + (l === '' ? '&nbsp;' : escapeHtml(l)) + '</div><div class="diff-cell ' + rc + '">' + (r === '' ? '&nbsp;' : escapeHtml(r)) + '</div></div>';
+    }).join('');
+    var contrib = (data.events || []).map(function(e) {
+      var who = (typeof _alActor === 'function') ? _alActor(e.actor) : (e.actor || 'System');
+      var when = (typeof _alFmtDate === 'function') ? _alFmtDate(e.at) : '';
+      return '<span style="display:inline-block;margin-right:10px;white-space:nowrap;">' + escapeHtml(who) + (when ? ' &middot; ' + escapeHtml(when) : '') + '</span>';
+    }).join('');
+    bodyHtml =
+      '<div style="padding:6px 14px;font-size:0.66rem;color:#6b7a8d;background:#f8f9fa;border-bottom:1px solid #dde3ea;"><strong style="color:#1a7245;">+' + inss + '</strong> / <strong style="color:#c0392b;">-' + dels + '</strong> lines' + (contrib ? ' &middot; by ' + contrib : '') + '</div>' +
+      '<div class="diff-colheads"><div>Before</div><div>After</div></div>' +
+      '<div class="diff-body">' + (rows || '<div style="padding:20px;color:#6b7a8d;">No differences.</div>') + '</div>';
+  }
+  function tabBtn(mode, label) {
+    var on = _changesMode === mode;
+    return '<button type="button" onclick="_switchChangesMode(\'' + mode + '\')" style="padding:6px 14px;border:1px solid ' + (on ? 'var(--vance-primary,#006868)' : '#dde3ea') + ';background:' + (on ? 'var(--vance-primary,#006868)' : '#fff') + ';color:' + (on ? '#fff' : '#1e2d40') + ';font-size:0.72rem;font-weight:700;cursor:pointer;border-radius:4px;font-family:inherit;">' + label + '</button>';
+  }
+  var wrap = document.createElement('div');
+  wrap.id = 'articleChangesModal';
+  wrap.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,34,0.6);z-index:9700;display:flex;align-items:center;justify-content:center;font-family:Montserrat,sans-serif;padding:20px;';
+  wrap.innerHTML =
+    '<div style="background:#fff;border-radius:10px;width:min(1100px,100%);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;">' +
+      '<div style="padding:16px 22px;border-bottom:1px solid #dde3ea;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">' +
+        '<div><h3 style="font-size:0.92rem;margin:0 0 6px;color:#1e2d40;">' + escapeHtml(item.title || 'Article') + ' — changes</h3>' +
+          '<div style="display:flex;gap:8px;">' + tabBtn('edits', 'User edits') + tabBtn('compress', 'Compression') + '</div>' +
+        '</div>' +
+        '<button type="button" id="_chgClose" style="padding:8px 14px;background:#f0f2f5;color:#1e2d40;border:1px solid #dde3ea;font-weight:600;font-size:0.76rem;cursor:pointer;border-radius:4px;flex-shrink:0;">Close</button>' +
+      '</div>' + bodyHtml +
+    '</div>';
+  document.body.appendChild(wrap);
+  wrap.addEventListener('click', function(e) { if (e.target === wrap) wrap.remove(); });
+  wrap.querySelector('#_chgClose').onclick = function() { wrap.remove(); };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  APPROVAL LOG — per-article review / edit / approval history
+// ═══════════════════════════════════════════════════════════
+var _approvalLogItems = {}; // id → full record, cached for diff lookups
+
+function _alFmtDate(d) { try { return d ? new Date(d).toLocaleString('en-GB') : ''; } catch (_) { return ''; } }
+function _alActor(a) {
+  if (!a) return 'System';
+  if (typeof reviewerName === 'function') { var n = reviewerName(a); if (n && n !== a) return n; }
+  return a;
+}
+function _alDiffLabel(type) {
+  return type === 'compress' ? 'compression' : type === 'ai_revise' ? 'AI revision' : type === 'edit' ? 'edit' : 'changes';
+}
+
+// Open a before/after diff for a snapshot in the article's version history.
+// versions[] are snapshots taken BEFORE each change, so versions[vi] is the
+// "before" and the NEXT snapshot (or the current body) is the "after".
+function openVersionDiff(id, vi, label) {
+  var item = _approvalLogItems[id];
+  if (!item) return;
+  var versions = Array.isArray(item.versions) ? item.versions : [];
+  if (vi < 0 || vi >= versions.length) return;
+  var before = versions[vi].body || '';
+  var after = (vi + 1 < versions.length) ? (versions[vi + 1].body || '') : (item.body || '');
+  openDiffModal(before, after, {
+    title: (item.title || 'Article') + ' — ' + (label || 'changes'),
+    leftLabel: 'Before', rightLabel: 'After',
+  });
+}
+
+// Build a chronologically-sorted (newest first) timeline for an article.
+// Prefers the structured auditLog[]; falls back to reconstructing events from
+// legacy fields for articles created before the audit log existed.
+function buildArticleTimeline(item) {
+  var ev = [];
+  var versions = Array.isArray(item.versions) ? item.versions : [];
+  function versionIndexAt(at) {
+    for (var k = 0; k < versions.length; k++) { if (versions[k].at && versions[k].at === at) return k; }
+    return -1;
+  }
+  function push(at, type, actor, label, detail, vi) {
+    ev.push({ at: at || '', type: type, actor: actor, label: label, detail: detail || '', versionIdx: (vi == null ? -1 : vi) });
+  }
+
+  if (Array.isArray(item.auditLog) && item.auditLog.length) {
+    item.auditLog.forEach(function(e) {
+      var d = e.detail || {};
+      var label, detail = '';
+      switch (e.type) {
+        case 'edit': label = 'Edited'; detail = (d.wordsBefore != null ? d.wordsBefore + ' → ' + d.wordsAfter + ' words' : ''); break;
+        case 'compress': label = 'Auto-compressed for length'; detail = (d.wordsBefore != null ? d.wordsBefore + ' → ' + d.wordsAfter + ' words (limit ' + (d.limit || '?') + ')' : ''); break;
+        case 'ai_revise': label = 'AI revision applied'; detail = (d.model ? 'model: ' + d.model : ''); break;
+        case 'approve': label = 'Approved'; break;
+        case 'change_request': label = 'Changes requested'; detail = [(d.hasOverall ? 'overall feedback' : ''), (d.inlineNotes ? d.inlineNotes + ' inline note' + (d.inlineNotes === 1 ? '' : 's') : '')].filter(Boolean).join(' · '); break;
+        case 'comment': label = 'Comment added'; detail = [(d.hasOverall ? 'general comment' : ''), (d.inlineNotes ? d.inlineNotes + ' inline note' + (d.inlineNotes === 1 ? '' : 's') : '')].filter(Boolean).join(' · '); break;
+        case 'title': label = 'Title edited'; detail = d.to ? ('→ "' + d.to + '"') : ''; break;
+        case 'status': label = 'Status: ' + (d.from || '?') + ' → ' + (d.to || '?'); break;
+        default: label = e.type || 'Event';
+      }
+      push(e.at, e.type, e.actor, label, detail, versionIndexAt(e.at));
+    });
+  } else {
+    if (item.createdAt) push(item.createdAt, 'created', null, 'Created', '');
+    if (item.sentForReviewAt) push(item.sentForReviewAt, 'status', null, 'Sent for review', '');
+    (item.rejectionComments || []).forEach(function(c) {
+      var notes = (c.highlights && c.highlights.length) ? c.highlights.length : 0;
+      var hasOverall = (c.overall != null) ? !!String(c.overall).trim() : (!notes && !!String(c.comment || '').trim());
+      push(c.at, 'change_request', c.reviewerId, 'Changes requested',
+        [(hasOverall ? 'overall feedback' : ''), (notes ? notes + ' inline note' + (notes === 1 ? '' : 's') : '')].filter(Boolean).join(' · '));
+    });
+    if (item.approvedAt) push(item.approvedAt, 'approve', null, 'Approved', '');
+    if (item.revisedByAi && item.revisedByAi.at) push(item.revisedByAi.at, 'ai_revise', item.revisedByAi.by, 'AI revision applied', '');
+    if (item.scheduledAt) push(item.scheduledAt, 'status', null, 'Scheduled', '');
+    if (item.publishedAt) push(item.publishedAt, 'status', null, 'Published', '');
+  }
+  ev.sort(function(a, b) { return a.at < b.at ? 1 : (a.at > b.at ? -1 : 0); });
+  return ev;
+}
+
+function renderTimelineHtml(item) {
+  var timeline = buildArticleTimeline(item);
+  var tl = timeline.length ? timeline.map(function(e) {
+    var cmpBtn = (e.versionIdx >= 0)
+      ? ' <button class="btn btn-outline btn-xs" style="font-size:0.58rem;padding:2px 7px;" onclick="openVersionDiff(\'' + item.id + '\',' + e.versionIdx + ',\'' + _alDiffLabel(e.type) + '\')">Compare before/after</button>'
+      : '';
+    return '<div class="al-event al-' + e.type + '"><div class="al-ev-dot"></div><div class="al-ev-body">' +
+      '<div class="al-ev-label">' + escapeHtml(e.label) + cmpBtn + '</div>' +
+      (e.detail ? '<div class="al-ev-detail">' + escapeHtml(e.detail) + '</div>' : '') +
+      '<div class="al-ev-meta">' + escapeHtml(_alActor(e.actor)) + (e.at ? ' &middot; ' + _alFmtDate(e.at) : '') + '</div>' +
+      '</div></div>';
+  }).join('') : '<p class="al-empty" style="padding:6px 0;">No recorded history.</p>';
+  return tl + '<div style="padding:8px 0 2px;"><button class="btn btn-outline btn-xs" onclick="viewArticleFromPipeline(\'' + item.id + '\')">Open article</button></div>';
+}
+
+async function loadApprovalLog() {
+  var listEl = document.getElementById('approvalLogList');
+  if (!listEl) return;
+  activeContentRender = renderApprovalLog;
+  if (!contentCache.list) listEl.innerHTML = '<p class="al-empty">Loading…</p>';
+  withContent(renderApprovalLog);
+}
+
+function renderApprovalLog(items) {
+  var listEl = document.getElementById('approvalLogList');
+  if (!listEl) return;
+  items = (Array.isArray(items) ? items : []).filter(function(i) { return i.status !== 'trash'; });
+  items.sort(function(a, b) {
+    var ax = a.updatedAt || a.createdAt || '', bx = b.updatedAt || b.createdAt || '';
+    return ax < bx ? 1 : (ax > bx ? -1 : 0);
+  });
+  if (!items.length) { listEl.innerHTML = '<p class="al-empty">No articles yet.</p>'; return; }
+  var ST = { draft: 'Draft', in_review: 'In Review', rejected: 'Changes Requested', approved: 'Approved', scheduled: 'Scheduled', published: 'Published' };
+  listEl.innerHTML = items.map(function(item) {
+    var st = item.status || 'draft';
+    return '<details class="al-card" data-id="' + escapeHtml(item.id) + '">' +
+      '<summary class="al-summary">' +
+        '<span class="al-title">' + escapeHtml(item.title || 'Untitled') + '</span>' +
+        '<span class="review-req-status s-' + st + '">' + (ST[st] || st) + '</span>' +
+        '<span class="al-date">' + _alFmtDate(item.updatedAt || item.createdAt) + '</span>' +
+      '</summary>' +
+      '<div class="al-timeline" data-loaded="0"><p class="al-empty" style="padding:6px 0;">Expand to load history…</p></div>' +
+    '</details>';
+  }).join('');
+
+  // Lazy-load each article's full record (with auditLog/versions) on expand.
+  // 'toggle' does not bubble, so listen in the capture phase on the container.
+  if (!listEl._alBound) {
+    listEl._alBound = true;
+    listEl.addEventListener('toggle', function(e) {
+      var det = e.target;
+      if (!det || det.tagName !== 'DETAILS' || !det.open) return;
+      var tl = det.querySelector('.al-timeline');
+      if (!tl || tl.getAttribute('data-loaded') === '1') return;
+      tl.setAttribute('data-loaded', '1');
+      tl.innerHTML = '<p class="al-empty" style="padding:6px 0;">Loading history…</p>';
+      var id = det.getAttribute('data-id');
+      fetch('/api/content/' + id, { credentials: 'same-origin' })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(full) {
+          if (!full) { tl.innerHTML = '<p class="al-empty">Could not load history.</p>'; tl.setAttribute('data-loaded', '0'); return; }
+          _approvalLogItems[id] = full;
+          tl.innerHTML = renderTimelineHtml(full);
+        })
+        .catch(function() { tl.innerHTML = '<p class="al-empty">Could not load history.</p>'; tl.setAttribute('data-loaded', '0'); });
+    }, true);
+  }
 }
 
 // Toolbar "Send for Review" — queues first if not already in pipeline, then sends
@@ -16160,13 +17261,29 @@ function disconnectSocialConn(platId) {
 // Prompt object shape: { name: string, createdBy: string, text: string }
 // stored[0] is always the active default for generation
 
+// ── Shared article prompt library (server-backed: vance:article-prompts) ──────
+// In-memory cache so the many synchronous readers (generation, category editor)
+// keep working. Falls back to the legacy per-browser localStorage copy for first
+// paint / offline, then is refreshed from the shared server store by
+// loadArticlePrompts() at startup.
+var articlePromptsConfig = { categories: {} };
+
+function _rawArticlePrompts(catId) {
+  if (articlePromptsConfig.categories && articlePromptsConfig.categories[catId]) {
+    return articlePromptsConfig.categories[catId];
+  }
+  try {
+    return JSON.parse(localStorage.getItem('vance_prompts_' + catId) || 'null');
+  } catch (_) { return null; }
+}
+
 function getPromptsForCat(catId) {
   try {
-    const raw = JSON.parse(localStorage.getItem('vance_prompts_' + catId) || 'null');
+    const raw = _rawArticlePrompts(catId);
     if (!raw) return null;
     // Migrate legacy plain strings to objects + auto-refresh the Vance-shipped
     // default prompt so the latest in-code version always wins (fixes stale
-    // prompts cached in localStorage from earlier deploys).
+    // prompts cached from earlier deploys).
     var fresh = (typeof getCatDefaultPrompt === 'function') ? getCatDefaultPrompt(catId) : null;
     return raw.map(function(p) {
       if (typeof p === 'string') return { name: 'Default Prompt', createdBy: 'Gastro Health Hub', text: p };
@@ -16179,7 +17296,70 @@ function getPromptsForCat(catId) {
 }
 
 function savePromptsForCat(catId, arr) {
-  localStorage.setItem('vance_prompts_' + catId, JSON.stringify(arr));
+  // Update shared in-memory cache + legacy localStorage fallback immediately so
+  // synchronous readers see the change, then persist to the shared server store.
+  if (!articlePromptsConfig.categories) articlePromptsConfig.categories = {};
+  articlePromptsConfig.categories[catId] = arr;
+  try { localStorage.setItem('vance_prompts_' + catId, JSON.stringify(arr)); } catch (_) {}
+  if (typeof apiFetch === 'function') {
+    var payload = { categories: {} };
+    payload.categories[catId] = arr;
+    // Fire-and-forget; viewers without edit rights get 403, which we ignore.
+    Promise.resolve(apiFetch('/api/content/article-prompts', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })).catch(function () {});
+  }
+}
+
+// Pull the shared library from the server and refresh the in-memory cache.
+// One-time migration: if a category exists only in this browser's localStorage,
+// push it up so existing work isn't lost when the shared store is first seeded.
+async function loadArticlePrompts() {
+  var serverCats = {};
+  try {
+    var rec = await apiFetch('/api/content/article-prompts');
+    if (rec && rec.categories && typeof rec.categories === 'object') {
+      serverCats = rec.categories;
+      articlePromptsConfig.categories = serverCats;
+      Object.keys(serverCats).forEach(function (catId) {
+        try { localStorage.setItem('vance_prompts_' + catId, JSON.stringify(serverCats[catId])); } catch (_) {}
+      });
+    }
+  } catch (_) { /* offline or not authenticated — keep local cache */ }
+
+  // Migrate local-only categories to the shared store (admin/content only).
+  try {
+    var toPush = {};
+    var hasPush = false;
+    var cats = (typeof CATEGORIES !== 'undefined' && CATEGORIES) ? CATEGORIES : [];
+    cats.forEach(function (cat) {
+      if (serverCats[cat.id]) return; // already shared
+      var local = null;
+      try { local = JSON.parse(localStorage.getItem('vance_prompts_' + cat.id) || 'null'); } catch (_) {}
+      if (local && local.length) {
+        toPush[cat.id] = local;
+        hasPush = true;
+        articlePromptsConfig.categories[cat.id] = local;
+      }
+    });
+    if (hasPush) {
+      var pushed = await apiFetch('/api/content/article-prompts', {
+        method: 'PUT',
+        body: JSON.stringify({ categories: toPush }),
+      });
+      if (pushed && pushed.categories) articlePromptsConfig.categories = pushed.categories;
+    }
+  } catch (_) { /* viewer without edit rights, or offline — ignore */ }
+
+  // Refresh any visible prompt UI now that the shared copy is loaded.
+  try { if (typeof loadPromptsTab_articleOnly === 'function') loadPromptsTab_articleOnly(); } catch (_) {}
+  try {
+    if (typeof currentCategory !== 'undefined' && currentCategory) {
+      var ta = document.getElementById('promptTextarea');
+      if (ta && typeof getEffectivePrompt === 'function') ta.value = getEffectivePrompt(currentCategory);
+    }
+  } catch (_) {}
 }
 
 // ── Auto-save: persist prompt textarea edits so they survive reloads ─────────
@@ -16586,14 +17766,22 @@ function addPromptToCat(catId) {
 // ═══════════════════════════════════════════════════════════
 
 async function loadTrash() {
+  const grid = document.getElementById('trashGrid');
+  if (!grid) return;
+  activeContentRender = renderTrash;
+  if (!contentCache.list) {
+    grid.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:0.75rem;">Loading…</div>';
+  }
+  withContent(renderTrash);
+}
+
+function renderTrash(items) {
   const grid  = document.getElementById('trashGrid');
   const empty = document.getElementById('trashEmpty');
   if (!grid) return;
-  grid.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:0.75rem;">Loading…</div>';
 
   // Pipeline trashed items
-  const allPipeline = await contentApi.getAll();
-  const pipelineTrashed = allPipeline.filter(i => i.status === 'trash');
+  const pipelineTrashed = items.filter(i => i.status === 'trash');
 
   // Archive trashed items — aggregate across all categories
   const archiveTrashed = [];
@@ -16681,8 +17869,11 @@ async function permanentlyDeleteFromTrash(id, type, catId) {
 
 async function viewTrashedArticle(id, type, catId) {
   if (type === 'pipeline') {
-    const items = await contentApi.getAll();
-    const item = items.find(i => i.id === id);
+    let item = null;
+    try {
+      const r = await fetch('/api/content/' + id, { credentials: 'same-origin' });
+      if (r.ok) item = await r.json();
+    } catch(e) {}
     if (!item) return;
     rawArticleText = item.body || '';
     document.getElementById('articleContent').innerHTML = formatArticleHTML(rawArticleText);

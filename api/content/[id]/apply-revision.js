@@ -1,5 +1,6 @@
 import { kv } from '../../../lib/kv.js';
 import { getCurrentUser, requireRole } from '../../../lib/auth.js';
+import { logEvent, snapshotBody } from '../../../lib/article-history.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -17,6 +18,16 @@ export default async function handler(req, res) {
 
   const now = new Date().toISOString();
   const excerpt = newBody.replace(/^#.*$/gm, '').replace(/<[^>]+>/g, '').split(/\s+/).filter(Boolean).slice(0, 30).join(' ') + '…';
+
+  // Snapshot the pre-revision body so the before/after diff is available, and
+  // record the event in the audit log. Mutations on `item` survive the spread.
+  const actor = me ? (me.name || me.email || me.id) : 'Content team';
+  if (newBody !== item.body) snapshotBody(item, { actor, at: now, reason: 'pre-ai-revise' });
+  logEvent(item, {
+    type: 'ai_revise', actor, at: now,
+    detail: { model: req.body?.model || null, addressedComments: req.body?.addressedCommentIndexes || [] },
+  });
+
   const updated = {
     ...item,
     title: (newTitle || item.title || '').toString().trim() || item.title,

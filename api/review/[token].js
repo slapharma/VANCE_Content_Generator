@@ -1,6 +1,7 @@
 import { kv } from '../../lib/kv.js';
 import { parseApprovalToken } from '../review/send.js';
 import { renderArticleEmailContent } from '../../lib/email-content.js';
+import { logEvent } from '../../lib/article-history.js';
 
 // Render the full article inline using the same rich renderer the review
 // email uses — hero image + formatted markdown body. Wrapped in a scrollable
@@ -150,6 +151,10 @@ const HIGHLIGHT_SCRIPT = `
   }
 
   form.addEventListener('submit', function(){
+    // Preserve the reviewer's raw overall feedback separately from the merged
+    // comment, so view-article can surface it on its own (above the inline notes).
+    var overallField = document.getElementById('overallField');
+    if (overallField) overallField.value = (commentEl.value || '').trim();
     if (!highlights.length) return;
     var preamble = highlights.map(function(h){
       return '> "' + h.quote.replace(/\\s+/g,' ').trim() + '"\\n↳ ' + h.comment;
@@ -261,9 +266,10 @@ function feedbackPage(token, item) {
     <div id="inlineNotesList" style="display:none;margin-bottom:18px;"></div>
     <form method="POST" action="/api/review/${escHtml(token)}">
       <input type="hidden" name="highlights" id="highlightsField" value="[]" />
-      <label for="comment">Overall feedback <span style="color:#9aa5b4;font-weight:400;">(required)</span></label>
-      <textarea id="comment" name="comment" placeholder="Describe the changes needed — be as specific as possible…" required></textarea>
-      <p class="hint">Your feedback (including inline notes) will be stored with the article and visible to the content team.</p>
+      <input type="hidden" name="overallComment" id="overallField" value="" />
+      <label for="comment">Overall feedback <span style="color:#9aa5b4;font-weight:400;">(optional)</span></label>
+      <textarea id="comment" name="comment" placeholder="Add any overall feedback — or leave blank if your inline notes say it all…"></textarea>
+      <p class="hint">Leave inline notes by highlighting passages above, add overall feedback here, or both. At least one is required.</p>
       <div class="actions">
         <button type="submit" class="btn-submit">↩ Submit Changes Request</button>
       </div>
@@ -352,6 +358,7 @@ export default async function handler(req, res) {
       item.status = computeNewStatus(item);
       item.updatedAt = now;
       if (!item.approvedAt && item.status === 'approved') item.approvedAt = now;
+      logEvent(item, { type: 'approve', actor: reviewerId, at: now });
       await kv.set(`content:${contentId}`, item);
 
       res.setHeader('Content-Type', 'text/html');
@@ -363,12 +370,14 @@ export default async function handler(req, res) {
         }`));
     }
 
-    // Reject — comment is required
+    // Request changes — overall feedback is now OPTIONAL, but the reviewer must
+    // leave SOMETHING: either overall feedback or at least one inline note.
     const comment = (req.body?.comment || '').toString().trim();
-    if (!comment) {
-      res.setHeader('Content-Type', 'text/html');
-      return res.status(400).send(feedbackPage(token, item));
-    }
+    // The raw overall feedback, captured separately from the merged `comment`
+    // (which also carries the inline-note preamble) so view-article can show it
+    // on its own. Falls back to `comment` for older clients that don't send it.
+    const overall = (req.body?.overallComment != null ? req.body.overallComment : req.body?.comment || '')
+      .toString().trim();
 
     // Inline highlights from the Google-Docs-style commenting widget. The
     // widget also prepends them to `comment` client-side, so legacy views see
@@ -385,13 +394,22 @@ export default async function handler(req, res) {
       } catch (_) { /* ignore malformed payload */ }
     }
 
+    if (!comment && !highlights.length) {
+      res.setHeader('Content-Type', 'text/html');
+      return res.status(400).send(feedbackPage(token, item));
+    }
+
     item.rejections.push(reviewerId);
     item.rejectionComments = [
       ...(item.rejectionComments || []),
-      { reviewerId, comment, at: now, highlights },
+      { reviewerId, comment, overall, at: now, highlights },
     ];
     item.status = computeNewStatus(item);
     item.updatedAt = now;
+    logEvent(item, {
+      type: 'change_request', actor: reviewerId, at: now,
+      detail: { hasOverall: !!overall, inlineNotes: highlights.length },
+    });
     await kv.set(`content:${contentId}`, item);
 
     res.setHeader('Content-Type', 'text/html');

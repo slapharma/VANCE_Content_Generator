@@ -18,3 +18,11 @@ hcp-desktop-full.png
 .claude/
 
 .env.prod.fresh
+
+# Large content/data dumps — never commit, never ship to Vercel (bloats deploy)
+articles-backup-*.json
+*-backup-*.json
+
+# Stray local working dirs
+sla-customizer-edits-*/
+tasks/

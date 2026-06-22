@@ -1,4 +1,6 @@
 import { kv } from '../../lib/kv.js';
+import { getCurrentUser } from '../../lib/auth.js';
+import { logEvent, snapshotBody } from '../../lib/article-history.js';
 
 // Note: 'rejected' is intentionally absent from in_review's allowed targets.
 // Reviewers' "Request Changes" feedback is stored as comments on the article but
@@ -48,6 +50,30 @@ export default async function handler(req, res) {
       if (updates.status === 'scheduled'  && !item.scheduledAt)     statusTimestamps.scheduledAt     = now;
       if (updates.status === 'published'  && !item.publishedAt)     statusTimestamps.publishedAt     = now;
     }
+
+    // Audit log + body snapshots. Edits made from the app are attributed to the
+    // logged-in user; if no session is present (e.g. internal scripts) fall back
+    // to a generic label. Mutations happen on `item` so they survive the spread.
+    const me = await getCurrentUser(req).catch(() => null);
+    const actor = me ? (me.name || me.email || me.id) : 'Content team';
+    const bodyChanged = typeof updates.body === 'string' && updates.body !== item.body;
+    if (bodyChanged) {
+      snapshotBody(item, { actor, at: now, reason: 'edit' });
+      logEvent(item, {
+        type: 'edit', actor, at: now,
+        detail: {
+          wordsBefore: (item.body || '').split(/\s+/).filter(Boolean).length,
+          wordsAfter: updates.body.split(/\s+/).filter(Boolean).length,
+        },
+      });
+    }
+    if (updates.status && updates.status !== item.status) {
+      logEvent(item, { type: 'status', actor, at: now, detail: { from: item.status, to: updates.status } });
+    }
+    if (typeof updates.title === 'string' && updates.title !== item.title) {
+      logEvent(item, { type: 'title', actor, at: now, detail: { from: item.title || '', to: updates.title } });
+    }
+
     const updated = { ...item, ...updates, ...statusTimestamps, updatedAt: now };
     await kv.set(`content:${id}`, updated);
     return res.json(updated);
