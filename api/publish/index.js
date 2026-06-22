@@ -96,6 +96,10 @@ function markdownToWpHtml(text) {
     const trimmed = line.trim();
     if (!trimmed) { html.push(''); continue; }
 
+    // Drop the "Reading Time" meta line — it's an editorial label, not published body.
+    // Matches "Reading Time: 6 minutes" with optional ** bold wrappers.
+    if (/^\**\s*reading time\b/i.test(trimmed)) continue;
+
     // Strip ** wrappers from standalone heading lines (e.g. "**Background & Rationale**")
     const boldOnly = trimmed.match(/^\*\*(.+?)\*\*$/);
 
