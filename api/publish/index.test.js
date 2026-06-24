@@ -3,15 +3,53 @@ import { test } from 'node:test';
 import { buildWpPayload } from './index.js';
 
 test('buildWpPayload maps known category', () => {
-  const item = { title: 'Test', body: '<p>Body</p>', excerpt: 'Short', category: 'industry-news' };
-  const payload = buildWpPayload(item, { 'industry-news': 5 });
+  const item = { title: 'Test', body: 'Body', excerpt: 'Short', category: 'industry-news' };
+  const payload = buildWpPayload(item, [5]);
   assert.equal(payload.title, 'Test');
   assert.deepEqual(payload.categories, [5]);
   assert.equal(payload.status, 'publish');
 });
 
-test('buildWpPayload uses empty categories for unknown category', () => {
+test('buildWpPayload uses empty categories when none resolved', () => {
   const item = { title: 'x', body: 'y', excerpt: '', category: 'unknown' };
-  const payload = buildWpPayload(item, {});
+  const payload = buildWpPayload(item, []);
   assert.deepEqual(payload.categories, []);
+});
+
+test('buildWpPayload wraps the opening paragraph in a blockquote for prose articles', () => {
+  const body = [
+    '# How diet affects IBD',
+    'Your gut responds differently during a flare.',
+    '## What is a flare?',
+    'A flare is active inflammation.',
+  ].join('\n');
+  const item = { title: 'How diet affects IBD', body, excerpt: '', category: 'ibd-living' };
+  const { content } = buildWpPayload(item, [5]);
+  // Opening paragraph becomes a blockquote, matching the manual house style.
+  assert.match(content, /<blockquote><p>Your gut responds differently during a flare\.<\/p><\/blockquote>/);
+  // Body paragraphs after the first section stay plain <p>.
+  assert.match(content, /<p>A flare is active inflammation\.<\/p>/);
+  // Exactly one blockquote — only the opening paragraph is wrapped.
+  assert.equal((content.match(/<blockquote>/g) || []).length, 1);
+});
+
+test('buildWpPayload does not blockquote the clinical-review subheader', () => {
+  const body = [
+    '# Clinical Review: Drug X in ulcerative colitis',
+    'Smith J, et al. Lancet. 2024;403:1.',
+    '## Background & Rationale',
+    'UC needs better therapies.',
+  ].join('\n');
+  const item = { title: 'Clinical Review: Drug X', body, excerpt: '', category: 'clinical-reviews' };
+  const { content } = buildWpPayload(item, [5]);
+  assert.doesNotMatch(content, /<blockquote>/);
+  assert.match(content, /<p>Smith J, et al\. Lancet\. 2024;403:1\.<\/p>/);
+});
+
+test('buildWpPayload does not blockquote a body paragraph when there is no opening paragraph', () => {
+  const body = ['# Title', '## Section', 'First body sentence.'].join('\n');
+  const item = { title: 'Title', body, excerpt: '', category: 'op-eds' };
+  const { content } = buildWpPayload(item, [5]);
+  assert.doesNotMatch(content, /<blockquote>/);
+  assert.match(content, /<p>First body sentence\.<\/p>/);
 });

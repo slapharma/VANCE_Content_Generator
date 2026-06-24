@@ -85,13 +85,19 @@ async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader) {
   }
 }
 
-// Convert raw markdown/LLM output to clean WordPress HTML
-function markdownToWpHtml(text) {
+// Convert raw markdown/LLM output to clean WordPress HTML.
+// When `wrapOpening` is true, the opening paragraph — the first prose line
+// before any body section heading — is rendered as a <blockquote> lead-in to
+// match the editorial house style. Categories that open with a meta subheader
+// instead of a prose intro (e.g. clinical reviews) pass wrapOpening: false.
+function markdownToWpHtml(text, { wrapOpening = false } = {}) {
   if (!text) return '';
   const lines = text.split('\n');
   const html = [];
   let subtitleDone = false;
   let listType = null; // 'ul' | 'ol' | null — tracks an open list block
+  let seenSection = false;    // true once a body section heading has been emitted
+  let openingWrapped = false; // true once the opening paragraph has been blockquoted
 
   const closeList = () => { if (listType) { html.push(`</${listType}>`); listType = null; } };
 
@@ -124,9 +130,10 @@ function markdownToWpHtml(text) {
     // Strip ** wrappers from standalone heading lines (e.g. "**Background & Rationale**")
     const boldOnly = trimmed.match(/^\*\*(.+?)\*\*$/);
 
-    // Markdown headings → first body "# " is the subtitle (<h1>); "## " → <h2>; "### " → <h3>
-    if (trimmed.startsWith('### '))     { html.push(`<h3>${trimmed.slice(4).replace(/\*\*/g, '')}</h3>`); continue; }
-    if (trimmed.startsWith('## '))      { html.push(`<h2>${trimmed.slice(3).replace(/\*\*/g, '')}</h2>`); continue; }
+    // Markdown headings → first body "# " is the subtitle (<h1>); "## " → <h2>; "### " → <h3>.
+    // Reaching a section heading closes the opening-paragraph window.
+    if (trimmed.startsWith('### '))     { seenSection = true; html.push(`<h3>${trimmed.slice(4).replace(/\*\*/g, '')}</h3>`); continue; }
+    if (trimmed.startsWith('## '))      { seenSection = true; html.push(`<h2>${trimmed.slice(3).replace(/\*\*/g, '')}</h2>`); continue; }
     if (trimmed.startsWith('# '))       {
       const txt = trimmed.slice(2).replace(/\*\*/g, '');
       if (!subtitleDone) { subtitleDone = true; html.push(`<h1>${txt}</h1>`); continue; }
@@ -137,7 +144,14 @@ function markdownToWpHtml(text) {
     if (boldOnly) {
       const inner = boldOnly[1].trim();
       const isHeader = /^(Background|Study Design|Patient Population|Key Findings|Discussion|Safety|Authors|Reference|Clinical Relevance|Conclusions|Disclaimer)/i.test(inner);
-      if (isHeader) { html.push(`<h2>${inner}</h2>`); continue; }
+      if (isHeader) { seenSection = true; html.push(`<h2>${inner}</h2>`); continue; }
+    }
+
+    // Opening paragraph (first prose line before any section) → <blockquote> lead-in.
+    if (wrapOpening && !openingWrapped && !seenSection) {
+      openingWrapped = true;
+      html.push(`<blockquote><p>${inline(trimmed)}</p></blockquote>`);
+      continue;
     }
 
     html.push(`<p>${inline(trimmed)}</p>`);
@@ -148,9 +162,13 @@ function markdownToWpHtml(text) {
 }
 
 export function buildWpPayload(item, categoryIds, tagIds = [], featuredMediaId = null) {
+  // Lead the article with a <blockquote> opening paragraph (editorial house style).
+  // Clinical reviews open with an authors/journal/DOI subheader rather than a prose
+  // intro, so they keep a plain first paragraph.
+  const wrapOpening = item.category !== 'clinical-reviews';
   return {
     title:      item.title,
-    content:    markdownToWpHtml(item.body),
+    content:    markdownToWpHtml(item.body, { wrapOpening }),
     excerpt:    item.excerpt ?? '',
     status:     'publish',
     categories: Array.isArray(categoryIds) && categoryIds.length > 0 ? categoryIds : [],
