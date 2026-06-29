@@ -10169,7 +10169,7 @@ async function generateReview() {
       // Auto-populate Pexels search from article title
       const firstLine = rawArticleText.split('\n').find(l => l.trim());
       if (firstLine) {
-        const cleanTitle = firstLine.replace(/^#+\s*/, '').replace(/[*_]/g, '').substring(0, 50);
+        const cleanTitle = stripCategoryTitlePrefix(firstLine.replace(/^#+\s*/, '').replace(/[*_]/g, '')).substring(0, 50);
         const uq = document.getElementById('unsplashQuery');
         if (uq) uq.value = cleanTitle;
       }
@@ -11426,6 +11426,14 @@ async function _ahDeleteComment(articleId, rcIndex) {
 // ═══════════════════════════════════════════════════════════
 //  FORMATTING HELPERS
 // ═══════════════════════════════════════════════════════════
+// Category prefixes (e.g. "Gastro Living: ", "Clinical Review: ") are no longer
+// wanted on article titles. Strip any known prefix wherever a title/H1 is derived
+// or rendered, so prompts that still emit one don't leak it into the UI or WP.
+const CATEGORY_TITLE_PREFIX_RE = /^(clinical review|gastro living|gastro health news|op[-\s]?ed|white paper|infographic)\s*:\s*/i;
+function stripCategoryTitlePrefix(s) {
+  return s == null ? s : String(s).replace(CATEGORY_TITLE_PREFIX_RE, '').trim();
+}
+
 function formatArticleHTML(text) {
   const lines = text.split('\n');
   let html = '', inMetaBlock = false, titleDone = false, subtitleDone = false;
@@ -11442,11 +11450,11 @@ function formatArticleHTML(text) {
     // Title: first non-heading line or first # line
     if (!titleDone) {
       if (trimmed.startsWith('# ')) {
-        html += `<h1>${escapeHtml(trimmed.slice(2).replace(/\*\*/g, ''))}</h1>`;
+        html += `<h1>${escapeHtml(stripCategoryTitlePrefix(trimmed.slice(2).replace(/\*\*/g, '')))}</h1>`;
         titleDone = true; inMetaBlock = true; continue;
       }
       if (!trimmed.startsWith('#')) {
-        html += `<h1>${escapeHtml(stripped)}</h1>`;
+        html += `<h1>${escapeHtml(stripCategoryTitlePrefix(stripped))}</h1>`;
         titleDone = true; inMetaBlock = true; continue;
       }
     }
@@ -11506,7 +11514,7 @@ function formatAnalysisHTML(text) {
 function extractTitleFromArticle(text) {
   const lines = text.split('\n').map(l => l.trim()).filter(l => l);
   for (const line of lines) {
-    const clean = line.replace(/^#+\s*/, '').trim();
+    const clean = stripCategoryTitlePrefix(line.replace(/^#+\s*/, '').trim());
     if (clean.length > 10 && clean.length < 200) return clean;
   }
   return null;
@@ -14199,7 +14207,7 @@ async function heroLeftGenerate() {
   // left side clean with gradient overlay, no-text enforcement, etc.)
   const titleEl = document.getElementById('articleTitleDisplay');
   const rawTitle = (titleEl ? (titleEl.innerText || titleEl.textContent || '') : '').trim();
-  const topic = rawTitle.replace(/^Clinical Review:\s*/i, '').trim()
+  const topic = stripCategoryTitlePrefix(rawTitle)
     || extractKeywordsFromText(text, 6).join(', ');
   const template = (heroPromptsConfig && heroPromptsConfig.default) || HERO_PROMPT_DEFAULT;
   let prompt;

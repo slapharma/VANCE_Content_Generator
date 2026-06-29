@@ -90,6 +90,14 @@ async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader) {
 // before any body section heading — is rendered as a <blockquote> lead-in to
 // match the editorial house style. Categories that open with a meta subheader
 // instead of a prose intro (e.g. clinical reviews) pass wrapOpening: false.
+// Category prefixes (e.g. "Gastro Living: ", "Clinical Review: ") are no longer
+// wanted on article titles. Strip any known prefix from the WP post title and the
+// body's title H1 so legacy/saved items and prompt-emitted prefixes don't leak through.
+const CATEGORY_TITLE_PREFIX_RE = /^(clinical review|gastro living|gastro health news|op[-\s]?ed|white paper|infographic)\s*:\s*/i;
+function stripCategoryTitlePrefix(s) {
+  return s == null ? s : String(s).replace(CATEGORY_TITLE_PREFIX_RE, '').trim();
+}
+
 function markdownToWpHtml(text, { wrapOpening = false } = {}) {
   if (!text) return '';
   const lines = text.split('\n');
@@ -135,7 +143,7 @@ function markdownToWpHtml(text, { wrapOpening = false } = {}) {
     if (trimmed.startsWith('### '))     { seenSection = true; html.push(`<h3>${trimmed.slice(4).replace(/\*\*/g, '')}</h3>`); continue; }
     if (trimmed.startsWith('## '))      { seenSection = true; html.push(`<h2>${trimmed.slice(3).replace(/\*\*/g, '')}</h2>`); continue; }
     if (trimmed.startsWith('# '))       {
-      const txt = trimmed.slice(2).replace(/\*\*/g, '');
+      const txt = stripCategoryTitlePrefix(trimmed.slice(2).replace(/\*\*/g, ''));
       if (!subtitleDone) { subtitleDone = true; html.push(`<h1>${txt}</h1>`); continue; }
       html.push(`<h2>${txt}</h2>`); continue;
     }
@@ -167,7 +175,7 @@ export function buildWpPayload(item, categoryIds, tagIds = [], featuredMediaId =
   // intro, so they keep a plain first paragraph.
   const wrapOpening = item.category !== 'clinical-reviews';
   return {
-    title:      item.title,
+    title:      stripCategoryTitlePrefix(item.title),
     content:    markdownToWpHtml(item.body, { wrapOpening }),
     excerpt:    item.excerpt ?? '',
     status:     'publish',
