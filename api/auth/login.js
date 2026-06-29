@@ -1,7 +1,8 @@
 import { loadUsers, safe } from '../../lib/users.js';
 import { verifyPassword, signSession, setSessionCookie } from '../../lib/auth.js';
+import { withErrorBoundary } from '../../lib/api.js';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: 'email and password required' });
@@ -14,3 +15,5 @@ export default async function handler(req, res) {
   setSessionCookie(res, token);
   return res.json({ user: safe(user) });
 }
+
+export default withErrorBoundary(handler);

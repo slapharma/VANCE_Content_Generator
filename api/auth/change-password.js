@@ -1,7 +1,8 @@
 import { getCurrentUser, hashPassword, verifyPassword } from '../../lib/auth.js';
 import { loadUsers, saveUsers } from '../../lib/users.js';
+import { withErrorBoundary } from '../../lib/api.js';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const me = await getCurrentUser(req);
   if (!me) return res.status(401).json({ error: 'Not authenticated' });
@@ -23,3 +24,5 @@ export default async function handler(req, res) {
   await saveUsers(users);
   return res.json({ ok: true });
 }
+
+export default withErrorBoundary(handler);

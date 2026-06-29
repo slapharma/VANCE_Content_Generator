@@ -2,6 +2,7 @@ import { kv } from '../../lib/kv.js';
 import { randomUUID } from 'crypto';
 import { getCurrentUser, requireRole } from '../../lib/auth.js';
 import { countBodyWords } from '../../lib/word-count.js';
+import { withErrorBoundary } from '../../lib/api.js';
 
 // ── Pure helpers (exported for testing) ─────────────────────────────────────
 
@@ -62,7 +63,7 @@ export function validateContentItem(data) {
 
 // ── HTTP handler ─────────────────────────────────────────────────────────────
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // Admin-only diagnostic endpoints stay piggy-backed here — no client callers,
   // invoked manually via curl/Postman, so splitting them gains nothing.
   const action = req.query.action;
@@ -473,3 +474,5 @@ export default async function handler(req, res) {
 
   res.status(405).json({ error: 'Method not allowed' });
 }
+
+export default withErrorBoundary(handler);

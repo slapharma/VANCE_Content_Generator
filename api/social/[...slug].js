@@ -13,6 +13,7 @@ import scheduleHandler from '../../lib/social/handlers/schedule.js';
 import cronHandler from '../../lib/social/handlers/cron.js';
 import imageHandler from '../../lib/social/handlers/image.js';
 import connectionsHandler from '../../lib/social/handlers/connections.js';
+import { isKvUnavailable } from '../../lib/api.js';
 
 export default async function handler(req, res) {
   // In non-Next.js Vercel serverless, [...slug].js exposes matched segments as
@@ -75,7 +76,12 @@ export default async function handler(req, res) {
 
     return res.status(404).json({ error: 'Not found' });
   } catch (err) {
+    if (res.headersSent) throw err;
+    if (isKvUnavailable(err)) {
+      console.error('[social] kv-unavailable:', req.method, req.url, err?.message);
+      return res.status(503).json({ error: 'Storage temporarily unavailable. Please try again in a moment.' });
+    }
     console.error('[social] unhandled error:', err);
-    return res.status(500).json({ error: err.message || 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }

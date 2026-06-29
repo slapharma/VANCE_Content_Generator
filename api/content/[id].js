@@ -1,6 +1,7 @@
 import { kv } from '../../lib/kv.js';
 import { getCurrentUser } from '../../lib/auth.js';
 import { logEvent, snapshotBody } from '../../lib/article-history.js';
+import { withErrorBoundary } from '../../lib/api.js';
 
 // Note: 'rejected' is intentionally absent from in_review's allowed targets.
 // Reviewers' "Request Changes" feedback is stored as comments on the article but
@@ -24,7 +25,7 @@ export function applyStatusTransition(current, next) {
   return next;
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const { id } = req.query;
   const item = await kv.get(`content:${id}`);
   if (!item) return res.status(404).json({ error: 'Not found' });
@@ -90,3 +91,5 @@ export default async function handler(req, res) {
 
   res.status(405).json({ error: 'Method not allowed' });
 }
+
+export default withErrorBoundary(handler);

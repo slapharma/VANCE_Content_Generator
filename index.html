@@ -7681,6 +7681,21 @@ async function apiFetch(path, opts) {
   return ct.includes('application/json') ? res.json() : res.text();
 }
 
+// Parse a fetch Response as JSON, degrading gracefully when the server returns a
+// non-JSON body (e.g. a platform crash page). Prevents the cryptic
+// `Unexpected token 'A', "A server e"...` error when an endpoint falls over.
+// Returns {} for empty bodies; throws a clean, user-facing message otherwise.
+async function readJsonResponse(res) {
+  const text = await res.text().catch(() => '');
+  if (!text) return {};
+  try { return JSON.parse(text); }
+  catch {
+    throw new Error(res.status === 503
+      ? 'Service temporarily unavailable. Please try again in a moment.'
+      : 'Unexpected server response. Please try again shortly.');
+  }
+}
+
 // ── Automation Module ─────────────────────────────────────────────────────────
 
 function switchAutoSubTab(tab) {
@@ -13086,7 +13101,7 @@ async function submitLogin() {
       credentials: 'same-origin',
       body: JSON.stringify({ email, password }),
     });
-    const data = await r.json();
+    const data = await readJsonResponse(r);
     if (!r.ok) throw new Error(data.error || 'Login failed');
     _currentUser = data.user;
     document.getElementById('loginOverlay').style.display = 'none';
@@ -13149,7 +13164,7 @@ async function submitChangePassword() {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
       body: JSON.stringify({ oldPassword, newPassword }),
     });
-    const data = await r.json();
+    const data = await readJsonResponse(r);
     if (!r.ok) throw new Error(data.error || 'Failed');
     if (_currentUser) _currentUser.mustChangePassword = false;
     document.getElementById('changePwdModal').style.display = 'none';

@@ -16,8 +16,9 @@ import authHandler from '../../lib/automation/handlers/auth.js';
 import logsHandler from '../../lib/automation/handlers/logs.js';
 import sourcesListHandler from '../../lib/automation/handlers/sources-list.js';
 import bibliographyHandler from '../../lib/automation/handlers/bibliography.js';
+import { withErrorBoundary } from '../../lib/api.js';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // In non-Next.js Vercel serverless, [...slug].js exposes matched segments as
   // req.query['...slug'] (three dots are part of the key name), not req.query.slug.
   // Single-segment paths arrive as a plain string ('telegram-test').
@@ -57,3 +58,5 @@ export default async function handler(req, res) {
 
   return res.status(404).json({ error: 'Not found' });
 }
+
+export default withErrorBoundary(handler);
