@@ -4228,6 +4228,32 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       </div>
     </div>
 
+    <!-- Reset Databases (admin only) -->
+    <div class="settings-section" style="grid-column: 1 / -1;" data-require-role="admin">
+      <div class="settings-section-header">
+        <h3>Reset Databases</h3>
+        <p>Selectively clear generated data and counters. Prompts, users, and automation rules are always preserved. <strong style="color:#b91c1c;">This permanently deletes the selected data and cannot be undone.</strong></p>
+      </div>
+      <div class="settings-section-body">
+        <div id="adminResetTargets" style="display:grid;grid-template-columns:1fr 1fr;gap:9px 18px;margin-bottom:14px;">
+          <div style="color:var(--text-muted);font-size:0.68rem;">Loading datasets…</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button class="btn btn-outline btn-sm" onclick="adminReset(true)">Preview (dry run)</button>
+          <button class="btn btn-sm" style="background:#b91c1c;border-color:#b91c1c;color:#fff;" onclick="adminResetConfirm()">Wipe selected…</button>
+        </div>
+        <div id="adminResetConfirmRow" style="display:none;margin-top:12px;padding:12px;border:1.5px solid #b91c1c;background:rgba(185,28,28,0.05);">
+          <p style="font-size:0.7rem;color:#b91c1c;font-weight:700;margin:0 0 8px;">Type <code style="background:rgba(185,28,28,0.12);padding:1px 5px;">WIPE</code> to permanently delete the selected datasets from production.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" id="adminResetConfirmInput" placeholder="WIPE" autocomplete="off" style="flex:1;min-width:120px;padding:6px 9px;border:1px solid var(--border);font-size:0.72rem;" onkeydown="if(event.key==='Enter')adminReset(false)" />
+            <button class="btn btn-sm" style="background:#b91c1c;border-color:#b91c1c;color:#fff;" onclick="adminReset(false)">Confirm wipe</button>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('adminResetConfirmRow').style.display='none'">Cancel</button>
+          </div>
+        </div>
+        <pre id="adminResetResult" style="display:none;margin-top:12px;padding:12px;background:var(--bg);border:1px solid var(--border);font-size:0.7rem;line-height:1.5;white-space:pre-wrap;color:var(--text);"></pre>
+      </div>
+    </div>
+
     <!-- Google Connections (Drive + Gmail + Calendar) -->
     <div class="settings-section">
       <div class="settings-section-header">
@@ -16612,6 +16638,88 @@ async function loadSettings() {
   await loadReviewers();
   renderSocialConnections();
   loadCloudIntegrationStatus();
+  renderAdminResetTargets();
+}
+
+// ── Admin: Reset Databases tool ────────────────────────────────────────────────
+// Mirror of RESET_TARGETS in lib/admin/reset.js (id + label + default-checked).
+var ADMIN_RESET_TARGETS = [
+  { id: 'content',      label: 'Generated content (articles)',  on: true },
+  { id: 'jobs',         label: 'Automation jobs & pipeline',    on: true },
+  { id: 'logs',         label: 'Logs & notification history',   on: true },
+  { id: 'social',       label: 'Social kits, queue & posts',    on: true },
+  { id: 'counters',     label: 'Reset automation counters',     on: true },
+  { id: 'processed',    label: 'Reset source processed-state',  on: true },
+  { id: 'usage',        label: 'LLM usage & cost stats',        on: false },
+  { id: 'bibliography', label: 'Bibliography processed flags',  on: false },
+];
+
+function renderAdminResetTargets() {
+  var box = document.getElementById('adminResetTargets');
+  if (!box || box.dataset.rendered) return;
+  box.innerHTML = ADMIN_RESET_TARGETS.map(function (t) {
+    return '<label style="display:flex;gap:7px;align-items:center;font-size:0.72rem;cursor:pointer;">'
+      + '<input type="checkbox" class="admin-reset-cb" value="' + t.id + '"' + (t.on ? ' checked' : '') + ' /> '
+      + t.label + '</label>';
+  }).join('');
+  box.dataset.rendered = '1';
+}
+
+function adminResetConfirm() {
+  renderAdminResetTargets();
+  if (!document.querySelectorAll('.admin-reset-cb:checked').length) {
+    alert('Select at least one dataset to wipe.');
+    return;
+  }
+  var row = document.getElementById('adminResetConfirmRow');
+  row.style.display = '';
+  var inp = document.getElementById('adminResetConfirmInput');
+  inp.value = '';
+  inp.focus();
+}
+
+async function adminReset(dryRun) {
+  renderAdminResetTargets();
+  var targets = Array.prototype.map.call(
+    document.querySelectorAll('.admin-reset-cb:checked'),
+    function (cb) { return cb.value; }
+  );
+  if (!targets.length) { alert('Select at least one dataset.'); return; }
+  if (!dryRun) {
+    var typed = (document.getElementById('adminResetConfirmInput').value || '').trim();
+    if (typed !== 'WIPE') { alert('Type WIPE to confirm the wipe.'); return; }
+  }
+
+  var out = document.getElementById('adminResetResult');
+  out.style.display = '';
+  out.textContent = dryRun ? 'Previewing…' : 'Wiping…';
+
+  try {
+    var res = await fetch('/api/admin/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ dryRun: dryRun, targets: targets }),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || res.statusText);
+
+    var lines = [data.dryRun ? 'DRY RUN — nothing was deleted:' : 'WIPE COMPLETE:'];
+    Object.keys(data.results || {}).forEach(function (k) {
+      lines.push('  • ' + k + ': ' + data.results[k].detail);
+    });
+    out.textContent = lines.join('\n');
+
+    if (!dryRun) {
+      document.getElementById('adminResetConfirmRow').style.display = 'none';
+      if (typeof showToast === 'function') showToast('Databases wiped');
+      try { if (typeof loadDashboard === 'function') loadDashboard(); } catch (e) {}
+      try { if (typeof updateInboxBadge === 'function') updateInboxBadge(); } catch (e) {}
+      try { if (typeof updateTrashBadge === 'function') updateTrashBadge(); } catch (e) {}
+    }
+  } catch (err) {
+    out.textContent = 'Error: ' + (err.message || err);
+  }
 }
 
 // ── Cloud Storage Integration ──────────────────────────────────────────────────

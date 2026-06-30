@@ -22,7 +22,8 @@ Any project-specific learning, fix, gotcha, or architectural note discovered whi
 
 ## Deployment
 - GitHub auto-deploy is **disabled** (`"github": {"enabled": false}` in vercel.json).
-- Deploy: `vercel --prod --yes` from the repo directory (re-link Vercel project to `vance-content-generator` first if needed).
+- Deploy: run from the repo directory (re-link Vercel project to `vance-content-generator` first if needed). The Vercel CLI is **not globally installed** on this machine — use **`npx vercel --prod --yes`** (a bare `vercel …` errors with "not recognized"). First-time auth: `npx vercel login` (interactive, once; auth then caches under `%APPDATA%\com.vercel.cli`).
+- **Terminal hand-offs**: when giving the user any command to run manually (deploy, scripts, etc.), ALWAYS prefix it with `cd C:\Users\clift\Ai-Projects\VANCE-Content-Generator` first — deploys and the `scripts/*` tools must run from the repo root, and the user is often in another directory.
 - **Vercel Pro** (upgraded 2026-05-14): unlimited functions, `maxDuration: 300` on both catch-alls, up to 40 cron jobs. Hobby workarounds lifted — see `.claude/vercel-pro-audit-20260514.md` for full list.
 
 ## Vercel Routing (Critical)
