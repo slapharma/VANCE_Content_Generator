@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@composio/core": "^0.13.1",
     "@vercel/kv": "^1.0.0",
     "cron-parser": "^5.5.0",
     "jose": "^5.2.0",

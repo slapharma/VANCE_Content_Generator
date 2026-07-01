@@ -3274,14 +3274,27 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     </div>
   </div>
 
-  <div style="background:rgba(27,63,48,0.05);border-left:3px solid var(--vance-dark);padding:10px 14px;margin:0 0 18px;font-size:0.7rem;color:var(--text-muted);">
-    To wire a new platform: Vercel Dashboard → vance-content-generator → Settings → Environment Variables → Add the names listed below → Redeploy. Full step-by-step in
-    <a href="/docs/user-guide/social-connectors-walkthrough.html" target="_blank" style="color:var(--vance-dark);font-weight:600;">the walkthrough</a>.
+  <!-- ── Primary: Composio connected accounts (live posting) ── -->
+  <div style="background:rgba(27,63,48,0.05);border-left:3px solid var(--vance-dark);padding:10px 14px;margin:0 0 14px;font-size:0.7rem;color:var(--text-muted);">
+    <strong style="color:var(--vance-dark);">Connected accounts</strong> — these are the live accounts used for posting, connected via Composio. Multiple accounts per platform are supported; the <span style="color:#15803d;font-weight:700;">default</span> is used unless a kit picks another.
   </div>
 
-  <div id="socialConnEnvList" style="display:flex;flex-direction:column;gap:10px;">
-    <div style="color:var(--text-muted);font-size:0.82rem;padding:2rem;">Loading connections…</div>
+  <div id="socialComposioList" style="display:flex;flex-direction:column;gap:14px;margin:0 0 26px;">
+    <div style="color:var(--text-muted);font-size:0.82rem;padding:1.25rem;">Loading accounts…</div>
   </div>
+
+  <!-- ── Demoted: legacy env-var connections (not used when a Composio account is connected) ── -->
+  <details id="socialLegacyEnvWrap" style="border-top:1px solid var(--border);padding-top:14px;">
+    <summary style="cursor:pointer;font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;list-style:revert;">
+      Legacy env-var connections &amp; service keys
+    </summary>
+    <div style="background:var(--bg);border-left:3px solid var(--border);padding:10px 14px;margin:12px 0;font-size:0.68rem;color:var(--text-muted);">
+      The social rows below (Instagram / Facebook / LinkedIn / X / TikTok) are the <em>old single-account</em> method and are <strong>not in use</strong> — posting now runs through the connected accounts above. <strong>OpenRouter</strong> (text/images) and <strong>FAL.ai</strong> (video) are still live services and do belong here.
+    </div>
+    <div id="socialConnEnvList" style="display:flex;flex-direction:column;gap:10px;opacity:0.85;">
+      <div style="color:var(--text-muted);font-size:0.82rem;padding:1rem;">Loading connections…</div>
+    </div>
+  </details>
 </div>
 
   <!-- ── Pane: Prompt Library ── -->
@@ -4300,12 +4313,21 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <div class="settings-section">
       <div class="settings-section-header">
         <h3>Social Media Connections</h3>
-        <p>Configure credentials for direct posting of generated social content</p>
+        <p>Live posting runs through connected accounts (Composio). Manage them in Social → Connections.</p>
       </div>
       <div class="settings-section-body">
-        <div class="social-conn-list" id="socialConnList">
-          <!-- Rendered by loadSettings() -->
+        <div id="socialComposioSummary" style="margin:0 0 18px;">
+          <!-- Rendered by renderComposioSummary() -->
         </div>
+        <details style="border-top:1px solid var(--border);padding-top:12px;">
+          <summary style="cursor:pointer;font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">
+            Legacy per-browser credentials (not in use)
+          </summary>
+          <p style="font-size:0.68rem;color:var(--text-muted);margin:10px 0;">These localStorage-only credential forms are the old direct-posting method and are no longer used for posting. Kept for reference only.</p>
+          <div class="social-conn-list" id="socialConnList" style="opacity:0.85;">
+            <!-- Rendered by loadSettings() -->
+          </div>
+        </details>
       </div>
     </div>
 
@@ -6749,7 +6771,7 @@ function switchSocialTab(tab) {
   if (tab === 'queue') loadSocialQueue();
   if (tab === 'posted') loadSocialPosted();
   if (tab === 'prompts') loadSocialPromptsTab();
-  if (tab === 'connections') renderSocialEnvConnections();
+  if (tab === 'connections') { renderComposioAccounts(); renderSocialEnvConnections(); }
 }
 
 // ── Kit Builder state ─────────────────────────────────────────────────────────
@@ -16636,6 +16658,7 @@ let _reviewers = [];
 
 async function loadSettings() {
   await loadReviewers();
+  renderComposioSummary();
   renderSocialConnections();
   loadCloudIntegrationStatus();
   renderAdminResetTargets();
@@ -17301,6 +17324,154 @@ async function testSocialEnvConnection(platform) {
     }
   } catch (err) {
     if (out) out.innerHTML = '<span style="color:#ef4444;">✗ ' + (err.message || err) + '</span>';
+  }
+}
+
+// ── Composio connected accounts (live posting) — primary connections view ──────
+var COMPOSIO_PLAT_META = {
+  facebook:  { label: 'Facebook',    cfgKey: 'pageId',    cfgLabel: 'Page ID' },
+  instagram: { label: 'Instagram',   cfgKey: 'igUserId',  cfgLabel: 'IG user' },
+  linkedin:  { label: 'LinkedIn',    cfgKey: 'authorUrn', cfgLabel: 'Author' },
+  twitter:   { label: 'X / Twitter', cfgKey: null,        cfgLabel: '' },
+  tiktok:    { label: 'TikTok',      cfgKey: null,        cfgLabel: '' },
+};
+
+function composioStatusColor(status) {
+  var s = (status || '').toUpperCase();
+  if (s === 'ACTIVE') return '#22c55e';
+  if (s === 'EXPIRED' || s === 'INACTIVE' || s === 'FAILED') return '#f59e0b';
+  return '#cbd5e1';
+}
+
+// id → label cache so inline onclick handlers pass only the (safe-slug) account id.
+var _composioAcctLabels = {};
+
+async function renderComposioAccounts() {
+  var list = document.getElementById('socialComposioList');
+  if (!list) return;
+  list.innerHTML = '<div style="color:var(--text-muted);font-size:0.82rem;padding:1.25rem;">Loading accounts…</div>';
+  try {
+    var r = await fetch('/api/social/accounts');
+    var data = await r.json();
+    var accounts = data.accounts || [];
+    if (!accounts.length) {
+      list.innerHTML = '<div style="background:#fff;border:1px dashed var(--border);border-radius:6px;padding:22px;text-align:center;">' +
+        '<div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:4px;">No accounts connected yet</div>' +
+        '<div style="font-size:0.7rem;color:var(--text-muted);">Connect social accounts in Composio, then register them here. Posting falls back to the legacy env-var method until an account is connected.</div>' +
+      '</div>';
+      return;
+    }
+    // Group by platform, preserving a stable platform order.
+    var order = ['facebook', 'instagram', 'linkedin', 'twitter', 'tiktok'];
+    var groups = {};
+    _composioAcctLabels = {};
+    accounts.forEach(function(a) {
+      _composioAcctLabels[a.id] = a.label || a.platform;
+      (groups[a.platform] = groups[a.platform] || []).push(a);
+    });
+    var platforms = Object.keys(groups).sort(function(a, b) {
+      var ia = order.indexOf(a); var ib = order.indexOf(b);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+
+    list.innerHTML = platforms.map(function(plat) {
+      var meta = COMPOSIO_PLAT_META[plat] || { label: plat, cfgKey: null, cfgLabel: '' };
+      var rows = groups[plat].map(function(a) {
+        var dot = composioStatusColor(a.status);
+        var isDefault = !!a.isDefault;
+        var cfgVal = meta.cfgKey && a.config ? a.config[meta.cfgKey] : '';
+        var cfgLine = cfgVal
+          ? '<div style="font-family:monospace;font-size:0.65rem;color:var(--text-muted);margin:4px 0 0 20px;">' + meta.cfgLabel + ': ' + escapeHtml(String(cfgVal)) + '</div>'
+          : '';
+        var defaultBadge = isDefault
+          ? '<span style="font-size:0.6rem;font-weight:700;color:#15803d;background:rgba(34,197,94,0.12);padding:1px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:0.4px;">Default</span>'
+          : '';
+        var setDefaultBtn = isDefault
+          ? ''
+          : '<button class="btn btn-outline btn-sm" onclick="setComposioDefault(\'' + a.id + '\')">Set default</button>';
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;">' +
+          '<div>' +
+            '<div style="display:flex;align-items:center;gap:10px;">' +
+              '<span title="' + escapeHtml(a.status || 'unknown') + '" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + dot + ';flex-shrink:0;"></span>' +
+              '<strong style="font-size:0.82rem;">' + escapeHtml(a.label || plat) + '</strong>' +
+              defaultBadge +
+              '<span style="font-size:0.62rem;color:var(--text-muted);">· ' + escapeHtml((a.status || '').toLowerCase()) + '</span>' +
+            '</div>' +
+            cfgLine +
+          '</div>' +
+          '<div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;">' +
+            setDefaultBtn +
+            '<button class="btn btn-outline btn-sm" onclick="removeComposioAccount(\'' + a.id + '\')" title="Remove account" aria-label="Remove ' + escapeHtml(a.label || plat) + '">Remove</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      return '<div>' +
+        '<div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--vance-dark);margin:0 0 8px;">' + escapeHtml(meta.label) + '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:8px;">' + rows + '</div>' +
+      '</div>';
+    }).join('');
+  } catch (err) {
+    list.innerHTML = '<div style="color:#ef4444;font-size:0.78rem;padding:1rem;">Failed to load accounts: ' + escapeHtml(err.message || String(err)) + '</div>';
+  }
+}
+
+async function setComposioDefault(id) {
+  try {
+    var r = await fetch('/api/social/accounts/' + encodeURIComponent(id), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isDefault: true })
+    });
+    if (!r.ok) { var e = await r.json().catch(function(){return{};}); throw new Error(e.error || ('HTTP ' + r.status)); }
+    await renderComposioAccounts();
+    if (typeof renderComposioSummary === 'function') renderComposioSummary();
+  } catch (err) {
+    alert('Could not set default: ' + (err.message || err));
+  }
+}
+
+async function removeComposioAccount(id) {
+  var label = _composioAcctLabels[id] || 'this account';
+  if (!confirm('Remove "' + label + '"? Posting for it will fall back to the default account (or the legacy method).')) return;
+  try {
+    var r = await fetch('/api/social/accounts/' + encodeURIComponent(id), { method: 'DELETE' });
+    if (!r.ok) { var e = await r.json().catch(function(){return{};}); throw new Error(e.error || ('HTTP ' + r.status)); }
+    await renderComposioAccounts();
+    if (typeof renderComposioSummary === 'function') renderComposioSummary();
+  } catch (err) {
+    alert('Could not remove account: ' + (err.message || err));
+  }
+}
+
+// Compact read-only summary for the Settings → Social Media Connections section.
+async function renderComposioSummary() {
+  var el = document.getElementById('socialComposioSummary');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-muted);font-size:0.72rem;padding:0.5rem 0;">Loading connected accounts…</div>';
+  try {
+    var r = await fetch('/api/social/accounts');
+    var data = await r.json();
+    var accounts = data.accounts || [];
+    if (!accounts.length) {
+      el.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:2px 0 10px;">No accounts connected yet. Manage accounts in <strong>Social → Connections</strong>.</div>';
+      return;
+    }
+    var order = ['facebook', 'instagram', 'linkedin', 'twitter', 'tiktok'];
+    accounts.sort(function(a, b) { return order.indexOf(a.platform) - order.indexOf(b.platform); });
+    el.innerHTML =
+      '<div style="font-size:0.72rem;color:var(--text-muted);margin:0 0 10px;">Live posting runs through these Composio accounts — manage them in <strong>Social → Connections</strong>.</div>' +
+      accounts.map(function(a) {
+        var meta = COMPOSIO_PLAT_META[a.platform] || { label: a.platform };
+        var dot = composioStatusColor(a.status);
+        var def = a.isDefault ? '<span style="font-size:0.58rem;font-weight:700;color:#15803d;margin-left:6px;">DEFAULT</span>' : '';
+        return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:0.74rem;">' +
+          '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dot + ';flex-shrink:0;"></span>' +
+          '<span style="color:var(--text-muted);min-width:74px;">' + escapeHtml(meta.label) + '</span>' +
+          '<strong style="color:var(--text);">' + escapeHtml(a.label || a.platform) + '</strong>' + def +
+        '</div>';
+      }).join('');
+  } catch (err) {
+    el.innerHTML = '<div style="color:#ef4444;font-size:0.72rem;">Failed to load accounts: ' + escapeHtml(err.message || String(err)) + '</div>';
   }
 }
 

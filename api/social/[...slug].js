@@ -13,6 +13,7 @@ import scheduleHandler from '../../lib/social/handlers/schedule.js';
 import cronHandler from '../../lib/social/handlers/cron.js';
 import imageHandler from '../../lib/social/handlers/image.js';
 import connectionsHandler from '../../lib/social/handlers/connections.js';
+import accountsHandler from '../../lib/social/handlers/accounts.js';
 import { isKvUnavailable } from '../../lib/api.js';
 
 export default async function handler(req, res) {
@@ -72,6 +73,11 @@ export default async function handler(req, res) {
     // POST /social/connections/test           → live verification call
     if (resource === 'connections') {
       return await connectionsHandler(req, res, id);
+    }
+
+    // /social/accounts*                        → multi-account management (Composio)
+    if (resource === 'accounts') {
+      return await accountsHandler(req, res, slug.slice(1).join('/'));
     }
 
     return res.status(404).json({ error: 'Not found' });
