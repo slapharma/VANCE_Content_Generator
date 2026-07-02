@@ -10666,7 +10666,7 @@ async function viewArticleFromPipeline(itemId) {
   heroImageType = item.heroImageType || null;
   if (typeof updateArticleHeroPreview === 'function') updateArticleHeroPreview();
   // Article body
-  document.getElementById('articleContent').innerHTML = formatArticleHTML(text);
+  document.getElementById('articleContent').innerHTML = formatArticleHTML(text, item.category);
   // Inline reviewer highlights — wraps matching quote text in <mark> and
   // renders an "Inline notes" panel above the body. No-op when the article
   // has no rejection comments with highlights attached.
@@ -11482,64 +11482,93 @@ function stripCategoryTitlePrefix(s) {
   return s == null ? s : String(s).replace(CATEGORY_TITLE_PREFIX_RE, '').trim();
 }
 
-function formatArticleHTML(text) {
+// Render an article body to HTML for the in-app view. This is a faithful client
+// mirror of markdownToWpHtml() in api/publish/index.js so view-article previews
+// exactly what gets published to WordPress: the "Reading Time" meta line is
+// dropped, the opening paragraph becomes a <blockquote> lead-in (non-clinical
+// categories), "### " → <h3>, and consecutive list items group into <ul>/<ol>.
+// Clinical reviews (category 'clinical-reviews') open with an authors/journal/DOI
+// subheader instead of a prose intro, so they keep a plain first paragraph and
+// render those lead lines as a styled .meta-block (matching WP's wrapOpening:false).
+// `category` defaults to the currently-viewed article's category.
+function formatArticleHTML(text, category) {
+  if (!text) return '';
+  const cat = category !== undefined ? category : (typeof currentCategory !== 'undefined' ? currentCategory : null);
+  const wrapOpening = cat !== 'clinical-reviews';
+
   const lines = text.split('\n');
-  let html = '', inMetaBlock = false, titleDone = false, subtitleDone = false;
-  const sectionHeaders = /^(\*{0,2})(Background|Study Design|Patient Population|Key Findings|Discussion|Safety|Authors|Reference|Clinical Relevance|Conclusions|Disclaimer|Industry|Op-Ed|White Paper|Infographic)/i;
+  const out = [];
+  let subtitleDone = false;
+  let listType = null;        // 'ul' | 'ol' | null — tracks an open list block
+  let seenSection = false;    // true once a body section heading has been emitted
+  let openingWrapped = false; // true once the opening paragraph has been blockquoted
+  let inMeta = (cat === 'clinical-reviews'); // clinical lead-in lines → .meta-block
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  // Known clinical-review section headers (mirrors the server list)
+  const sectionHeaders = /^(Background|Study Design|Patient Population|Key Findings|Discussion|Safety|Authors|Reference|Clinical Relevance|Conclusions|Disclaimer)/i;
+
+  const closeList = () => { if (listType) { out.push(`</${listType}>`); listType = null; } };
+
+  // Inline markdown → HTML. Escape first (body is untrusted), then apply
+  // **bold** and *italic* (italic guarded against word-internal *).
+  const inline = (s) => {
+    let e = escapeHtml(s);
+    e = e.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    e = e.replace(/(?<!\w)\*([^*]+?)\*(?!\w)/g, '<em>$1</em>');
+    return e;
+  };
+
+  for (const line of lines) {
     const trimmed = line.trim();
-    if (!trimmed) { html += '<br>'; continue; }
+    if (!trimmed) { closeList(); continue; }
 
-    // Strip ** wrappers from standalone bold lines for heading detection
-    const stripped = trimmed.replace(/^\*\*(.+?)\*\*$/, '$1').trim();
+    // Drop the "Reading Time" meta line — editorial label, not published body.
+    if (/^\**\s*reading time\b/i.test(trimmed)) continue;
 
-    // Title: first non-heading line or first # line
-    if (!titleDone) {
-      if (trimmed.startsWith('# ')) {
-        html += `<h1>${escapeHtml(stripCategoryTitlePrefix(trimmed.slice(2).replace(/\*\*/g, '')))}</h1>`;
-        titleDone = true; inMetaBlock = true; continue;
-      }
-      if (!trimmed.startsWith('#')) {
-        html += `<h1>${escapeHtml(stripCategoryTitlePrefix(stripped))}</h1>`;
-        titleDone = true; inMetaBlock = true; continue;
-      }
+    // List items group into one <ul>/<ol>; any other line closes the block.
+    const ulMatch = trimmed.match(/^[-*•]\s+(.*)$/);
+    const olMatch = trimmed.match(/^\d+[.)]\s+(.*)$/);
+    if (ulMatch || olMatch) {
+      const wantType = ulMatch ? 'ul' : 'ol';
+      if (listType && listType !== wantType) closeList();
+      if (!listType) { listType = wantType; out.push(`<${wantType}>`); }
+      out.push(`<li>${inline((ulMatch ? ulMatch[1] : olMatch[1]).trim())}</li>`);
+      continue;
+    }
+    closeList();
+
+    const boldOnly = trimmed.match(/^\*\*(.+?)\*\*$/);
+
+    // Markdown headings. Reaching a section heading closes the opening/meta window.
+    if (trimmed.startsWith('### ')) { seenSection = true; inMeta = false; out.push(`<h3>${escapeHtml(trimmed.slice(4).replace(/\*\*/g, ''))}</h3>`); continue; }
+    if (trimmed.startsWith('## '))  { seenSection = true; inMeta = false; out.push(`<h2>${escapeHtml(trimmed.slice(3).replace(/\*\*/g, ''))}</h2>`); continue; }
+    if (trimmed.startsWith('# '))   {
+      const txt = escapeHtml(stripCategoryTitlePrefix(trimmed.slice(2).replace(/\*\*/g, '')));
+      if (!subtitleDone) { subtitleDone = true; out.push(`<h1>${txt}</h1>`); continue; }
+      seenSection = true; inMeta = false; out.push(`<h2>${txt}</h2>`); continue;
     }
 
-    // Meta block (authors, journal, DOI — lines after title, before first section header)
-    if (inMetaBlock && titleDone) {
-      if (sectionHeaders.test(stripped) || trimmed.startsWith('## ') || trimmed.startsWith('### ')) {
-        inMetaBlock = false;
-      } else {
-        html += `<div class="meta-block">${escapeHtml(stripped)}</div>`;
-        continue;
-      }
-    }
-
-    // Markdown headings: first body "# " is the subtitle (→ h1), all others → h2
-    if (trimmed.startsWith('### '))     { html += `<h2>${escapeHtml(trimmed.slice(4).replace(/\*\*/g, ''))}</h2>`; continue; }
-    if (trimmed.startsWith('## '))      { html += `<h2>${escapeHtml(trimmed.slice(3).replace(/\*\*/g, ''))}</h2>`; continue; }
-    if (trimmed.startsWith('# '))       {
-      const txt = escapeHtml(trimmed.slice(2).replace(/\*\*/g, ''));
-      if (!subtitleDone) { subtitleDone = true; html += `<h1>${txt}</h1>`; continue; }
-      html += `<h2>${txt}</h2>`; continue;
-    }
-
-    // Bold-only lines matching known section headers → <h2>
-    const boldMatch = trimmed.match(/^\*\*(.+?)\*\*$/);
-    if (boldMatch && sectionHeaders.test(boldMatch[1])) {
-      html += `<h2>${escapeHtml(boldMatch[1])}</h2>`;
+    // Bold-only lines that name a known section header → <h2>
+    if (boldOnly && sectionHeaders.test(boldOnly[1].trim())) {
+      seenSection = true; inMeta = false;
+      out.push(`<h2>${escapeHtml(boldOnly[1].trim())}</h2>`);
       continue;
     }
 
-    // Regular paragraph with inline bold/italic rendering
-    let p = escapeHtml(trimmed);
-    p = p.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    p = p.replace(/(?<!\w)\*([^*]+?)\*(?!\w)/g, '<em>$1</em>');
-    html += `<p>${p}</p>`;
+    // Clinical-review lead-in (authors / journal / DOI) → styled meta-block.
+    if (inMeta) { out.push(`<div class="meta-block">${inline(trimmed)}</div>`); continue; }
+
+    // Opening paragraph (first prose line before any section) → <blockquote> lead-in.
+    if (wrapOpening && !openingWrapped && !seenSection) {
+      openingWrapped = true;
+      out.push(`<blockquote><p>${inline(trimmed)}</p></blockquote>`);
+      continue;
+    }
+
+    out.push(`<p>${inline(trimmed)}</p>`);
   }
-  return html;
+  closeList();
+  return out.join('\n');
 }
 
 function formatAnalysisHTML(text) {
