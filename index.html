@@ -567,6 +567,13 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .article-output h2 { font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 800; color: var(--vance-dark); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 8px; padding-left: 10px; border-left: 3px solid var(--vance-primary); }
 .article-output p { font-size: 0.9rem; line-height: 1.8; color: var(--text); margin-bottom: 12px; text-align: justify; }
 .article-output .meta-block { font-size: 0.78rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); font-style: italic; }
+.article-output .meta-block p { margin: 0 0 2px; text-align: left; font-size: inherit; line-height: inherit; color: inherit; }
+.article-output ul, .article-output ol { margin: 0 0 14px; padding-left: 1.4em; font-size: 0.9rem; line-height: 1.8; color: var(--text); }
+.article-output li { margin-bottom: 6px; }
+.article-output ul.fact-box-list { list-style: none; margin: 0 0 18px; padding: 14px 18px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
+.article-output ul.fact-box-list li { margin-bottom: 7px; font-size: 0.85rem; }
+.article-output ul.fact-box-list li:last-child { margin-bottom: 0; }
+.article-output ul.key-takeaways-list { margin: 0 0 18px; padding: 14px 16px 14px 34px; background: rgba(0, 104, 104, 0.06); border-left: 3px solid var(--vance-primary); border-radius: 0 6px 6px 0; }
 
 /* ══════════════════════════════════════════════════
    PROMPT EDITOR
@@ -8373,6 +8380,11 @@ async function openRuleWizard(editId) {
             rows: Array.isArray(s.rows) ? s.rows.slice() : [],
             consumedUrls: Array.isArray(s.consumedUrls) ? s.consumedUrls.slice() : [],
             consumedTitles: Array.isArray(s.consumedTitles) ? s.consumedTitles.slice() : [],
+            // Drive per-file dedup memory — must survive the edit/save round-trip
+            // just like consumedUrls/consumedTitles above, otherwise re-saving a
+            // rule (e.g. to change the prompt) wipes it and the next run
+            // re-generates from every file already processed.
+            consumedFileIds: Array.isArray(s.consumedFileIds) ? s.consumedFileIds.slice() : [],
             originalFilename: s.originalFilename || (s.type === 'upload' ? s.url : '') || '',
           };
         });
@@ -8813,7 +8825,7 @@ async function _wizSubmit() {
   var payload = {
     name: document.getElementById('wizName').value.trim(),
     category: document.getElementById('wizCategory').value,
-    sources: _wizSources.map(function(s) { var o = {type:s.type}; if(s.url)o.url=s.url; if(s.repo)o.repo=s.repo; if(s.path)o.path=s.path; if(s.branch)o.branch=s.branch; if(s.folderId)o.folderId=s.folderId; if(s.folderPath!==undefined)o.folderPath=s.folderPath; if(s.type==='upload'){o.urls=Array.isArray(s.urls)?s.urls:[];o.titlesOnly=Array.isArray(s.titlesOnly)?s.titlesOnly:[];o.rows=Array.isArray(s.rows)?s.rows:[];if(Array.isArray(s.consumedUrls))o.consumedUrls=s.consumedUrls;if(Array.isArray(s.consumedTitles))o.consumedTitles=s.consumedTitles;if(s.originalFilename)o.originalFilename=s.originalFilename;} if(s.type==='gmail'){if(s.from!==undefined)o.from=s.from;if(s.subjectContains!==undefined)o.subjectContains=s.subjectContains;if(s.labelIds)o.labelIds=s.labelIds;if(s.maxResults)o.maxResults=s.maxResults;} if(s.type==='google_sheets'){if(s.sheetId)o.sheetId=s.sheetId;if(s.sheetName)o.sheetName=s.sheetName;if(s.urlColumn)o.urlColumn=s.urlColumn;if(s.notesColumn)o.notesColumn=s.notesColumn;if(s.wpLinkColumn)o.wpLinkColumn=s.wpLinkColumn;} if(s.type==='bibliography'){if(s.bibId)o.bibId=s.bibId;if(s.mode)o.mode=s.mode;} return o; }),
+    sources: _wizSources.map(function(s) { var o = {type:s.type}; if(s.url)o.url=s.url; if(s.repo)o.repo=s.repo; if(s.path)o.path=s.path; if(s.branch)o.branch=s.branch; if(s.folderId)o.folderId=s.folderId; if(s.folderPath!==undefined)o.folderPath=s.folderPath; if(s.type==='google_drive'&&Array.isArray(s.consumedFileIds))o.consumedFileIds=s.consumedFileIds; if(s.type==='upload'){o.urls=Array.isArray(s.urls)?s.urls:[];o.titlesOnly=Array.isArray(s.titlesOnly)?s.titlesOnly:[];o.rows=Array.isArray(s.rows)?s.rows:[];if(Array.isArray(s.consumedUrls))o.consumedUrls=s.consumedUrls;if(Array.isArray(s.consumedTitles))o.consumedTitles=s.consumedTitles;if(s.originalFilename)o.originalFilename=s.originalFilename;} if(s.type==='gmail'){if(s.from!==undefined)o.from=s.from;if(s.subjectContains!==undefined)o.subjectContains=s.subjectContains;if(s.labelIds)o.labelIds=s.labelIds;if(s.maxResults)o.maxResults=s.maxResults;} if(s.type==='google_sheets'){if(s.sheetId)o.sheetId=s.sheetId;if(s.sheetName)o.sheetName=s.sheetName;if(s.urlColumn)o.urlColumn=s.urlColumn;if(s.notesColumn)o.notesColumn=s.notesColumn;if(s.wpLinkColumn)o.wpLinkColumn=s.wpLinkColumn;} if(s.type==='bibliography'){if(s.bibId)o.bibId=s.bibId;if(s.mode)o.mode=s.mode;} return o; }),
     trigger: {
       type: trigType,
       cron: trigType === 'schedule' ? cronExpr : null,
@@ -9868,12 +9880,15 @@ function renderAutoInboxDetail(job, content, rule) {
   };
   var s = statusMap[job.status] || { label: job.status || 'Unknown', color: 'var(--text-muted)' };
 
+  var promptName = (content && content.promptName) || '';
+
   var metaItems = [
     'Rule: ' + escHtml(ruleName),
     '<span style="color:' + s.color + ';font-weight:700;">' + s.label + '</span>',
     job.createdAt ? timeAgo(job.createdAt) : '',
     words ? words.toLocaleString() + ' words' : '',
     model ? '&#129302; ' + escHtml(model) : '',
+    promptName ? 'Prompt: ' + escHtml(promptName) : '',
   ].filter(Boolean).join(' &middot; ');
 
   var actions = job.status === 'pending_review'
@@ -11503,9 +11518,18 @@ function formatArticleHTML(text, category) {
   let seenSection = false;    // true once a body section heading has been emitted
   let openingWrapped = false; // true once the opening paragraph has been blockquoted
   let inMeta = (cat === 'clinical-reviews'); // clinical lead-in lines → .meta-block
+  let pendingListClass = null; // class to attach to the *next* <ul>/<ol> opened
 
   // Known clinical-review section headers (mirrors the server list)
   const sectionHeaders = /^(Background|Study Design|Patient Population|Key Findings|Discussion|Safety|Authors|Reference|Clinical Relevance|Conclusions|Disclaimer)/i;
+
+  // Headings that re-open the meta-block treatment (compact/italic, grouped into
+  // one box) or flag the list immediately following them for boxed styling —
+  // the "Abstract - Patient Updated 03/07" prompt introduced these as explicit
+  // "## " headings, whereas the renderer previously only recognised the
+  // meta-block window as "everything before the first heading."
+  const META_REOPEN_RE = /^article information$/i;
+  const LIST_STYLE_MAP = { 'study at a glance': 'fact-box-list', 'key takeaways': 'key-takeaways-list' };
 
   const closeList = () => { if (listType) { out.push(`</${listType}>`); listType = null; } };
 
@@ -11516,6 +11540,14 @@ function formatArticleHTML(text, category) {
     e = e.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     e = e.replace(/(?<!\w)\*([^*]+?)\*(?!\w)/g, '<em>$1</em>');
     return e;
+  };
+
+  // Applies the re-open/list-style side effects for a heading's plain text
+  // (called for every heading level and for bold-only pseudo-headings).
+  const applyHeadingEffects = (headingText) => {
+    const key = headingText.trim().toLowerCase();
+    inMeta = META_REOPEN_RE.test(key);
+    pendingListClass = LIST_STYLE_MAP[key] || null;
   };
 
   for (const line of lines) {
@@ -11531,7 +11563,11 @@ function formatArticleHTML(text, category) {
     if (ulMatch || olMatch) {
       const wantType = ulMatch ? 'ul' : 'ol';
       if (listType && listType !== wantType) closeList();
-      if (!listType) { listType = wantType; out.push(`<${wantType}>`); }
+      if (!listType) {
+        listType = wantType;
+        out.push(pendingListClass ? `<${wantType} class="${pendingListClass}">` : `<${wantType}>`);
+        pendingListClass = null;
+      }
       out.push(`<li>${inline((ulMatch ? ulMatch[1] : olMatch[1]).trim())}</li>`);
       continue;
     }
@@ -11539,18 +11575,20 @@ function formatArticleHTML(text, category) {
 
     const boldOnly = trimmed.match(/^\*\*(.+?)\*\*$/);
 
-    // Markdown headings. Reaching a section heading closes the opening/meta window.
-    if (trimmed.startsWith('### ')) { seenSection = true; inMeta = false; out.push(`<h3>${escapeHtml(trimmed.slice(4).replace(/\*\*/g, ''))}</h3>`); continue; }
-    if (trimmed.startsWith('## '))  { seenSection = true; inMeta = false; out.push(`<h2>${escapeHtml(trimmed.slice(3).replace(/\*\*/g, ''))}</h2>`); continue; }
+    // Markdown headings. Reaching a section heading closes the opening window
+    // and re-evaluates the meta-block / boxed-list state for what follows.
+    if (trimmed.startsWith('### ')) { seenSection = true; const txt = trimmed.slice(4).replace(/\*\*/g, ''); applyHeadingEffects(txt); out.push(`<h3>${escapeHtml(txt)}</h3>`); continue; }
+    if (trimmed.startsWith('## '))  { seenSection = true; const txt = trimmed.slice(3).replace(/\*\*/g, ''); applyHeadingEffects(txt); out.push(`<h2>${escapeHtml(txt)}</h2>`); continue; }
     if (trimmed.startsWith('# '))   {
       const txt = escapeHtml(stripCategoryTitlePrefix(trimmed.slice(2).replace(/\*\*/g, '')));
       if (!subtitleDone) { subtitleDone = true; out.push(`<h1>${txt}</h1>`); continue; }
-      seenSection = true; inMeta = false; out.push(`<h2>${txt}</h2>`); continue;
+      seenSection = true; applyHeadingEffects(txt); out.push(`<h2>${txt}</h2>`); continue;
     }
 
     // Bold-only lines that name a known section header → <h2>
     if (boldOnly && sectionHeaders.test(boldOnly[1].trim())) {
-      seenSection = true; inMeta = false;
+      seenSection = true;
+      applyHeadingEffects(boldOnly[1].trim());
       out.push(`<h2>${escapeHtml(boldOnly[1].trim())}</h2>`);
       continue;
     }

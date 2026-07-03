@@ -38,6 +38,7 @@ export function buildContentItem(data) {
     // on cards/emails/logs without a per-render rule lookup. Null for manual.
     automationRuleId: data.automationRuleId ?? null,
     automationRuleName: data.automationRuleName ?? null,
+    promptName: data.promptName ?? null,
     // Source-document provenance — the file / URL / sheet row / email this
     // article was generated from. Surfaced in review emails, the review-token
     // landing page, and the in-app article view so reviewers know what was

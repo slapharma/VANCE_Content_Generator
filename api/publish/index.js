@@ -98,6 +98,15 @@ function stripCategoryTitlePrefix(s) {
   return s == null ? s : String(s).replace(CATEGORY_TITLE_PREFIX_RE, '').trim();
 }
 
+// Inline-style presets for the boxed sections below — WP posts don't load the
+// app's stylesheet, so these have to travel as inline styles on the generated
+// tags rather than CSS classes.
+const WP_META_BLOCK_STYLE = 'font-size:14px;color:#6b7a8d;line-height:1.7;font-style:italic;margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid #dde3ea;';
+const WP_LIST_STYLE_MAP = {
+  'study at a glance': 'list-style:none;margin:0 0 20px;padding:16px 20px;background:#f7f8fa;border:1px solid #e2e6ec;border-radius:6px;',
+  'key takeaways':     'margin:0 0 20px;padding:14px 18px 14px 36px;background:rgba(0,104,104,0.06);border-left:3px solid #006868;border-radius:0 6px 6px 0;',
+};
+
 function markdownToWpHtml(text, { wrapOpening = false } = {}) {
   if (!text) return '';
   const lines = text.split('\n');
@@ -106,13 +115,31 @@ function markdownToWpHtml(text, { wrapOpening = false } = {}) {
   let listType = null; // 'ul' | 'ol' | null — tracks an open list block
   let seenSection = false;    // true once a body section heading has been emitted
   let openingWrapped = false; // true once the opening paragraph has been blockquoted
+  let inMeta = false;          // re-opened by an "Article information" heading → merge into one box
+  let metaBuffer = [];         // lines collected while inMeta is true
+  let pendingListStyle = null; // inline style for the *next* <ul>/<ol> opened
 
   const closeList = () => { if (listType) { html.push(`</${listType}>`); listType = null; } };
+  const flushMeta = () => {
+    if (metaBuffer.length) html.push(`<p style="${WP_META_BLOCK_STYLE}">${metaBuffer.join('<br>')}</p>`);
+    metaBuffer = [];
+  };
 
   // Inline markdown → HTML: **bold** and *italic* (italic guarded against word-internal *)
   const inline = (s) => s
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/(?<!\w)\*([^*]+?)\*(?!\w)/g, '<em>$1</em>');
+
+  // Applies the re-open/list-style side effects for a heading's plain text —
+  // mirrors index.html's formatArticleHTML so in-app previews and the
+  // published WP post render "Article information" / "Study at a glance" /
+  // "Key takeaways" the same way regardless of where the prompt puts them.
+  const applyHeadingEffects = (headingText) => {
+    flushMeta();
+    const key = headingText.trim().toLowerCase();
+    inMeta = key === 'article information';
+    pendingListStyle = WP_LIST_STYLE_MAP[key] || null;
+  };
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -129,7 +156,11 @@ function markdownToWpHtml(text, { wrapOpening = false } = {}) {
     if (ulMatch || olMatch) {
       const wantType = ulMatch ? 'ul' : 'ol';
       if (listType && listType !== wantType) closeList();
-      if (!listType) { listType = wantType; html.push(`<${wantType}>`); }
+      if (!listType) {
+        listType = wantType;
+        html.push(pendingListStyle ? `<${wantType} style="${pendingListStyle}">` : `<${wantType}>`);
+        pendingListStyle = null;
+      }
       html.push(`<li>${inline((ulMatch ? ulMatch[1] : olMatch[1]).trim())}</li>`);
       continue;
     }
@@ -140,20 +171,24 @@ function markdownToWpHtml(text, { wrapOpening = false } = {}) {
 
     // Markdown headings → first body "# " is the subtitle (<h1>); "## " → <h2>; "### " → <h3>.
     // Reaching a section heading closes the opening-paragraph window.
-    if (trimmed.startsWith('### '))     { seenSection = true; html.push(`<h3>${trimmed.slice(4).replace(/\*\*/g, '')}</h3>`); continue; }
-    if (trimmed.startsWith('## '))      { seenSection = true; html.push(`<h2>${trimmed.slice(3).replace(/\*\*/g, '')}</h2>`); continue; }
+    if (trimmed.startsWith('### '))     { seenSection = true; const txt = trimmed.slice(4).replace(/\*\*/g, ''); applyHeadingEffects(txt); html.push(`<h3>${txt}</h3>`); continue; }
+    if (trimmed.startsWith('## '))      { seenSection = true; const txt = trimmed.slice(3).replace(/\*\*/g, ''); applyHeadingEffects(txt); html.push(`<h2>${txt}</h2>`); continue; }
     if (trimmed.startsWith('# '))       {
       const txt = stripCategoryTitlePrefix(trimmed.slice(2).replace(/\*\*/g, ''));
       if (!subtitleDone) { subtitleDone = true; html.push(`<h1>${txt}</h1>`); continue; }
-      html.push(`<h2>${txt}</h2>`); continue;
+      applyHeadingEffects(txt); html.push(`<h2>${txt}</h2>`); continue;
     }
 
     // Bold-only lines that look like section headers → <h2>
     if (boldOnly) {
       const inner = boldOnly[1].trim();
       const isHeader = /^(Background|Study Design|Patient Population|Key Findings|Discussion|Safety|Authors|Reference|Clinical Relevance|Conclusions|Disclaimer)/i.test(inner);
-      if (isHeader) { seenSection = true; html.push(`<h2>${inner}</h2>`); continue; }
+      if (isHeader) { seenSection = true; applyHeadingEffects(inner); html.push(`<h2>${inner}</h2>`); continue; }
     }
+
+    // Article-information lead-in (authors / journal / DOI) → one merged box
+    // instead of a run of disconnected one-line paragraphs.
+    if (inMeta) { metaBuffer.push(inline(trimmed)); continue; }
 
     // Opening paragraph (first prose line before any section) → <blockquote> lead-in.
     if (wrapOpening && !openingWrapped && !seenSection) {
@@ -165,6 +200,7 @@ function markdownToWpHtml(text, { wrapOpening = false } = {}) {
     html.push(`<p>${inline(trimmed)}</p>`);
   }
   closeList();
+  flushMeta();
 
   return html.filter(l => l !== '').join('\n');
 }

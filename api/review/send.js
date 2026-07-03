@@ -49,6 +49,12 @@ function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl, urgent =
            : escHtml(content.sourceDocName)}
        </p>`
     : '';
+  const promptLine = content.promptName
+    ? `<p style="font-size:12px;color:#6b7a8d;margin:6px 0 0;">
+         <span style="text-transform:uppercase;letter-spacing:1px;font-size:10px;color:#9aa5b4;">Prompt: </span>
+         ${escHtml(content.promptName)}
+       </p>`
+    : '';
   return {
     from: process.env.RESEND_FROM_EMAIL ?? 'Vance Content <noreply@slapharmagroup.com>',
     to: reviewer.email,
@@ -75,6 +81,7 @@ function buildApprovalEmail({ reviewer, content, approveUrl, rejectUrl, urgent =
                 <p style="font-size:16px;font-weight:bold;color:#1e2d40;margin:0 0 8px;">${content.title}</p>
                 <p style="font-size:13px;color:#6b7a8d;margin:0;">${content.category ?? ''}</p>
                 ${sourceLine}
+                ${promptLine}
               </td>
             </tr>
           </table>
