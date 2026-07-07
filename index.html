@@ -1377,7 +1377,7 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
   display: flex; gap: 10px; padding: 0 1.25rem 1.25rem;
   overflow-x: auto; flex: 1; align-items: flex-start;
 }
-.pipeline-col { flex: 0 0 252px; min-width: 252px; border-radius: 0; overflow: hidden; border: 1px solid var(--border); background: var(--card); }
+.pipeline-col { flex: 0 0 404px; min-width: 404px; border-radius: 0; overflow: hidden; border: 1px solid var(--border); background: var(--card); }
 .pipeline-col-header {
   padding: 9px 12px; display: flex; align-items: center; justify-content: space-between;
   background: var(--vance-dark);
@@ -1441,7 +1441,7 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .pipeline-board.layout-stacked { flex-direction: column; overflow-x: hidden; overflow-y: auto; align-items: stretch; gap: 10px; }
 .pipeline-board.layout-stacked .pipeline-col { flex: none; min-width: 0; width: 100%; }
 .pipeline-board.layout-stacked .pipeline-col-body { flex-direction: row; flex-wrap: wrap; align-items: flex-start; }
-.pipeline-board.layout-stacked .kcard { width: 240px; flex-shrink: 0; }
+.pipeline-board.layout-stacked .kcard { width: 384px; flex-shrink: 0; }
 
 /* ── List view ── */
 .pipeline-board.layout-list { flex-direction: column; overflow-x: hidden; overflow-y: auto; align-items: stretch; gap: 0; padding-bottom: 1.25rem; }
@@ -15345,19 +15345,21 @@ function renderPipeline(items) {
     }).join('');
   } else {
     board.className = 'pipeline-board' + (layout === 'kanban-v' ? ' layout-stacked' : '');
-    board.innerHTML = STATUS_COLS.map(col => `
+    // Only render a column for stages that actually contain an article.
+    const activeCols = STATUS_COLS.filter(col => cols[col.id].length > 0);
+    board.innerHTML = activeCols.length
+      ? activeCols.map(col => `
       <div class="pipeline-col">
         <div class="pipeline-col-header ${col.cls}">
           <span class="pipeline-col-label">${col.label}</span>
           <span class="pipeline-col-count">${cols[col.id].length}</span>
         </div>
         <div class="pipeline-col-body">
-          ${cols[col.id].length
-            ? cols[col.id].map(item => renderKanbanCard(item)).join('')
-            : '<div class="pipeline-empty">No items</div>'}
+          ${cols[col.id].map(item => renderKanbanCard(item)).join('')}
         </div>
       </div>
-    `).join('');
+    `).join('')
+      : '<div class="pipeline-empty" style="width:100%;padding:3rem;">No articles in the pipeline yet.</div>';
   }
 }
 
