@@ -5073,8 +5073,18 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             </div>
 
             <div class="ced-section">
+              <div class="ced-section-title">Hero Image Source</div>
+              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 8px;">How the hero image is produced for this category — applies to both the generator and automation.</p>
+              <div class="hero-mode-toggle" style="margin-bottom:0;">
+                <button type="button" class="hero-mode-btn active" id="catEditorHeroSourceAi" onclick="setCatHeroSource('ai')" title="Generate a unique hero image with AI from the prompt below">✨ AI Generated</button>
+                <button type="button" class="hero-mode-btn" id="catEditorHeroSourceStock" onclick="setCatHeroSource('stock')" title="Search Pexels for a matching stock photo (keywords from the article — no prompt)">🔍 Stock Photo</button>
+              </div>
+            </div>
+
+            <div class="ced-section" id="catEditorHeroPromptSection">
               <div class="ced-section-title">Hero Image Prompt</div>
               <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">The AI image prompt used when generating a hero image for this category — in the generator and in automation. Leave on <strong>Global default</strong> to inherit the prompt set on the LLM page, or override it here. Use <code>{topic}</code> where the article subject should be inserted.</p>
+              <div id="catEditorHeroStockNote" class="alert" style="display:none;background:rgba(244,121,32,0.08);border:1px solid rgba(244,121,32,0.25);color:var(--vance-primary);font-size:0.68rem;padding:8px 12px;border-radius:6px;margin:0 0 10px;">Stock Photo is selected — hero images are matched from Pexels using keywords from the article title. The prompt below is only used when the source is set to <strong>AI Generated</strong>.</div>
               <label class="ced-label">Prompt source</label>
               <select id="catEditorHeroPromptPreset" class="ced-input" style="appearance:none;-webkit-appearance:none;background:var(--bg);cursor:pointer;margin-bottom:8px;" onchange="onCatHeroPromptPresetChange()"></select>
               <textarea id="catEditorHeroPrompt" class="ced-input" rows="6" placeholder="Leave blank to use the global default prompt." style="font-family:Georgia,serif;line-height:1.5;resize:vertical;"></textarea>
@@ -5987,6 +5997,12 @@ function switchCategory(catId) {
   heroImageUrl   = null;
   heroImageType  = null;
   updateArticleHeroPreview();
+  // Default the Hero Image card mode to this category's configured source
+  // ('stock' => Pexels Auto-Search, else AI Auto-Generate). User can still switch.
+  try {
+    var _heroSrc = (heroPromptsConfig.sources && heroPromptsConfig.sources[catId]) === 'stock' ? 'search' : 'ai';
+    if (typeof setHeroLeftMode === 'function') setHeroLeftMode(_heroSrc);
+  } catch (_) {}
   document.getElementById('articleOutput').classList.remove('visible');
   document.getElementById('emptyState').style.display = '';
   hideAlert('extractionStatus');
@@ -7455,8 +7471,8 @@ var HERO_PROMPT_DEFAULT = 'Professional editorial hero image for a clinical medi
 
 // In-memory + localStorage cache so the generator and category editor can read synchronously.
 var heroPromptsConfig = (function() {
-  try { return JSON.parse(localStorage.getItem('vance_hero_prompts') || 'null') || { default: '', presets: [], categories: {} }; }
-  catch (_) { return { default: '', presets: [], categories: {} }; }
+  try { return JSON.parse(localStorage.getItem('vance_hero_prompts') || 'null') || { default: '', presets: [], categories: {}, sources: {} }; }
+  catch (_) { return { default: '', presets: [], categories: {}, sources: {} }; }
 })();
 
 function cacheHeroPromptsConfig(rec) {
@@ -7464,6 +7480,7 @@ function cacheHeroPromptsConfig(rec) {
     default: typeof rec.default === 'string' ? rec.default : '',
     presets: Array.isArray(rec.presets) ? rec.presets : [],
     categories: (rec.categories && typeof rec.categories === 'object') ? rec.categories : {},
+    sources: (rec.sources && typeof rec.sources === 'object') ? rec.sources : {},
   };
   try { localStorage.setItem('vance_hero_prompts', JSON.stringify(heroPromptsConfig)); } catch (_) {}
 }
@@ -12362,6 +12379,10 @@ function renderCatHeroPreview() {
 // ── Per-category hero image prompt control (category editor → Settings) ───────
 // Populates the preset dropdown + textarea from heroPromptsConfig. The stored
 // override is the textarea value ('' = inherit the global default).
+// Per-category hero source, mirrored from the toggle into saveCategoryConfig.
+// 'ai' (default) => AI generation from the prompt; 'stock' => Pexels search.
+var catEditorHeroSource = 'ai';
+
 function renderCatHeroPromptControls(catId) {
   var sel = document.getElementById('catEditorHeroPromptPreset');
   var ta  = document.getElementById('catEditorHeroPrompt');
@@ -12382,6 +12403,24 @@ function renderCatHeroPromptControls(catId) {
     sel.value = matchIdx >= 0 ? ('preset:' + matchIdx) : '__custom';
     ta.disabled = false;
   }
+  // Source toggle (AI vs Stock), from heroPromptsConfig.sources[catId].
+  var storedSrc = (typeof heroPromptsConfig !== 'undefined' && heroPromptsConfig.sources && heroPromptsConfig.sources[catId]) || 'ai';
+  setCatHeroSource(storedSrc === 'stock' ? 'stock' : 'ai');
+}
+
+// Toggle the category hero source. Updates the button state and dims the AI
+// prompt controls when Stock Photo is selected (they're inert in that mode).
+function setCatHeroSource(mode) {
+  catEditorHeroSource = mode === 'stock' ? 'stock' : 'ai';
+  var aiBtn    = document.getElementById('catEditorHeroSourceAi');
+  var stockBtn = document.getElementById('catEditorHeroSourceStock');
+  var note     = document.getElementById('catEditorHeroStockNote');
+  var promptSection = document.getElementById('catEditorHeroPromptSection');
+  var isStock = catEditorHeroSource === 'stock';
+  if (aiBtn)    aiBtn.classList.toggle('active', !isStock);
+  if (stockBtn) stockBtn.classList.toggle('active', isStock);
+  if (note)     note.style.display = isStock ? '' : 'none';
+  if (promptSection) promptSection.style.opacity = isStock ? '0.55' : '';
 }
 
 function onCatHeroPromptPresetChange() {
@@ -12403,17 +12442,21 @@ function onCatHeroPromptPresetChange() {
   }
 }
 
-// Persist the per-category override into heroPromptsConfig + KV. Called from
-// saveCategoryConfig once the (possibly newly generated) catId is known.
-async function persistCategoryHeroPrompt(catId, text) {
+// Persist the per-category override + source into heroPromptsConfig + KV. Called
+// from saveCategoryConfig once the (possibly newly generated) catId is known.
+// `source` is 'ai' (default) or 'stock'.
+async function persistCategoryHeroPrompt(catId, text, source) {
   if (!catId) return;
   if (typeof heroPromptsConfig === 'undefined') return;
   heroPromptsConfig.categories = heroPromptsConfig.categories || {};
+  heroPromptsConfig.sources = heroPromptsConfig.sources || {};
   var t = (text || '').trim();
   if (t) heroPromptsConfig.categories[catId] = t;
   else delete heroPromptsConfig.categories[catId];
+  if (source === 'stock') heroPromptsConfig.sources[catId] = 'stock';
+  else delete heroPromptsConfig.sources[catId];
   try {
-    var rec = await apiFetch('/api/content/hero-prompts', { method: 'PUT', body: JSON.stringify({ categories: heroPromptsConfig.categories }) });
+    var rec = await apiFetch('/api/content/hero-prompts', { method: 'PUT', body: JSON.stringify({ categories: heroPromptsConfig.categories, sources: heroPromptsConfig.sources }) });
     if (typeof cacheHeroPromptsConfig === 'function' && rec) cacheHeroPromptsConfig(rec);
   } catch (err) {
     showToast('Hero prompt save failed: ' + err.message);
@@ -12885,6 +12928,7 @@ function saveCategoryConfig() {
   const llm     = document.getElementById('catEditorLlm').value;
   const heroImage = (document.getElementById('catEditorHeroImage')?.value || '').trim();
   const heroPrompt = (document.getElementById('catEditorHeroPrompt')?.value || '').trim();
+  const heroSource = (typeof catEditorHeroSource !== 'undefined') ? catEditorHeroSource : 'ai';
 
   if (!editingCategoryId && !name) { alert('Please enter a category name.'); document.getElementById('catEditorName').focus(); return; }
 
@@ -12903,7 +12947,7 @@ function saveCategoryConfig() {
     customCategories.push(newCat);
     saveCustomCategories();
     activateCustomCategories();
-    persistCategoryHeroPrompt(newCat.id, heroPrompt);
+    persistCategoryHeroPrompt(newCat.id, heroPrompt, heroSource);
     persistCategoryWordLimit(newCat.id);
     // Load the default prompt into the generator when this category is active
     renderCategoriesPage();
@@ -12920,7 +12964,7 @@ function saveCategoryConfig() {
     saveBuiltinOverrides(overrides);
     // Update per-category LLM if set
     if (llm) { const cm = JSON.parse(localStorage.getItem('vance_cat_models') || '{}'); cm[catId] = llm; localStorage.setItem('vance_cat_models', JSON.stringify(cm)); }
-    persistCategoryHeroPrompt(catId, heroPrompt);
+    persistCategoryHeroPrompt(catId, heroPrompt, heroSource);
     persistCategoryWordLimit(catId);
     renderCategoriesPage();
     closeCategoryEditor();
@@ -12938,7 +12982,7 @@ function saveCategoryConfig() {
     if (catEntry) catEntry.label = name;
     saveCustomCategories();
     activateCustomCategories();
-    persistCategoryHeroPrompt(editingCategoryId, heroPrompt);
+    persistCategoryHeroPrompt(editingCategoryId, heroPrompt, heroSource);
     persistCategoryWordLimit(editingCategoryId);
     renderCategoriesPage();
     closeCategoryEditor();
@@ -14318,19 +14362,13 @@ async function heroLeftGenerate() {
   const model = (document.getElementById('heroAiModelSelect') || {}).value || 'google/gemini-3.1-flash-image-preview-20260226';
   showHeroLeftStatus('info', 'Generating image with AI… this can take 15–30 seconds');
 
-  // Use the same hero prompt template as the automation flow (right-weighted composition,
-  // left side clean with gradient overlay, no-text enforcement, etc.)
+  // Resolve the hero prompt for the active category (per-category override wins,
+  // else the global default) — same resolution the automation flow uses.
   const titleEl = document.getElementById('articleTitleDisplay');
   const rawTitle = (titleEl ? (titleEl.innerText || titleEl.textContent || '') : '').trim();
   const topic = stripCategoryTitlePrefix(rawTitle)
     || extractKeywordsFromText(text, 6).join(', ');
-  const template = (heroPromptsConfig && heroPromptsConfig.default) || HERO_PROMPT_DEFAULT;
-  let prompt;
-  if (/\{topic\}|\{title\}/i.test(template)) {
-    prompt = template.replace(/\{topic\}/gi, topic).replace(/\{title\}/gi, topic);
-  } else {
-    prompt = template + ' (Subject: ' + topic + '.)';
-  }
+  const prompt = getResolvedHeroPrompt(currentCategory, topic);
   try {
     const resp = await fetch('/api/social/image', {
       method: 'POST',

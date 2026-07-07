@@ -27,6 +27,13 @@ The "Implication for Beta" field is the key one — it forces the entry to be us
 
 ---
 
+## 2026-07-07 — Per-category hero image source (AI vs Pexels stock), honoured in generator + automation
+
+- **Context**: Added a per-category "Hero Image Source" toggle (✨ AI Generated / 🔍 Stock Photo) in the category editor, so a category's hero can come from Pexels stock instead of AI generation. Previously automation *only* did AI heroes; Pexels lived client-side only (manual generator's Auto-Search).
+- **Finding**: Storage rides the existing `vance:hero-prompts` KV record — added a parallel `sources: { [catId]: 'stock' }` map alongside `categories`/`presets`/`default` (only `'stock'` is persisted; `'ai'` is the default and stays out of the map). The `hero-prompts.js` PUT already does partial-merge per slice, so the new map slots in the same way. Server-side Pexels now lives in `lib/social/media.js` as `generateHeroStockImage(title)` (env `PEXELS_API_KEY`, falls back to the same key the client hardcodes) with a local title→keywords helper — no LLM. `run.js` resolves `heroImageSource` once per run next to `heroPromptTemplate` and branches the hero-gen call, keeping the same 90s timeout race; stamps `heroImageType: 'pexels'` (reused the manual flow's existing value rather than inventing `'stock'`, since `heroImageType` is passive display metadata, never branched on). Client: `heroPromptsConfig.sources` cached, `persistCategoryHeroPrompt(catId, text, source)` gained a 3rd arg, and `switchCategory` defaults the manual Hero Image card mode to the category's source.
+- **Implication for Beta**: This is per-category config in a *shared* KV record — under multi-tenancy the `sources` map must be tenant-scoped the same way `categories` is (rides `lib/kv.js` `p(key)` prefix, so it's automatic once tenancy lands). Note the Pexels API key is currently a shared hardcoded fallback in both `index.html` and `media.js`; for a multi-tenant/public showcase, move it to env-only and consider a per-tenant key + usage budget (Pexels has rate limits, and one tenant's automation volume shouldn't exhaust a shared key). The manual generator's *AI* path still reads only `heroPromptsConfig.default` (not the per-category prompt) — pre-existing gap, unrelated to this change but worth closing in Beta.
+- **Tag**: #kv #prompts #ui
+
 ## 2026-06-29 — Shared Upstash Free-tier 500k cap takes the whole app down; surfaces as a login JSON-parse error
 
 - **Context**: Users hit `Unexpected token 'A', "A server e"... is not valid JSON` when logging in. Looked like an auth/login code bug.

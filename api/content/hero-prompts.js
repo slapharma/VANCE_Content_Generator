@@ -7,12 +7,14 @@ import { getCurrentUser, requireRole } from '../../lib/auth.js';
 //     default:    "<template string, may contain {topic} / {title} placeholders>",
 //     presets:    [ { id, name, text } ],   // reusable library, for convenience in the UI
 //     categories: { [categoryId]: "<template string>" },  // per-category override ('' = use default)
+//     sources:    { [categoryId]: "stock" },  // per-category hero source ('ai' is the default, omitted)
 //     updatedAt, updatedBy
 //   }
 //
 // Resolution (shared with lib/social/media.js): categories[cat] (non-empty) wins, else default.
+// sources[cat] === 'stock' => Pexels stock photo; anything else => AI generation.
 
-const EMPTY = { default: '', presets: [], categories: {} };
+const EMPTY = { default: '', presets: [], categories: {}, sources: {} };
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
@@ -35,6 +37,7 @@ export default async function handler(req, res) {
       default: typeof existing.default === 'string' ? existing.default : '',
       presets: Array.isArray(existing.presets) ? existing.presets : [],
       categories: (existing.categories && typeof existing.categories === 'object') ? existing.categories : {},
+      sources: (existing.sources && typeof existing.sources === 'object') ? existing.sources : {},
     };
 
     if (typeof body.default === 'string') rec.default = body.default;
@@ -53,6 +56,14 @@ export default async function handler(req, res) {
         if (typeof v === 'string' && v.trim()) clean[k] = v;
       }
       rec.categories = clean;
+    }
+    if (body.sources && typeof body.sources === 'object') {
+      // Only 'stock' is persisted; 'ai' is the default and stays out of the map.
+      const clean = {};
+      for (const [k, v] of Object.entries(body.sources)) {
+        if (v === 'stock') clean[k] = 'stock';
+      }
+      rec.sources = clean;
     }
 
     rec.updatedAt = new Date().toISOString();
