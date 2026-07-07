@@ -5614,10 +5614,8 @@ Clear, specific, and informative
 Use sentence case
 Preferred formats: "X 101: ..." or "How X affects gut inflammation"
 Avoid clickbait or vague phrasing
-2. Reading Time Label
-Directly below the title:
-Reading Time: X minutes
-3. Opening Paragraph (2 to 4 sentences)
+Do NOT add a category prefix (e.g. "Clinical Review:") to the title, and do NOT add a "Reading Time" line anywhere.
+2. Opening Paragraph (2 to 4 sentences)
 Start with real-world relevance or a common patient experience
 Do NOT start with definitions, statistics, or "In this article..."
 4. Body Sections
@@ -5666,7 +5664,7 @@ No opening with statistics
 No vague "gut health" without explanation
 
 OUTPUT FORMAT
-Output the article in markdown. The very first line MUST be the title prefixed with "# " (no other text on the first line). The Reading Time label is the next line. All body section headings use "## ". Deliver the complete article ready for publication; no preamble or commentary outside the article itself.`;
+Output the article in markdown. The very first line MUST be the title prefixed with "# " (no other text on the first line). Do NOT add a category prefix to the title, and do NOT include a "Reading Time" line. All body section headings use "## ". Deliver the complete article ready for publication; no preamble or commentary outside the article itself.`;
 
 // ─── Social platform default prompts ─────────────────────────────────────────
 
@@ -7383,7 +7381,7 @@ Avoid using alarming or scaremongering language where possible.
 Abbreviations: introduce the term in full at first mention with the abbreviation in brackets, then use the abbreviation throughout. If a term would not naturally be spoken as its abbreviation, write it in full every time.
 Do not bold words mid-sentence or mid-paragraph. Bold is only for titles and subheadings.
 No exclamation marks. No clickbait. Avoid promotional language like "groundbreaking", "revolutionary", "journey", or "game-changing".
-OUTPUT FORMAT: Output the article in markdown. The very first line MUST be the title prefixed with "# " (no other text on the first line). The Reading Time label is the next line. Top-level body section headings use "## "; sub-headings within a section (e.g. one per named gene, drug, or listed item) use "### ". Deliver the complete article ready for publication; no preamble or commentary outside the article itself.
+OUTPUT FORMAT: Output the article in markdown. The very first line MUST be the title prefixed with "# " (no other text on the first line). Do NOT add a category prefix (e.g. "Clinical Review:") to the title, and do NOT include a "Reading Time" line. Top-level body section headings use "## "; sub-headings within a section (e.g. one per named gene, drug, or listed item) use "### ". Deliver the complete article ready for publication; no preamble or commentary outside the article itself.
 Do not generate any article that refers to a human story, testimonial or case study.
 Do not refer to or include any reference to animal studies.
 [STRUCTURE & FORMATTING]
@@ -10231,7 +10229,7 @@ async function generateReview() {
     try {
       showProgress(true, 25, 'Sending request...');
       const result = await attemptGeneration(model, systemPrompt, sourceText);
-      rawArticleText = result.text;
+      rawArticleText = sanitizeGeneratedMarkdown(result.text);
       document.getElementById('articleContent').innerHTML = formatArticleHTML(rawArticleText);
       document.getElementById('wordCount').textContent = countBodyProse(rawArticleText).toLocaleString() + ' words';
       const badge = document.getElementById('modelUsedBadge');
@@ -11519,6 +11517,29 @@ async function _ahDeleteComment(articleId, rcIndex) {
 const CATEGORY_TITLE_PREFIX_RE = /^(clinical review|gastro living|gastro health news|op[-\s]?ed|white paper|infographic)\s*:\s*/i;
 function stripCategoryTitlePrefix(s) {
   return s == null ? s : String(s).replace(CATEGORY_TITLE_PREFIX_RE, '').trim();
+}
+
+// Remove editorial artefacts we never want persisted or displayed, at the moment
+// the article is generated: the "Reading Time" meta line, and any category prefix
+// on the first markdown H1. Applied to rawArticleText so the stored source,
+// title extraction, pipeline, view, publish, and copy are all clean regardless
+// of what the (code or KV) prompt instructed.
+function sanitizeGeneratedMarkdown(md) {
+  if (!md) return md;
+  const lines = String(md).split('\n');
+  const out = [];
+  let h1Done = false;
+  for (const line of lines) {
+    const t = line.trim();
+    if (/^\**\s*reading time\b/i.test(t)) continue;            // drop reading-time line
+    if (!h1Done && /^#\s+/.test(t)) {                          // strip prefix on first H1
+      h1Done = true;
+      out.push('# ' + stripCategoryTitlePrefix(t.replace(/^#\s+/, '')));
+      continue;
+    }
+    out.push(line);
+  }
+  return out.join('\n');
 }
 
 // Render an article body to HTML for the in-app view. This is a faithful client
