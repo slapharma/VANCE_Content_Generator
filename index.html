@@ -14304,12 +14304,17 @@ function heroLeftPopulateKeywords() {
   const text = articleText || extractedText || '';
   const chips = document.getElementById('heroLeftKeywordChips');
   const input = document.getElementById('heroLeftKeywordInput');
-  if (!text) return;
+  // Prefer the article title as the Pexels search query; keywords are shown as
+  // editable suggestions and used as a fallback when there's no title yet.
+  const titleEl = document.getElementById('articleTitleDisplay');
+  const rawTitle = (titleEl ? (titleEl.innerText || titleEl.textContent || '') : '').trim();
+  const titleQuery = (typeof stripCategoryTitlePrefix === 'function' ? stripCategoryTitlePrefix(rawTitle) : rawTitle) || '';
+  if (!text && !titleQuery) return;
   const keywords = extractKeywordsFromText(text, 6);
   if (chips) chips.innerHTML = keywords.map(function(k){
     return '<span class="keyword-chip">' + escapeHtml(k) + '</span>';
   }).join('');
-  if (input && !input.value) input.value = keywords.join(', ');
+  if (input && !input.value) input.value = titleQuery || keywords.join(', ');
 }
 
 async function heroLeftRun() {
@@ -14323,12 +14328,15 @@ async function heroLeftRun() {
 async function heroLeftSearch() {
   const input = document.getElementById('heroLeftKeywordInput');
   let query = (input ? input.value.trim() : '') || '';
-  if (!query && extractedText) {
-    const kws = extractKeywordsFromText(extractedText, 6);
-    query = kws.join(' ');
-    if (input) input.value = query;
+  if (!query) {
+    // Prefer the article title, then fall back to keywords from the source.
+    const titleEl = document.getElementById('articleTitleDisplay');
+    const rawTitle = (titleEl ? (titleEl.innerText || titleEl.textContent || '') : '').trim();
+    const titleQuery = (typeof stripCategoryTitlePrefix === 'function' ? stripCategoryTitlePrefix(rawTitle) : rawTitle) || '';
+    query = titleQuery || (extractedText ? extractKeywordsFromText(extractedText, 6).join(' ') : '');
+    if (input && query) input.value = query;
   }
-  if (!query) { showHeroLeftStatus('error', 'Upload a source document first, or enter keywords manually.'); return; }
+  if (!query) { showHeroLeftStatus('error', 'Generate an article or upload a source first, or enter keywords manually.'); return; }
   showHeroLeftStatus('info', 'Searching Pexels…');
   const grid = document.getElementById('heroLeftGrid');
   if (grid) grid.innerHTML = '';
