@@ -4990,6 +4990,10 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             Prompts
             <span class="ced-tab-badge" id="cedPromptsBadge">—</span>
           </button>
+          <button class="ced-tab" id="cedTab-hero" onclick="switchCatEditorTab('hero')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Hero Image
+          </button>
           <button class="ced-tab" id="cedTab-settings" onclick="switchCatEditorTab('settings')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             Settings
@@ -5064,14 +5068,12 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
               <div id="catEditorWordLimitHint" style="font-size:0.66rem;color:var(--text-muted);min-height:14px;margin-top:4px;"></div>
             </div>
 
-            <div class="ced-section">
-              <div class="ced-section-title">Category Hero Image</div>
-              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">Fallback image used for articles in this category that don't have their own hero image. Paste a publicly accessible image URL.</p>
-              <label class="ced-label">Hero Image URL</label>
-              <input type="url" id="catEditorHeroImage" class="ced-input" placeholder="https://example.com/hero.jpg" oninput="renderCatHeroPreview()" />
-              <div id="catEditorHeroPreview" style="margin-top:8px;min-height:60px;"></div>
-            </div>
+            <!-- Hidden inputs used by saveCategoryConfig -->
+            <textarea id="catEditorPrompt" style="display:none;"></textarea>
+          </div><!-- /cedPane-settings -->
 
+          <!-- TAB: Hero Image -->
+          <div class="ced-pane" id="cedPane-hero">
             <div class="ced-section">
               <div class="ced-section-title">Hero Image Source</div>
               <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 8px;">How the hero image is produced for this category — applies to both the generator and automation.</p>
@@ -5090,9 +5092,14 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
               <textarea id="catEditorHeroPrompt" class="ced-input" rows="6" placeholder="Leave blank to use the global default prompt." style="font-family:Georgia,serif;line-height:1.5;resize:vertical;"></textarea>
             </div>
 
-            <!-- Hidden inputs used by saveCategoryConfig -->
-            <textarea id="catEditorPrompt" style="display:none;"></textarea>
-          </div><!-- /cedPane-settings -->
+            <div class="ced-section">
+              <div class="ced-section-title">Category Fallback Image</div>
+              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">Fallback image used for articles in this category that don't have their own hero image. Paste a publicly accessible image URL.</p>
+              <label class="ced-label">Hero Image URL</label>
+              <input type="url" id="catEditorHeroImage" class="ced-input" placeholder="https://example.com/hero.jpg" oninput="renderCatHeroPreview()" />
+              <div id="catEditorHeroPreview" style="margin-top:8px;min-height:60px;"></div>
+            </div>
+          </div><!-- /cedPane-hero -->
 
         </div><!-- /ced-panes -->
 
@@ -13057,7 +13064,7 @@ The prompt should instruct an AI writer to produce high-quality, accurate, UK-En
 
 // ── Category editor tab switching ────────────────────────────────────────────
 function switchCatEditorTab(tab) {
-  ['info', 'prompts', 'settings'].forEach(function(t) {
+  ['info', 'prompts', 'hero', 'settings'].forEach(function(t) {
     const btn  = document.getElementById('cedTab-' + t);
     const pane = document.getElementById('cedPane-' + t);
     if (btn)  btn.classList.toggle('active', t === tab);
