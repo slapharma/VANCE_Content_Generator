@@ -8,13 +8,15 @@ import { getCurrentUser, requireRole } from '../../lib/auth.js';
 //     presets:    [ { id, name, text } ],   // reusable library, for convenience in the UI
 //     categories: { [categoryId]: "<template string>" },  // per-category override ('' = use default)
 //     sources:    { [categoryId]: "stock" },  // per-category hero source ('ai' is the default, omitted)
+//     stockProvider: "pexels" | "unsplash",   // which stock service Stock-Photo heroes use
+//     unsplashKey:   "<access key>",           // Unsplash access key (public client-side key)
 //     updatedAt, updatedBy
 //   }
 //
 // Resolution (shared with lib/social/media.js): categories[cat] (non-empty) wins, else default.
-// sources[cat] === 'stock' => Pexels stock photo; anything else => AI generation.
+// sources[cat] === 'stock' => stock photo (via stockProvider); anything else => AI generation.
 
-const EMPTY = { default: '', presets: [], categories: {}, sources: {} };
+const EMPTY = { default: '', presets: [], categories: {}, sources: {}, stockProvider: 'pexels', unsplashKey: '' };
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
@@ -38,6 +40,8 @@ export default async function handler(req, res) {
       presets: Array.isArray(existing.presets) ? existing.presets : [],
       categories: (existing.categories && typeof existing.categories === 'object') ? existing.categories : {},
       sources: (existing.sources && typeof existing.sources === 'object') ? existing.sources : {},
+      stockProvider: existing.stockProvider === 'unsplash' ? 'unsplash' : 'pexels',
+      unsplashKey: typeof existing.unsplashKey === 'string' ? existing.unsplashKey : '',
     };
 
     if (typeof body.default === 'string') rec.default = body.default;
@@ -64,6 +68,12 @@ export default async function handler(req, res) {
         if (v === 'stock') clean[k] = 'stock';
       }
       rec.sources = clean;
+    }
+    if (body.stockProvider !== undefined) {
+      rec.stockProvider = body.stockProvider === 'unsplash' ? 'unsplash' : 'pexels';
+    }
+    if (body.unsplashKey !== undefined) {
+      rec.unsplashKey = typeof body.unsplashKey === 'string' ? body.unsplashKey.trim() : '';
     }
 
     rec.updatedAt = new Date().toISOString();

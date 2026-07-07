@@ -3742,6 +3742,24 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         </div>
         <p style="font-size:0.6rem;color:var(--text-muted);margin:0 0 10px;">Reusable hero prompts you can apply to any category from the category editor. Editing a preset here does not retroactively change categories already using its text.</p>
         <div id="heroPresetsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;" />
+
+        <label style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--vance-dark);display:block;margin-bottom:6px;">Stock image provider</label>
+        <p style="font-size:0.6rem;color:var(--text-muted);margin:0 0 8px;">Which service supplies photos for categories whose Hero Image source is set to <strong>Stock Photo</strong> — in the generator and automation.</p>
+        <div class="hero-mode-toggle" style="margin-bottom:8px;">
+          <button type="button" class="hero-mode-btn active" id="stockProviderPexels" onclick="setStockProvider('pexels')" title="Use Pexels (built-in key, no setup)">Pexels</button>
+          <button type="button" class="hero-mode-btn" id="stockProviderUnsplash" onclick="setStockProvider('unsplash')" title="Use Unsplash (requires a free access key)">Unsplash</button>
+        </div>
+        <div id="unsplashKeyRow" style="display:none;margin-bottom:8px;">
+          <label style="font-size:0.62rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px;">Unsplash Access Key</label>
+          <input type="text" id="unsplashKeyInput" placeholder="Paste your Unsplash Access Key…" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);font-family:'Montserrat',sans-serif;font-size:0.72rem;border-radius:0;color:var(--text);background:var(--bg);" />
+          <p style="font-size:0.58rem;color:var(--text-muted);margin:5px 0 0;">Create a free app at <span style="color:var(--vance-primary);">unsplash.com/developers</span> and paste its <strong>Access Key</strong> here. Required for Unsplash search.</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;justify-content:flex-end;">
+          <span id="stockProviderStatus" style="font-size:0.66rem;color:var(--text-muted);"></span>
+          <button class="btn btn-orange btn-sm" onclick="saveStockProvider()">Save provider</button>
+        </div>
       </div>
     </div>
 
@@ -5079,14 +5097,14 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
               <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 8px;">How the hero image is produced for this category — applies to both the generator and automation.</p>
               <div class="hero-mode-toggle" style="margin-bottom:0;">
                 <button type="button" class="hero-mode-btn active" id="catEditorHeroSourceAi" onclick="setCatHeroSource('ai')" title="Generate a unique hero image with AI from the prompt below">✨ AI Generated</button>
-                <button type="button" class="hero-mode-btn" id="catEditorHeroSourceStock" onclick="setCatHeroSource('stock')" title="Search Pexels for a matching stock photo (keywords from the article — no prompt)">🔍 Stock Photo</button>
+                <button type="button" class="hero-mode-btn" id="catEditorHeroSourceStock" onclick="setCatHeroSource('stock')" title="Search your configured stock provider (Pexels or Unsplash) for a matching photo — set it on the LLM Management page">🔍 Stock Photo</button>
               </div>
             </div>
 
             <div class="ced-section" id="catEditorHeroPromptSection">
               <div class="ced-section-title">Hero Image Prompt</div>
               <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">The AI image prompt used when generating a hero image for this category — in the generator and in automation. Leave on <strong>Global default</strong> to inherit the prompt set on the LLM page, or override it here. Use <code>{topic}</code> where the article subject should be inserted.</p>
-              <div id="catEditorHeroStockNote" class="alert" style="display:none;background:rgba(244,121,32,0.08);border:1px solid rgba(244,121,32,0.25);color:var(--vance-primary);font-size:0.68rem;padding:8px 12px;border-radius:6px;margin:0 0 10px;">Stock Photo is selected — hero images are matched from Pexels using keywords from the article title. The prompt below is only used when the source is set to <strong>AI Generated</strong>.</div>
+              <div id="catEditorHeroStockNote" class="alert" style="display:none;background:rgba(244,121,32,0.08);border:1px solid rgba(244,121,32,0.25);color:var(--vance-primary);font-size:0.68rem;padding:8px 12px;border-radius:6px;margin:0 0 10px;">Stock Photo is selected — hero images are matched from your configured stock provider (Pexels or Unsplash, set on the <strong>LLM Management</strong> page) using the article title. The prompt below is only used when the source is set to <strong>AI Generated</strong>.</div>
               <label class="ced-label">Prompt source</label>
               <select id="catEditorHeroPromptPreset" class="ced-input" style="appearance:none;-webkit-appearance:none;background:var(--bg);cursor:pointer;margin-bottom:8px;" onchange="onCatHeroPromptPresetChange()"></select>
               <textarea id="catEditorHeroPrompt" class="ced-input" rows="6" placeholder="Leave blank to use the global default prompt." style="font-family:Georgia,serif;line-height:1.5;resize:vertical;"></textarea>
@@ -7476,8 +7494,9 @@ var HERO_PROMPT_DEFAULT = 'Professional editorial hero image for a clinical medi
 
 // In-memory + localStorage cache so the generator and category editor can read synchronously.
 var heroPromptsConfig = (function() {
-  try { return JSON.parse(localStorage.getItem('vance_hero_prompts') || 'null') || { default: '', presets: [], categories: {}, sources: {} }; }
-  catch (_) { return { default: '', presets: [], categories: {}, sources: {} }; }
+  var EMPTY = { default: '', presets: [], categories: {}, sources: {}, stockProvider: 'pexels', unsplashKey: '' };
+  try { return JSON.parse(localStorage.getItem('vance_hero_prompts') || 'null') || EMPTY; }
+  catch (_) { return EMPTY; }
 })();
 
 function cacheHeroPromptsConfig(rec) {
@@ -7486,6 +7505,8 @@ function cacheHeroPromptsConfig(rec) {
     presets: Array.isArray(rec.presets) ? rec.presets : [],
     categories: (rec.categories && typeof rec.categories === 'object') ? rec.categories : {},
     sources: (rec.sources && typeof rec.sources === 'object') ? rec.sources : {},
+    stockProvider: rec.stockProvider === 'unsplash' ? 'unsplash' : 'pexels',
+    unsplashKey: typeof rec.unsplashKey === 'string' ? rec.unsplashKey : '',
   };
   try { localStorage.setItem('vance_hero_prompts', JSON.stringify(heroPromptsConfig)); } catch (_) {}
 }
@@ -7501,6 +7522,52 @@ async function loadHeroPrompts() {
   var status = document.getElementById('heroDefaultPromptStatus');
   if (status) status.textContent = heroPromptsConfig.default ? '' : 'Built-in default shown — Save to store it.';
   renderHeroPresets();
+  renderStockProviderControls();
+}
+
+// ── Stock image provider (global: Pexels vs Unsplash) ────────────────────────
+var stockProviderSel = 'pexels';
+
+function renderStockProviderControls() {
+  stockProviderSel = heroPromptsConfig.stockProvider === 'unsplash' ? 'unsplash' : 'pexels';
+  var keyInput = document.getElementById('unsplashKeyInput');
+  if (keyInput) keyInput.value = heroPromptsConfig.unsplashKey || '';
+  setStockProvider(stockProviderSel);
+  var status = document.getElementById('stockProviderStatus');
+  if (status) status.textContent = '';
+}
+
+function setStockProvider(p) {
+  stockProviderSel = p === 'unsplash' ? 'unsplash' : 'pexels';
+  var isUns = stockProviderSel === 'unsplash';
+  var pBtn = document.getElementById('stockProviderPexels');
+  var uBtn = document.getElementById('stockProviderUnsplash');
+  var keyRow = document.getElementById('unsplashKeyRow');
+  if (pBtn) pBtn.classList.toggle('active', !isUns);
+  if (uBtn) uBtn.classList.toggle('active', isUns);
+  if (keyRow) keyRow.style.display = isUns ? '' : 'none';
+}
+
+async function saveStockProvider() {
+  var status = document.getElementById('stockProviderStatus');
+  var keyInput = document.getElementById('unsplashKeyInput');
+  var key = keyInput ? (keyInput.value || '').trim() : '';
+  if (stockProviderSel === 'unsplash' && !key) {
+    if (status) { status.style.color = '#c0392b'; status.textContent = 'Enter an Unsplash Access Key first.'; }
+    return;
+  }
+  if (status) { status.style.color = 'var(--text-muted)'; status.textContent = 'Saving…'; }
+  try {
+    var rec = await apiFetch('/api/content/hero-prompts', {
+      method: 'PUT',
+      body: JSON.stringify({ stockProvider: stockProviderSel, unsplashKey: key }),
+    });
+    if (rec) cacheHeroPromptsConfig(rec);
+    if (status) status.textContent = '✓ Saved';
+    setTimeout(function(){ if (status) status.textContent = ''; }, 2500);
+  } catch (err) {
+    if (status) { status.style.color = '#c0392b'; status.textContent = 'Save failed: ' + err.message; }
+  }
 }
 
 // Resolve the effective hero prompt for a category, with {topic} substituted.
@@ -14358,24 +14425,41 @@ async function heroLeftSearch() {
     if (input && query) input.value = query;
   }
   if (!query) { showHeroLeftStatus('error', 'Generate an article or upload a source first, or enter keywords manually.'); return; }
-  showHeroLeftStatus('info', 'Searching Pexels…');
+  const provider = (heroPromptsConfig && heroPromptsConfig.stockProvider === 'unsplash') ? 'unsplash' : 'pexels';
+  const providerLabel = provider === 'unsplash' ? 'Unsplash' : 'Pexels';
+  showHeroLeftStatus('info', 'Searching ' + providerLabel + '…');
   const grid = document.getElementById('heroLeftGrid');
   if (grid) grid.innerHTML = '';
   heroLeftSelectedIdx = -1;
   try {
-    const resp = await fetch(
-      'https://api.pexels.com/v1/search?query=' + encodeURIComponent(query) + '&per_page=9&orientation=landscape',
-      { headers: { Authorization: PEXELS_API_KEY } }
-    );
-    if (!resp.ok) throw new Error('Pexels ' + resp.status);
-    const data = await resp.json();
-    if (!data.photos || !data.photos.length) {
-      showHeroLeftStatus('error', 'No photos found. Try different keywords.');
-      return;
+    if (provider === 'unsplash') {
+      const key = (heroPromptsConfig.unsplashKey || '').trim();
+      if (!key) { showHeroLeftStatus('error', 'Add your Unsplash Access Key on the LLM Management page first.'); return; }
+      const resp = await fetch(
+        'https://api.unsplash.com/search/photos?query=' + encodeURIComponent(query) + '&per_page=9&orientation=landscape&client_id=' + encodeURIComponent(key)
+      );
+      if (!resp.ok) throw new Error('Unsplash ' + resp.status);
+      const data = await resp.json();
+      if (!data.results || !data.results.length) { showHeroLeftStatus('error', 'No photos found. Try different keywords.'); return; }
+      heroLeftResults = data.results.map(function(p){
+        return {
+          small: p.urls.small, full: p.urls.regular || p.urls.full,
+          author: p.user && p.user.name, link: p.links && p.links.html,
+          provider: 'unsplash', dl: p.links && p.links.download_location,
+        };
+      });
+    } else {
+      const resp = await fetch(
+        'https://api.pexels.com/v1/search?query=' + encodeURIComponent(query) + '&per_page=9&orientation=landscape',
+        { headers: { Authorization: PEXELS_API_KEY } }
+      );
+      if (!resp.ok) throw new Error('Pexels ' + resp.status);
+      const data = await resp.json();
+      if (!data.photos || !data.photos.length) { showHeroLeftStatus('error', 'No photos found. Try different keywords.'); return; }
+      heroLeftResults = data.photos.map(function(p){
+        return { small: p.src.medium, full: p.src.large2x, author: p.photographer, link: p.url, provider: 'pexels' };
+      });
     }
-    heroLeftResults = data.photos.map(function(p){
-      return { small: p.src.medium, full: p.src.large2x, author: p.photographer, link: p.url };
-    });
     if (grid) {
       grid.innerHTML = heroLeftResults.map(function(img, i){
         return '<img src="' + img.small + '" class="hero-left-thumb" alt="result ' + (i+1) + '" onclick="heroLeftSelectImage(' + i + ')" loading="lazy" onerror="this.style.opacity=\'0.3\'" />';
@@ -14442,11 +14526,17 @@ function heroLeftSelectImage(idx) {
   });
   const img = heroLeftResults[idx];
   heroImageUrl  = img.full;
-  heroImageType = 'pexels';
+  heroImageType = img.provider === 'unsplash' ? 'unsplash' : 'pexels';
   updateArticleHeroPreview();
-  const credit = img.author ? ('Photo by ' + img.author + ' on Pexels') : 'Photo from Pexels';
+  const svc = img.provider === 'unsplash' ? 'Unsplash' : 'Pexels';
+  const credit = img.author ? ('Photo by ' + img.author + ' on ' + svc) : ('Photo from ' + svc);
   heroLeftSelectImageDirect(img.small, credit, img.link);
-  // Sync to right panel Pexels pane
+  // Unsplash API guideline: trigger the download endpoint when an image is used.
+  if (img.provider === 'unsplash' && img.dl) {
+    const key = (heroPromptsConfig.unsplashKey || '').trim();
+    if (key) fetch(img.dl + (img.dl.indexOf('?') >= 0 ? '&' : '?') + 'client_id=' + encodeURIComponent(key)).catch(function(){});
+  }
+  // Sync to right panel selected pane
   const rightSel = document.getElementById('heroUnsplashSelected');
   if (rightSel) { rightSel.src = img.full; rightSel.style.display = 'block'; }
 }

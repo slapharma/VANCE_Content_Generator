@@ -27,6 +27,13 @@ The "Implication for Beta" field is the key one — it forces the entry to be us
 
 ---
 
+## 2026-07-08 — Selectable stock image provider (Pexels ↔ Unsplash), global setting in KV
+
+- **Context**: Added Unsplash as an alternative to Pexels for Stock-Photo heroes, with a global provider toggle + Unsplash Access Key field on the LLM Management page.
+- **Finding**: Kept it a **global** setting (not per-category) stored in the existing `vance:hero-prompts` KV record (`stockProvider: 'pexels'|'unsplash'`, `unsplashKey: '<key>'`). `lib/social/media.js` `generateHeroStockImage(title, opts)` gained a provider param with normalised `{url, photographer, sourceUrl}` per provider; `run.js` reads provider+key from the same KV fetch it already does for prompt/source and passes them through. Client manual Auto-Search (`heroLeftSearch`) branches on `heroPromptsConfig.stockProvider`. Unsplash specifics that bit: response shape is `results[]` with `urls.regular` (not Pexels' `photos[].src.large2x`); the API **requires** pinging `links.download_location?client_id=…` when an image is used (done server-side on pick and client-side on select); and the free "demo" tier is 50 req/hr. The access key is a **public** client-side key (same exposure model as the hardcoded Pexels key), so storing it in KV and shipping it to authenticated clients is fine. Because the key lives in KV (entered via UI), automation picks it up with **no Vercel env var needed** — `UNSPLASH_ACCESS_KEY` env is only a fallback.
+- **Implication for Beta**: This is another slice of the shared `vance:hero-prompts` KV record — tenant-scoped automatically via `lib/kv.js` prefix. For multi-tenant, each tenant needs its own Unsplash key (they will, since it's per-record). Watch the 50 req/hr Unsplash demo cap under automation volume — a busy tenant needs Unsplash "production" approval or should stay on Pexels. The provider abstraction in `generateHeroStockImage(title, {provider, unsplashKey})` is the extension point if more providers (Pixabay, Openverse) are added later.
+- **Tag**: #kv #ui #prompts
+
 ## 2026-07-07 — Reading-time + category-prefix must be stripped at generation time, not just at render
 
 - **Context**: User reported the category title prefix ("Clinical Review:" etc.) and the "Reading Time: X minutes" line still showing up, despite existing strip logic. Both are *instructed* by the prompts — category prompts demand a "Clinical Review:" / "Gastro Health News:" title prefix, and the master prompt (+ ibd-living prompt) say "The Reading Time label is the next line."
