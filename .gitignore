@@ -26,3 +26,6 @@ articles-backup-*.json
 # Stray local working dirs
 sla-customizer-edits-*/
 tasks/
+
+# Reformat script output (before/after dumps, backups)
+scripts/reformat-out/
