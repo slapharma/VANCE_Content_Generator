@@ -10835,9 +10835,12 @@ async function viewArticleFromPipeline(itemId) {
 
   switchTab('article');
   // Open the article scrolled to the top — otherwise it inherits the scroll
-  // position of whatever tab we came from and lands mid-page.
+  // position of whatever tab we came from and lands mid-page. .scroll-area only
+  // scrolls internally when its content fits within one viewport; long articles
+  // exceed that, so the window itself scrolls instead — reset both.
   var scrollArea = document.querySelector('.scroll-area');
   if (scrollArea) scrollArea.scrollTop = 0;
+  window.scrollTo(0, 0);
 }
 
 // Plain Approve from the article toolbar — flips status to 'approved' without
