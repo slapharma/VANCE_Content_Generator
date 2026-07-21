@@ -6781,9 +6781,17 @@ async function hardRefresh() {
   // Strip any prior cache-bust param, then reload cleanly. Caches/SW were
   // cleared above, so a normal reload picks up the fresh deploy without
   // polluting the URL with ?_r=<timestamp>.
+  // NOTE: the app uses hash routing (e.g. /#dashboard). A location.replace() to
+  // a URL that differs only in the hash is a same-document navigation and does
+  // NOT reload the page — so when there's nothing to strip from the search we
+  // must call reload() explicitly, otherwise the button silently does nothing.
   var url = new URL(window.location.href);
   url.searchParams.delete('_r');
-  window.location.replace(url.pathname + (url.search ? url.search : '') + url.hash);
+  if (url.search !== window.location.search) {
+    window.location.replace(url.pathname + url.search + url.hash);
+  } else {
+    window.location.reload();
+  }
 }
 
 // ── User Guide modal ────────────────────────────────────────────────────────
