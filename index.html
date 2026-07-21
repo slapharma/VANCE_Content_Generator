@@ -1431,8 +1431,8 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .pipeline-loading { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.78rem; }
 
 /* ── Pipeline layout toggles ── */
-.pipeline-layout-btns { display: flex; gap: 2px; border: 1px solid var(--border); overflow: hidden; }
-.pipeline-layout-btn { padding: 5px 9px; background: transparent; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
+.pipeline-layout-btns { display: flex; gap: 2px; border: 1px solid var(--border); overflow: hidden; flex-shrink: 0; }
+.pipeline-layout-btn { padding: 5px 9px; background: transparent; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all 0.12s; flex-shrink: 0; }
 .pipeline-layout-btn:hover { background: rgba(27,63,48,0.06); color: var(--vance-dark); }
 .pipeline-layout-btn.active { background: var(--vance-dark); color: #fff; }
 .pipeline-layout-btn svg { width: 14px; height: 14px; }
@@ -1447,9 +1447,9 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .pipeline-board.layout-list { flex-direction: column; overflow-x: hidden; overflow-y: auto; align-items: stretch; gap: 0; padding-bottom: 1.25rem; }
 .pipeline-list-group { margin-bottom: 10px; }
 .pipeline-list-group-hdr { display: flex; align-items: center; gap: 8px; padding: 7px 12px; cursor: pointer; user-select: none; border-bottom: 1px solid var(--border); }
-.pipeline-list-group-hdr-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #fff; flex: 1; }
-.pipeline-list-group-hdr-count { background: rgba(255,255,255,0.2); color: #fff; font-size: 0.58rem; font-weight: 800; padding: 1px 6px; }
-.pipeline-list-group-chevron { color: rgba(255,255,255,0.7); transition: transform 0.18s; }
+.pipeline-list-group-hdr-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--vance-dark); flex: 1; }
+.pipeline-list-group-hdr-count { background: rgba(27,63,48,0.1); color: var(--vance-dark); font-size: 0.58rem; font-weight: 800; padding: 1px 6px; }
+.pipeline-list-group-chevron { color: var(--text-muted); transition: transform 0.18s; }
 .pipeline-list-group.collapsed .pipeline-list-group-chevron { transform: rotate(-90deg); }
 .pipeline-list-rows { display: flex; flex-direction: column; border: 1px solid var(--border); border-top: none; }
 .pipeline-list-group.collapsed .pipeline-list-rows { display: none; }
@@ -3606,6 +3606,9 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
         <!-- Layout toggle buttons -->
+        <select id="pipelineCatFilter" onchange="setPipelineCatFilter(this.value)" title="View by category" style="padding:5px 8px;border:1px solid var(--border);background:var(--card);color:var(--vance-dark);font-size:0.68rem;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;min-width:0;flex-shrink:1;">
+          <option value="all">All categories</option>
+        </select>
         <div class="pipeline-layout-btns" id="pipelineLayoutBtns">
           <button class="pipeline-layout-btn active" id="layout-btn-kanban-h" onclick="setPipelineLayout('kanban-h')" title="Horizontal Kanban">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="5" height="18"/><rect x="9.5" y="3" width="5" height="18"/><rect x="17" y="3" width="5" height="18"/></svg>
@@ -15455,6 +15458,37 @@ const CATEGORY_LABELS = {
   'ibd-living':       'Gastro Living',
 };
 
+// ── Pipeline category filter ─────────────────────
+function getPipelineCatFilter() {
+  return localStorage.getItem('vance_pipeline_cat') || 'all';
+}
+
+function setPipelineCatFilter(catId) {
+  localStorage.setItem('vance_pipeline_cat', catId);
+  if (contentCache.list) renderPipeline(contentCache.list);
+  else loadPipeline();
+}
+
+// Rebuild the selector options from the known categories plus any category
+// actually present on pipeline items (covers custom categories).
+function syncPipelineCatFilterOptions(items) {
+  const sel = document.getElementById('pipelineCatFilter');
+  if (!sel) return;
+  const known = {};
+  CATEGORIES.forEach(function(c) { known[c.id] = c.label; });
+  (items || []).forEach(function(it) {
+    if (it.category && !known[it.category]) {
+      known[it.category] = CATEGORY_LABELS[it.category] || it.category;
+    }
+  });
+  const current = getPipelineCatFilter();
+  sel.innerHTML = '<option value="all">All categories</option>' +
+    Object.keys(known).map(function(id) {
+      return '<option value="' + escapeHtml(id) + '">' + escapeHtml(known[id]) + '</option>';
+    }).join('');
+  sel.value = (current === 'all' || known[current]) ? current : 'all';
+}
+
 // ── Pipeline layout ──────────────────────────────
 function getPipelineLayout() {
   return localStorage.getItem('vance_pipeline_layout') || 'kanban-h';
@@ -15515,15 +15549,21 @@ function renderPipeline(items) {
   const board = document.getElementById('pipelineBoard');
   if (!board) return;
   const layout = getPipelineLayout();
+  syncPipelineCatFilterOptions(items);
+  const catFilter = getPipelineCatFilter();
+  const shown = catFilter === 'all' ? items : items.filter(item => item.category === catFilter);
   const cols = {};
   STATUS_COLS.forEach(c => { cols[c.id] = []; });
-  items.forEach(item => {
+  shown.forEach(item => {
     if (cols[item.status] !== undefined) cols[item.status].push(item);
   });
 
-  const total = items.length;
+  const total = shown.length;
   const sub = document.getElementById('pipelineSubtitle');
-  if (sub) sub.textContent = `${total} article${total !== 1 ? 's' : ''} across all stages`;
+  if (sub) {
+    sub.textContent = `${total} article${total !== 1 ? 's' : ''} across all stages` +
+      (catFilter === 'all' ? '' : ` in ${CATEGORY_LABELS[catFilter] || catFilter}`);
+  }
 
   if (layout === 'list') {
     board.className = 'pipeline-board layout-list';
