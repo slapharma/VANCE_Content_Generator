@@ -14297,6 +14297,41 @@ function heroLeftThumbHtml(img, i) {
   return '<img src="' + img.small + '" class="hero-left-thumb" alt="result ' + (i+1) + '" onclick="heroLeftSelectImage(' + i + ')" loading="lazy" onerror="this.style.opacity=\'0.3\'" />';
 }
 
+// Query-broadening ladder — client mirror of heroStockQueries() in
+// lib/social/media.js. Full article titles are usually too specific for stock
+// search, so each rung broadens: full phrase → first 6 words → significant
+// keywords → generic safety net.
+const HERO_QUERY_STOPWORDS = new Set([
+  'the', 'and', 'for', 'with', 'from', 'this', 'that', 'have', 'been', 'will', 'are',
+  'was', 'were', 'their', 'its', 'not', 'but', 'more', 'also', 'such', 'each', 'than',
+  'into', 'over', 'about', 'after', 'before', 'between', 'through', 'during', 'which',
+  'when', 'where', 'would', 'could', 'should', 'study', 'review', 'clinical', 'using',
+  'used', 'based', 'patients', 'patient', 'treatment', 'analysis', 'data', 'versus',
+  'effect', 'effects', 'role',
+]);
+
+function heroCleanQuery(q) {
+  return (q || '')
+    .replace(/^\s*(clinical review|case study|white ?paper|op-?ed|opinion|editorial|review|infographic|report)\s*[:\-–—]\s*/i, '')
+    .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 80);
+}
+
+function heroQueryLadder(raw) {
+  const cleaned = heroCleanQuery(raw);
+  const words = cleaned.split(' ').filter(Boolean);
+  const queries = [];
+  if (cleaned) queries.push(cleaned);
+  if (words.length > 6) queries.push(words.slice(0, 6).join(' '));
+  const kws = words.filter(function(w){ return w.length > 4 && !HERO_QUERY_STOPWORDS.has(w.toLowerCase()); }).slice(0, 4);
+  if (kws.length) queries.push(kws.join(' '));
+  queries.push('healthcare medicine clinical');
+  const seen = new Set();
+  return queries.filter(function(q){ const k = q.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
 function heroLeftSetMoreBtn(show) {
   const btn = document.getElementById('heroLeftMoreBtn');
   if (btn) { btn.style.display = show ? '' : 'none'; btn.disabled = false; btn.textContent = 'See more images ↓'; }
@@ -14321,14 +14356,25 @@ async function heroLeftSearch() {
   heroLeftSelectedIdx = -1;
   heroLeftSetMoreBtn(false);
   try {
-    const page = await heroLeftFetchPage(query, 1);
-    if (!page.results.length) { showHeroLeftStatus('error', 'No photos found. Try different keywords.'); return; }
-    heroLeftQuery   = query;
+    // Try the query as given, broadening one rung at a time until something hits.
+    const ladder = heroQueryLadder(query);
+    let page = null, matched = '';
+    for (const q of ladder) {
+      page = await heroLeftFetchPage(q, 1);
+      if (page.results.length) { matched = q; break; }
+    }
+    if (!matched) { showHeroLeftStatus('error', 'No photos found. Try different keywords.'); return; }
+    heroLeftQuery   = matched;
     heroLeftPage    = 1;
     heroLeftResults = page.results;
     if (grid) grid.innerHTML = heroLeftResults.map(heroLeftThumbHtml).join('');
     heroLeftSetMoreBtn(page.hasMore);
-    showHeroLeftStatus('', '');
+    if (matched !== ladder[0]) {
+      if (input) input.value = matched;
+      showHeroLeftStatus('info', 'No results for the full phrase — showing "' + matched + '" instead.');
+    } else {
+      showHeroLeftStatus('', '');
+    }
   } catch(e) {
     showHeroLeftStatus('error', 'Search failed: ' + e.message);
   }
