@@ -19,7 +19,11 @@ export function buildContentItem(data) {
     status: 'draft',
     sourceId: data.sourceId ?? null,      // links back to archive item id
     heroImageUrl: data.heroImageUrl ?? null,   // stored for WP featured image upload
-    heroImageType: data.heroImageType ?? null, // 'pexels' | 'ai'
+    heroImageType: data.heroImageType ?? null, // 'pexels' | 'unsplash' | 'ai' | 'upload'
+    // Stock-photo attribution { photographer, photographerUrl, photoUrl, provider } —
+    // rendered as a credit line in-app and appended to the published WP post
+    // (required by the Unsplash API guidelines). Null for AI/uploaded heroes.
+    heroImageCredit: data.heroImageCredit ?? null,
     wpCategorySlug: data.wpCategorySlug ?? null, // per-category WP slug override
     // Per-row sub-category name (from the multi-column bulk-upload spreadsheet,
     // e.g. "Lifestyle & Wellbeing"). When set, the publish endpoint resolves it

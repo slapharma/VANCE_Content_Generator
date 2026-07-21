@@ -205,6 +205,25 @@ function markdownToWpHtml(text, { wrapOpening = false } = {}) {
   return html.filter(l => l !== '').join('\n');
 }
 
+// Attribution paragraph for stock-photo heroes, appended to the post body.
+// The Unsplash API guidelines require crediting the photographer AND Unsplash,
+// both linked, with utm_source/utm_medium on links back to Unsplash.
+export function buildHeroCreditHtml(item) {
+  const c = item?.heroImageCredit;
+  if (!c || !c.photographer) return '';
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const isUnsplash = (c.provider || item.heroImageType) === 'unsplash';
+  const svc  = isUnsplash ? 'Unsplash' : 'Pexels';
+  const utm  = 'utm_source=vance_health_hub&utm_medium=referral';
+  const home = isUnsplash ? `https://unsplash.com/?${utm}` : 'https://www.pexels.com/';
+  let pUrl = c.photographerUrl || '';
+  if (pUrl && isUnsplash) pUrl += (pUrl.includes('?') ? '&' : '?') + utm;
+  const name = pUrl
+    ? `<a href="${esc(pUrl)}" target="_blank" rel="noopener nofollow">${esc(c.photographer)}</a>`
+    : esc(c.photographer);
+  return `\n<p class="hero-image-credit" style="font-size:0.75em;color:#6b7a8d;">Hero image: Photo by ${name} on <a href="${esc(home)}" target="_blank" rel="noopener nofollow">${svc}</a></p>`;
+}
+
 export function buildWpPayload(item, categoryIds, tagIds = [], featuredMediaId = null) {
   // Lead the article with a <blockquote> opening paragraph (editorial house style).
   // Clinical reviews open with an authors/journal/DOI subheader rather than a prose
@@ -212,7 +231,7 @@ export function buildWpPayload(item, categoryIds, tagIds = [], featuredMediaId =
   const wrapOpening = item.category !== 'clinical-reviews';
   return {
     title:      stripCategoryTitlePrefix(item.title),
-    content:    markdownToWpHtml(item.body, { wrapOpening }),
+    content:    markdownToWpHtml(item.body, { wrapOpening }) + buildHeroCreditHtml(item),
     excerpt:    item.excerpt ?? '',
     status:     'publish',
     categories: Array.isArray(categoryIds) && categoryIds.length > 0 ? categoryIds : [],
