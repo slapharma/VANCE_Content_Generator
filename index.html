@@ -1038,49 +1038,6 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .design-option-btn:hover { border-color: var(--vance-dark); color: var(--vance-dark); }
 .design-option-btn.active { border-color: var(--vance-primary); background: rgba(244,121,32,0.06); color: var(--vance-primary); }
 
-/* ══════════════════════════════════════════════════
-   HERO IMAGE PANEL
-══════════════════════════════════════════════════ */
-.hero-image-panel {
-  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
-  border: 1px solid var(--border); margin-top: 12px; overflow: hidden;
-}
-.hero-image-header {
-  background: var(--vance-dark); padding: 10px 14px;
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-}
-.hero-image-header h3 {
-  color: #fff; font-family: 'Montserrat', sans-serif;
-  font-size: 0.75rem; font-weight: 800;
-  display: flex; align-items: center; gap: 7px;
-}
-.hero-image-header h3 svg { color: var(--vance-primary); }
-.hero-image-tabs { display: flex; gap: 4px; }
-.hero-img-tab-btn {
-  padding: 4px 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.6);
-  font-family: 'Montserrat', sans-serif; font-size: 0.65rem; font-weight: 700;
-  cursor: pointer; transition: all 0.15s;
-}
-.hero-img-tab-btn.active { background: var(--vance-primary); border-color: var(--vance-primary); color: #fff; }
-.hero-image-body { padding: 14px; }
-.hero-img-pane { display: none; }
-.hero-img-pane.active { display: block; }
-.hero-img-preview {
-  width: 100%; aspect-ratio: 16/5; object-fit: cover;
-  border-radius: 8px; border: 1px solid var(--border);
-  display: block; margin-bottom: 10px;
-  background: linear-gradient(135deg, #f0f2f5 0%, #dde3ea 100%);
-}
-.hero-img-placeholder {
-  width: 100%; aspect-ratio: 16/5; border-radius: 8px;
-  border: 2px dashed var(--border); display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 6px;
-  color: var(--text-muted); font-size: 0.75rem; margin-bottom: 10px;
-  background: #f8f9fa;
-}
-.hero-img-placeholder svg { opacity: 0.35; }
-.hero-img-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 /* ── Left-panel Hero Image card ── */
 .hero-mode-toggle { display: flex; gap: 3px; }
 .hero-mode-btn {
@@ -1109,16 +1066,6 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .hero-left-thumb.selected { border-color: var(--vance-primary); box-shadow: 0 0 0 2px rgba(244,121,32,0.3); }
 .hero-left-preview { margin-top: 8px; }
 .hero-left-preview img { width: 100%; border-radius: 6px; display: block; }
-.unsplash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
-.unsplash-thumb {
-  aspect-ratio: 16/9; object-fit: cover; border-radius: 6px;
-  cursor: pointer; border: 2px solid transparent; transition: all 0.15s;
-  width: 100%;
-}
-.unsplash-thumb:hover { border-color: var(--vance-primary); transform: scale(1.02); }
-.unsplash-thumb.selected { border-color: var(--vance-primary); box-shadow: 0 0 0 2px rgba(244,121,32,0.3); }
-.unsplash-search-row { display: flex; gap: 6px; margin-bottom: 8px; }
-.unsplash-search-row input { flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Montserrat', sans-serif; font-size: 0.75rem; }
 .unsplash-credit { font-size: 0.6rem; color: var(--text-muted); margin-top: 6px; }
 
 /* ── Send For Review modal ── */
@@ -1341,11 +1288,6 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
   .compare-bar { left: 0; padding: 8px 0.75rem; }
   .compare-bar-selected { display: none; }
 
-  /* Hero image panel */
-  .hero-image-panel { padding: 12px 10px; }
-  .hero-tabs { gap: 4px; }
-  .hero-tab-btn { font-size: 0.65rem; padding: 5px 10px; }
-  .unsplash-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
 
   /* White paper word count */
   .wp-options { flex-direction: column; gap: 8px; }
@@ -5824,8 +5766,6 @@ function removeArticleHero() {
   heroImageType = null;
   updateArticleHeroPreview();
 }
-let unsplashResults   = [];
-let selectedUnsplashIdx = -1;
 let extractedText   = '';
 let rawArticleText  = '';
 let currentContentId = null; // pipeline KV id of the currently loaded/generated article
@@ -10339,13 +10279,6 @@ async function generateReview() {
       if (qpBtn) qpBtn.disabled = false;
       const editBtn = document.getElementById('editArticleBtn');
       if (editBtn) editBtn.disabled = false;
-      // Auto-populate Pexels search from article title
-      const firstLine = rawArticleText.split('\n').find(l => l.trim());
-      if (firstLine) {
-        const cleanTitle = stripCategoryTitlePrefix(firstLine.replace(/^#+\s*/, '').replace(/[*_]/g, '')).substring(0, 50);
-        const uq = document.getElementById('unsplashQuery');
-        if (uq) uq.value = cleanTitle;
-      }
       // Auto-populate left-panel hero keywords from generated text
       heroLeftPopulateKeywords();
       return;
@@ -12259,139 +12192,6 @@ function updateModelSelectForCategory(catId) {
     select.value = catModel;
     updateLLMStatus();
   }
-}
-
-// ═══════════════════════════════════════════════════════════
-//  HERO IMAGE
-// ═══════════════════════════════════════════════════════════
-
-function switchHeroTab(tab) {
-  document.querySelectorAll('.hero-img-tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.hero-img-pane').forEach(p => p.classList.remove('active'));
-  document.getElementById('heroTab' + (tab === 'ai' ? 'AI' : 'Unsplash')).classList.add('active');
-  document.getElementById('heroPane-' + tab).classList.add('active');
-}
-
-async function generateHeroImage() {
-  const btn = document.getElementById('heroGenerateBtn');
-  const statusEl = document.getElementById('heroAiStatus');
-  const alertEl = document.getElementById('heroAiAlert');
-  alertEl.className = 'alert hidden';
-  btn.disabled = true;
-  statusEl.textContent = 'Generating image prompt...';
-
-  // Build the image generation prompt
-  let userPrompt = document.getElementById('heroAiPrompt').value.trim();
-  if (!userPrompt && rawArticleText) {
-    const firstLine = rawArticleText.split('\n').find(l => l.trim());
-    userPrompt = (firstLine || '').replace(/^#+\s*/, '').replace(/[*_]/g, '').substring(0, 80);
-  }
-  if (!userPrompt) userPrompt = 'healthcare medical professional clinical';
-
-  // Resolve the hero prompt for the active category (per-category override →
-  // global default → built-in), substituting the user's topic. Capped because
-  // very long Pollinations URLs can fail.
-  const resolvedHero = (typeof getResolvedHeroPrompt === 'function')
-    ? getResolvedHeroPrompt(currentCategory, userPrompt)
-    : `${userPrompt}, professional medical photography, clean clinical aesthetic`;
-  const imagePrompt = resolvedHero.substring(0, 380);
-  const seed = Math.floor(Math.random() * 99999);
-  const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=1200&height=400&model=flux&seed=${seed}`;
-
-  statusEl.textContent = 'Generating… this can take 15–30 seconds';
-  try {
-    await new Promise((resolve, reject) => {
-      const img = new Image();
-      const timer = setTimeout(() => { img.src = ''; reject(new Error('Timed out')); }, 45000);
-      img.onload  = () => { clearTimeout(timer); resolve(); };
-      img.onerror = () => { clearTimeout(timer); reject(new Error('Load failed')); };
-      img.src = imageUrl;
-    });
-    document.getElementById('heroAiPlaceholder').style.display = 'none';
-    const imgEl = document.getElementById('heroAiImage');
-    imgEl.src = imageUrl;
-    imgEl.style.display = 'block';
-    document.getElementById('heroDownloadBtn').style.display = 'inline-flex';
-    heroImageUrl = imageUrl;
-    heroImageType = 'ai';
-    updateArticleHeroPreview();
-    statusEl.textContent = '✓ Image generated';
-  } catch (e) {
-    alertEl.className = 'alert alert-error';
-    alertEl.textContent = `Image generation failed (${e.message}). Pollinations.ai may be busy — please try again in a moment.`;
-    statusEl.textContent = '';
-  }
-  btn.disabled = false;
-}
-
-async function searchPexels() {
-  const query = document.getElementById('unsplashQuery').value.trim();
-  if (!query) return;
-  const statusEl = document.getElementById('unsplashStatus');
-  const grid = document.getElementById('unsplashGrid');
-  statusEl.className = 'alert'; statusEl.textContent = 'Searching Pexels...';
-  grid.innerHTML = '';
-  selectedUnsplashIdx = -1;
-  document.getElementById('unsplashUseBtn').style.display = 'none';
-  document.getElementById('unsplashCredit').textContent = '';
-
-  try {
-    const resp = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=9&orientation=landscape`, {
-      headers: { Authorization: PEXELS_API_KEY }
-    });
-    if (!resp.ok) throw new Error(`Pexels API error ${resp.status}`);
-    const data = await resp.json();
-    if (!data.photos || data.photos.length === 0) {
-      statusEl.className = 'alert alert-error';
-      statusEl.textContent = 'No photos found. Try different keywords.';
-      return;
-    }
-    unsplashResults = data.photos.map(p => ({
-      urls: { small: p.src.medium, full: p.src.large2x },
-      user: { name: p.photographer },
-      link: p.url
-    }));
-    statusEl.className = 'alert hidden';
-    grid.innerHTML = unsplashResults.map((img, i) => `
-      <img src="${img.urls.small}" class="unsplash-thumb" alt="${query}" onclick="selectUnsplashImage(${i})" loading="lazy" onerror="this.style.opacity='0.3'" />
-    `).join('');
-    document.getElementById('unsplashCredit').textContent = `${data.photos.length} photos found on Pexels. Click to select.`;
-  } catch (e) {
-    statusEl.className = 'alert alert-error'; statusEl.textContent = `Search failed: ${e.message}`;
-  }
-}
-
-function selectUnsplashImage(idx) {
-  selectedUnsplashIdx = idx;
-  document.querySelectorAll('.unsplash-thumb').forEach((t, i) => t.classList.toggle('selected', i === idx));
-  document.getElementById('unsplashUseBtn').style.display = 'inline-flex';
-  const img = unsplashResults[idx];
-  const credit = img.user?.name ? `Photo by ${img.user.name} on Pexels` : 'Photo from Pexels';
-  document.getElementById('unsplashCredit').textContent = credit;
-}
-
-function useSelectedUnsplashImage() {
-  if (selectedUnsplashIdx < 0) return;
-  const img = unsplashResults[selectedUnsplashIdx];
-  const fullUrl = img.urls?.full || img.fallbackUrl || img.urls?.small;
-  const selectedImg = document.getElementById('heroUnsplashSelected');
-  selectedImg.src = fullUrl;
-  selectedImg.style.display = 'block';
-  heroImageUrl = fullUrl;
-  heroImageType = 'pexels';
-  updateArticleHeroPreview();
-  document.getElementById('unsplashDownloadBtn').style.display = 'inline-flex';
-}
-
-function downloadHeroImage() {
-  if (!heroImageUrl) return;
-  const a = document.createElement('a');
-  a.href = heroImageUrl;
-  a.download = 'hero-image.jpg';
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -14596,11 +14396,6 @@ async function heroLeftGenerate() {
     updateArticleHeroPreview();
     heroLeftSelectImageDirect(url, 'AI Generated (' + model.split('/').pop() + ')', null);
     showHeroLeftStatus('', '');
-    // Sync to right panel AI pane if present
-    const rightImg = document.getElementById('heroAiImage');
-    const rightPh  = document.getElementById('heroAiPlaceholder');
-    if (rightImg) { rightImg.src = url; rightImg.style.display = 'block'; }
-    if (rightPh)  rightPh.style.display = 'none';
   } catch(e) {
     showHeroLeftStatus('error', 'Generate failed: ' + e.message);
   } finally {
@@ -14625,9 +14420,6 @@ function heroLeftSelectImage(idx) {
     const key = (heroPromptsConfig.unsplashKey || '').trim();
     if (key) fetch(img.dl + (img.dl.indexOf('?') >= 0 ? '&' : '?') + 'client_id=' + encodeURIComponent(key)).catch(function(){});
   }
-  // Sync to right panel selected pane
-  const rightSel = document.getElementById('heroUnsplashSelected');
-  if (rightSel) { rightSel.src = img.full; rightSel.style.display = 'block'; }
 }
 
 // Upload a local image as the hero. The image is downscaled/compressed to a
