@@ -2733,6 +2733,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <div class="hero-mode-toggle" style="margin-bottom:10px;">
           <button class="hero-mode-btn active" id="heroModeSearchBtn" onclick="setHeroLeftMode('search')" title="Auto-extract keywords from source and search Pexels">🔍 Auto-Search</button>
           <button class="hero-mode-btn" id="heroModeAiBtn" onclick="setHeroLeftMode('ai')" title="Auto-generate image from article content using AI">✨ Auto-Generate</button>
+          <button class="hero-mode-btn" id="heroModeUploadBtn" onclick="document.getElementById('heroUploadInput').click()" title="Upload your own image from this device">⬆ Upload</button>
+          <input type="file" id="heroUploadInput" accept="image/*" style="display:none;" onchange="heroUploadFile(this)" />
         </div>
         <!-- AI model selector (visible only in AI mode) -->
         <div id="heroAiModelRow" style="display:none;margin-bottom:8px;">
@@ -14563,6 +14565,60 @@ function heroLeftSelectImage(idx) {
   // Sync to right panel selected pane
   const rightSel = document.getElementById('heroUnsplashSelected');
   if (rightSel) { rightSel.src = img.full; rightSel.style.display = 'block'; }
+}
+
+// Upload a local image as the hero. The image is downscaled/compressed to a
+// JPEG data URL client-side so it stays well under the KV request-size limit;
+// the publish flow fetches it like any other URL (Node fetch supports data:).
+function heroUploadFile(input) {
+  const file = input.files && input.files[0];
+  input.value = ''; // allow re-selecting the same file
+  if (!file) return;
+  if (!file.type || file.type.indexOf('image/') !== 0) {
+    showHeroLeftStatus('error', 'Please choose an image file (JPG, PNG or WebP).');
+    return;
+  }
+  showHeroLeftStatus('info', 'Processing image…');
+  const objectUrl = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = function() {
+    URL.revokeObjectURL(objectUrl);
+    try {
+      const MAX_W = 1600;
+      const scale  = Math.min(1, MAX_W / img.naturalWidth);
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.naturalWidth * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
+      const ctx = canvas.getContext('2d');
+      // White backdrop so transparent PNG regions don't turn black in the JPEG
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Step quality down until the data URL fits comfortably in a KV record
+      let dataUrl = '';
+      const qualities = [0.85, 0.75, 0.6];
+      for (let i = 0; i < qualities.length; i++) {
+        dataUrl = canvas.toDataURL('image/jpeg', qualities[i]);
+        if (dataUrl.length <= 800 * 1024) break;
+      }
+      if (dataUrl.length > 800 * 1024) {
+        showHeroLeftStatus('error', 'Image is too large even after compression — please use a smaller image.');
+        return;
+      }
+      heroImageUrl  = dataUrl;
+      heroImageType = 'upload';
+      updateArticleHeroPreview();
+      heroLeftSelectImageDirect(dataUrl, 'Uploaded: ' + file.name, null);
+      showHeroLeftStatus('', '');
+    } catch (e) {
+      showHeroLeftStatus('error', 'Could not process image: ' + e.message);
+    }
+  };
+  img.onerror = function() {
+    URL.revokeObjectURL(objectUrl);
+    showHeroLeftStatus('error', 'Could not read that file as an image.');
+  };
+  img.src = objectUrl;
 }
 
 function heroLeftSelectImageDirect(src, credit, link) {
