@@ -2752,6 +2752,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         </div>
         <div id="heroLeftStatus" class="alert hidden" style="margin-top:6px;font-size:0.7rem;"></div>
         <div id="heroLeftGrid" class="hero-left-grid"></div>
+        <button class="btn btn-outline btn-sm" id="heroLeftMoreBtn" onclick="heroLeftSeeMore()" style="display:none;width:100%;justify-content:center;margin-top:8px;font-size:0.7rem;">See more images ↓</button>
         <!-- Selected preview -->
         <div id="heroLeftPreviewWrap" class="hero-left-preview" style="display:none;">
           <div style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Selected Hero Image ✓</div>
@@ -14450,6 +14451,57 @@ async function heroLeftRun() {
   }
 }
 
+// Stock search is paginated: 12 results per page, with a "See more" button
+// below the grid that appends the next page (shared by Pexels and Unsplash).
+const HERO_LEFT_PAGE_SIZE = 12;
+let heroLeftQuery = '';
+let heroLeftPage  = 1;
+
+// Fetch one page of results from the active stock provider.
+// Returns { results, hasMore }; throws on missing key / HTTP errors.
+async function heroLeftFetchPage(query, page) {
+  const provider = (heroPromptsConfig && heroPromptsConfig.stockProvider === 'unsplash') ? 'unsplash' : 'pexels';
+  if (provider === 'unsplash') {
+    const key = (heroPromptsConfig.unsplashKey || '').trim();
+    if (!key) throw new Error('Add your Unsplash Access Key on the LLM Management page first.');
+    const resp = await fetch(
+      'https://api.unsplash.com/search/photos?query=' + encodeURIComponent(query)
+      + '&per_page=' + HERO_LEFT_PAGE_SIZE + '&page=' + page
+      + '&orientation=landscape&client_id=' + encodeURIComponent(key)
+    );
+    if (!resp.ok) throw new Error('Unsplash ' + resp.status);
+    const data = await resp.json();
+    const results = (data.results || []).map(function(p){
+      return {
+        small: p.urls.small, full: p.urls.regular || p.urls.full,
+        author: p.user && p.user.name, link: p.links && p.links.html,
+        provider: 'unsplash', dl: p.links && p.links.download_location,
+      };
+    });
+    return { results: results, hasMore: (data.total_pages || 0) > page };
+  }
+  const resp = await fetch(
+    'https://api.pexels.com/v1/search?query=' + encodeURIComponent(query)
+    + '&per_page=' + HERO_LEFT_PAGE_SIZE + '&page=' + page + '&orientation=landscape',
+    { headers: { Authorization: PEXELS_API_KEY } }
+  );
+  if (!resp.ok) throw new Error('Pexels ' + resp.status);
+  const data = await resp.json();
+  const results = (data.photos || []).map(function(p){
+    return { small: p.src.medium, full: p.src.large2x, author: p.photographer, link: p.url, provider: 'pexels' };
+  });
+  return { results: results, hasMore: !!data.next_page };
+}
+
+function heroLeftThumbHtml(img, i) {
+  return '<img src="' + img.small + '" class="hero-left-thumb" alt="result ' + (i+1) + '" onclick="heroLeftSelectImage(' + i + ')" loading="lazy" onerror="this.style.opacity=\'0.3\'" />';
+}
+
+function heroLeftSetMoreBtn(show) {
+  const btn = document.getElementById('heroLeftMoreBtn');
+  if (btn) { btn.style.display = show ? '' : 'none'; btn.disabled = false; btn.textContent = 'See more images ↓'; }
+}
+
 async function heroLeftSearch() {
   const input = document.getElementById('heroLeftKeywordInput');
   let query = (input ? input.value.trim() : '') || '';
@@ -14462,49 +14514,49 @@ async function heroLeftSearch() {
     if (input && query) input.value = query;
   }
   if (!query) { showHeroLeftStatus('error', 'Generate an article or upload a source first, or enter keywords manually.'); return; }
-  const provider = (heroPromptsConfig && heroPromptsConfig.stockProvider === 'unsplash') ? 'unsplash' : 'pexels';
-  const providerLabel = provider === 'unsplash' ? 'Unsplash' : 'Pexels';
+  const providerLabel = (heroPromptsConfig && heroPromptsConfig.stockProvider === 'unsplash') ? 'Unsplash' : 'Pexels';
   showHeroLeftStatus('info', 'Searching ' + providerLabel + '…');
   const grid = document.getElementById('heroLeftGrid');
   if (grid) grid.innerHTML = '';
   heroLeftSelectedIdx = -1;
+  heroLeftSetMoreBtn(false);
   try {
-    if (provider === 'unsplash') {
-      const key = (heroPromptsConfig.unsplashKey || '').trim();
-      if (!key) { showHeroLeftStatus('error', 'Add your Unsplash Access Key on the LLM Management page first.'); return; }
-      const resp = await fetch(
-        'https://api.unsplash.com/search/photos?query=' + encodeURIComponent(query) + '&per_page=9&orientation=landscape&client_id=' + encodeURIComponent(key)
-      );
-      if (!resp.ok) throw new Error('Unsplash ' + resp.status);
-      const data = await resp.json();
-      if (!data.results || !data.results.length) { showHeroLeftStatus('error', 'No photos found. Try different keywords.'); return; }
-      heroLeftResults = data.results.map(function(p){
-        return {
-          small: p.urls.small, full: p.urls.regular || p.urls.full,
-          author: p.user && p.user.name, link: p.links && p.links.html,
-          provider: 'unsplash', dl: p.links && p.links.download_location,
-        };
-      });
-    } else {
-      const resp = await fetch(
-        'https://api.pexels.com/v1/search?query=' + encodeURIComponent(query) + '&per_page=9&orientation=landscape',
-        { headers: { Authorization: PEXELS_API_KEY } }
-      );
-      if (!resp.ok) throw new Error('Pexels ' + resp.status);
-      const data = await resp.json();
-      if (!data.photos || !data.photos.length) { showHeroLeftStatus('error', 'No photos found. Try different keywords.'); return; }
-      heroLeftResults = data.photos.map(function(p){
-        return { small: p.src.medium, full: p.src.large2x, author: p.photographer, link: p.url, provider: 'pexels' };
-      });
-    }
-    if (grid) {
-      grid.innerHTML = heroLeftResults.map(function(img, i){
-        return '<img src="' + img.small + '" class="hero-left-thumb" alt="result ' + (i+1) + '" onclick="heroLeftSelectImage(' + i + ')" loading="lazy" onerror="this.style.opacity=\'0.3\'" />';
-      }).join('');
-    }
+    const page = await heroLeftFetchPage(query, 1);
+    if (!page.results.length) { showHeroLeftStatus('error', 'No photos found. Try different keywords.'); return; }
+    heroLeftQuery   = query;
+    heroLeftPage    = 1;
+    heroLeftResults = page.results;
+    if (grid) grid.innerHTML = heroLeftResults.map(heroLeftThumbHtml).join('');
+    heroLeftSetMoreBtn(page.hasMore);
     showHeroLeftStatus('', '');
   } catch(e) {
     showHeroLeftStatus('error', 'Search failed: ' + e.message);
+  }
+}
+
+// "See more" — append the next page of results and scroll the new batch into view.
+async function heroLeftSeeMore() {
+  if (!heroLeftQuery) return;
+  const btn = document.getElementById('heroLeftMoreBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+  try {
+    const nextPage = heroLeftPage + 1;
+    const page = await heroLeftFetchPage(heroLeftQuery, nextPage);
+    if (!page.results.length) { heroLeftSetMoreBtn(false); return; }
+    const startIdx = heroLeftResults.length;
+    heroLeftResults = heroLeftResults.concat(page.results);
+    heroLeftPage = nextPage;
+    const grid = document.getElementById('heroLeftGrid');
+    if (grid) {
+      grid.insertAdjacentHTML('beforeend',
+        page.results.map(function(img, i){ return heroLeftThumbHtml(img, startIdx + i); }).join(''));
+      const firstNew = grid.children[startIdx];
+      if (firstNew && firstNew.scrollIntoView) firstNew.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    heroLeftSetMoreBtn(page.hasMore);
+  } catch(e) {
+    heroLeftSetMoreBtn(true); // keep the button so the user can retry
+    showHeroLeftStatus('error', 'Could not load more: ' + e.message);
   }
 }
 
@@ -14646,6 +14698,9 @@ function clearHeroLeftImage() {
   heroImageType       = null;
   heroLeftSelectedIdx = -1;
   heroLeftResults     = [];
+  heroLeftQuery       = '';
+  heroLeftPage        = 1;
+  heroLeftSetMoreBtn(false);
   const wrap  = document.getElementById('heroLeftPreviewWrap');
   const grid  = document.getElementById('heroLeftGrid');
   const chips = document.getElementById('heroLeftKeywordChips');
