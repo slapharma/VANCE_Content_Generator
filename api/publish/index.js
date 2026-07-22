@@ -35,7 +35,7 @@ async function resolveWpCategoryId(slug, siteUrl, authHeader) {
  * Download an external image URL and upload it to the WordPress media library.
  * Returns the WP media object ID, or null on failure.
  */
-async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader) {
+async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader, credit = null) {
   try {
     // Fetch the image binary from the external URL
     const imgResp = await fetch(imageUrl, {
@@ -78,6 +78,26 @@ async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader) {
     }
 
     const media = await mediaResp.json();
+
+    // Stamp stock-photo attribution onto the media item itself — alt text,
+    // caption, and description — so the credit ships with the image without
+    // adding any visible line to the post. Non-fatal: a failed metadata write
+    // never blocks the publish.
+    if (media.id && credit?.plain) {
+      try {
+        await fetch(`${siteUrl}/wp-json/wp/v2/media/${media.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+          body: JSON.stringify({
+            alt_text:    credit.plain,
+            caption:     credit.html || credit.plain,
+            description: credit.html || credit.plain,
+          }),
+        });
+      } catch (metaErr) {
+        console.warn(`[publish] Hero credit metadata write failed: ${metaErr.message}`);
+      }
+    }
     return media.id ?? null;
   } catch (err) {
     console.warn(`[publish] Hero image upload error: ${err.message}`);
@@ -205,12 +225,13 @@ function markdownToWpHtml(text, { wrapOpening = false } = {}) {
   return html.filter(l => l !== '').join('\n');
 }
 
-// Attribution paragraph for stock-photo heroes, appended to the post body.
-// The Unsplash API guidelines require crediting the photographer AND Unsplash,
-// both linked, with utm_source/utm_medium on links back to Unsplash.
-export function buildHeroCreditHtml(item) {
+// Attribution for stock-photo heroes. Deliberately NOT rendered in the post
+// body — the credit travels invisibly on the WP media item instead (alt text
+// + caption + description, set by uploadHeroImageToWp). html keeps the linked,
+// UTM-tagged form the Unsplash API guidelines describe; plain is for alt text.
+export function buildHeroCredit(item) {
   const c = item?.heroImageCredit;
-  if (!c || !c.photographer) return '';
+  if (!c || !c.photographer) return null;
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const isUnsplash = (c.provider || item.heroImageType) === 'unsplash';
   const svc  = isUnsplash ? 'Unsplash' : 'Pexels';
@@ -221,7 +242,10 @@ export function buildHeroCreditHtml(item) {
   const name = pUrl
     ? `<a href="${esc(pUrl)}" target="_blank" rel="noopener nofollow">${esc(c.photographer)}</a>`
     : esc(c.photographer);
-  return `\n<p class="hero-image-credit" style="font-size:0.75em;color:#6b7a8d;">Hero image: Photo by ${name} on <a href="${esc(home)}" target="_blank" rel="noopener nofollow">${svc}</a></p>`;
+  return {
+    plain: `Photo by ${c.photographer} on ${svc}`,
+    html:  `Photo by ${name} on <a href="${esc(home)}" target="_blank" rel="noopener nofollow">${svc}</a>`,
+  };
 }
 
 export function buildWpPayload(item, categoryIds, tagIds = [], featuredMediaId = null) {
@@ -231,7 +255,7 @@ export function buildWpPayload(item, categoryIds, tagIds = [], featuredMediaId =
   const wrapOpening = item.category !== 'clinical-reviews';
   return {
     title:      stripCategoryTitlePrefix(item.title),
-    content:    markdownToWpHtml(item.body, { wrapOpening }) + buildHeroCreditHtml(item),
+    content:    markdownToWpHtml(item.body, { wrapOpening }),
     excerpt:    item.excerpt ?? '',
     status:     'publish',
     categories: Array.isArray(categoryIds) && categoryIds.length > 0 ? categoryIds : [],
@@ -329,7 +353,10 @@ async function publishToWordPress(item, { fallbackHeroImageUrl } = {}) {
   let featuredMediaId = null;
   const heroUrl = item.heroImageUrl || fallbackHeroImageUrl || null;
   if (heroUrl) {
-    featuredMediaId = await uploadHeroImageToWp(heroUrl, item.title, siteUrl, authHeader);
+    // Credit only applies when the article's own hero is used — the category
+    // fallback image has no per-photo attribution.
+    const credit = item.heroImageUrl ? buildHeroCredit(item) : null;
+    featuredMediaId = await uploadHeroImageToWp(heroUrl, item.title, siteUrl, authHeader, credit);
     if (featuredMediaId) {
       const source = item.heroImageUrl ? 'article' : 'category fallback';
       console.log(`[publish] Hero image uploaded as WP media ID ${featuredMediaId} (${source})`);
