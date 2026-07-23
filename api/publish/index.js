@@ -138,6 +138,7 @@ function markdownToWpHtml(text, { wrapOpening = false } = {}) {
   let inMeta = false;          // re-opened by an "Article information" heading → merge into one box
   let metaBuffer = [];         // lines collected while inMeta is true
   let pendingListStyle = null; // inline style for the *next* <ul>/<ol> opened
+  let inTable = false;         // true while consuming a markdown pipe-table's data rows
 
   const closeList = () => { if (listType) { html.push(`</${listType}>`); listType = null; } };
   const flushMeta = () => {
@@ -161,13 +162,47 @@ function markdownToWpHtml(text, { wrapOpening = false } = {}) {
     pendingListStyle = WP_LIST_STYLE_MAP[key] || null;
   };
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) { closeList(); html.push(''); continue; }
+  const isTableRow = (s) => /^\|.*\|$/.test(s);
+  const isTableSeparatorRow = (s) => /^\|?[\s:|-]+\|?$/.test(s) && s.includes('-');
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (!trimmed) { closeList(); inTable = false; html.push(''); continue; }
 
     // Drop the "Reading Time" meta line — it's an editorial label, not published body.
     // Matches "Reading Time: 6 minutes" with optional ** bold wrappers.
     if (/^\**\s*reading time\b/i.test(trimmed)) continue;
+
+    // Markdown pipe tables: the LLM sometimes writes a 2-column fact table (e.g. for
+    // "Study at a glance") instead of the requested bullet list. There's no <table>
+    // rendering in the house style, so collapse it into the same styled <ul> a bullet
+    // list would produce — same pendingListStyle/list machinery, just a different
+    // source syntax. Header + separator rows are dropped entirely (the bullet-list
+    // version has no header row either); only data rows become <li>s.
+    if (isTableRow(trimmed)) {
+      if (!inTable && isTableSeparatorRow((lines[i + 1] || '').trim())) {
+        inTable = true;
+        i++; // also consume the separator row
+        continue;
+      }
+      if (inTable) {
+        const cells = trimmed.split('|').map(c => c.trim());
+        cells.shift(); cells.pop(); // drop the empty segments outside the outer pipes
+        if (cells.length >= 2) {
+          const label = cells[0].replace(/^\*\*(.+)\*\*$/, '$1');
+          const value = cells.slice(1).join(' — ');
+          if (listType && listType !== 'ul') closeList();
+          if (!listType) {
+            listType = 'ul';
+            html.push(pendingListStyle ? `<ul style="${pendingListStyle}">` : '<ul>');
+            pendingListStyle = null;
+          }
+          html.push(`<li><strong>${inline(label)}:</strong> ${inline(value)}</li>`);
+          continue;
+        }
+      }
+    }
+    inTable = false;
 
     // List items: "- "/"* "/"• " → <ul>, "1. "/"1) " → <ol>. Consecutive items group
     // into one list; any other line (or blank) closes it.

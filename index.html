@@ -2228,9 +2228,14 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 .wiz-hero { background:linear-gradient(135deg,var(--vance-dark) 0%,#1a2e4a 100%); color:#fff; padding:24px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:0; }
 .wiz-hero h2 { margin:0; font-family:'Montserrat',sans-serif; font-size:1.15rem; font-weight:800; letter-spacing:-0.01em; }
 .wiz-hero p { margin:4px 0 0; font-size:0.72rem; color:rgba(255,255,255,0.65); font-weight:500; }
-.wiz-cancel { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); color:#fff; padding:8px 16px; font-size:0.72rem; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; text-transform:uppercase; letter-spacing:0.5px; transition:background 0.15s; }
-.wiz-cancel:hover { background:rgba(255,255,255,0.18); }
-.wiz-body { background:var(--card); border:1px solid var(--border); border-top:none; padding:24px 28px; }
+.wiz-hero .wiz-hero-name { margin:6px 0 0; font-size:0.85rem; color:#fff; font-weight:700; opacity:0.92; }
+.wiz-body { background:var(--card); border:1px solid var(--border); border-top:none; padding:24px 28px; min-height:520px; box-sizing:border-box; display:flex; flex-direction:column; }
+.wiz-body > div[id^="wizPanel"] { flex:1 0 auto; }
+.wiz-footer-btn { padding:8px 20px; border:1px solid var(--border); background:var(--bg); color:var(--text-muted); font-size:0.875rem; cursor:pointer; }
+.wiz-footer-save { padding:8px 20px; border:1px solid var(--vance-accent); background:transparent; color:var(--vance-accent); font-size:0.875rem; font-weight:700; cursor:pointer; }
+.wiz-footer-save:hover { background:rgba(77,189,189,0.1); }
+.wiz-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:700px) { .wiz-row-2 { grid-template-columns:1fr; } }
 .wiz-steps-bar { display:flex; gap:0; padding:14px 28px; background:var(--bg); border-bottom:1px solid var(--border); border-left:1px solid var(--border); border-right:1px solid var(--border); }
 .wiz-steps-bar .wiz-step + .wiz-step { border-left:none; }
 
@@ -4386,8 +4391,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div>
         <h2 id="ruleWizardTitle">New Automation Rule</h2>
         <p>Configure sources, triggers, generation, review and notifications.</p>
+        <p class="wiz-hero-name" id="wizHeroName" style="display:none;"></p>
       </div>
-      <button onclick="closeRuleWizard()" class="wiz-cancel">Cancel</button>
     </div>
     <!-- Step indicator -->
     <div class="wiz-steps-bar" id="wizardSteps">
@@ -4402,7 +4407,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <div id="wizPanel1">
       <div style="margin-bottom:16px;">
         <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Rule Name *</label>
-        <input id="wizName" type="text" maxlength="60" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+        <input id="wizName" type="text" maxlength="60" oninput="wizUpdateHeroName()" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
       </div>
       <div style="margin-bottom:16px;">
         <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Category *</label>
@@ -4482,48 +4487,59 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <select id="wizTemplate" disabled title="Template is locked to the selected Category — they always match." style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;opacity:0.7;cursor:not-allowed;"></select>
         <p style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">Locked — automatically matches the Category chosen in Step 1. Title prefix (e.g. "Clinical Review: …") is enforced for you.</p>
       </div>
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">AI Model <span style="color:var(--text-muted);font-weight:400;">(optional — overrides category default)</span></label>
-        <select id="wizModel" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
-          <option value="">— Use category default model —</option>
-          <optgroup label="── Recommended (Free) ──">
-            <option value="arcee-ai/trinity-large-preview:free">Arcee AI: Trinity Large ★</option>
-            <option value="minimax/minimax-m1:extended">MiniMax M1 ★</option>
-            <option value="deepseek/deepseek-r1-0528:free">DeepSeek R1 0528 ★</option>
-            <option value="qwen/qwen3-235b-a22b:free">Qwen3 235B ★</option>
-            <option value="google/gemma-3-27b-it:free">Google: Gemma 3 27B ★</option>
-            <option value="google/gemma-3-12b-it:free">Google: Gemma 3 12B ★</option>
-          </optgroup>
-          <optgroup label="── Free Models ──">
-            <option value="meta-llama/llama-3.3-70b-instruct:free">Meta: Llama 3.3 70B</option>
-            <option value="mistralai/mistral-small-3.1-24b-instruct:free">Mistral Small 3.1 24B</option>
-            <option value="qwen/qwen3-30b-a3b:free">Qwen3 30B</option>
-            <option value="qwen/qwen3-14b:free">Qwen3 14B</option>
-            <option value="deepseek/deepseek-r1:free">DeepSeek R1</option>
-          </optgroup>
-          <optgroup label="── Premium (key required) ──">
-            <option value="claude-opus-4-5">Claude Opus (Anthropic)</option>
-            <option value="anthropic/claude-sonnet-4.5">Claude Sonnet 4.5 (Anthropic)</option>
-            <option value="gpt-4o">GPT-4o (OpenAI)</option>
-            <option value="gemini-2.0-flash">Gemini 2.0 Flash (Google)</option>
-          </optgroup>
-        </select>
-      </div>
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Prompt</label>
-        <select id="wizPromptSelect" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
-          <option value="">— Use category default —</option>
-        </select>
-        <p style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">Add or edit prompts on the <a href="#" onclick="event.preventDefault();switchTab('categories');">Categories page</a>; pick one here to use it for this rule.</p>
-        <div id="wizSubCatRoute" style="font-size:0.7rem;margin-top:6px;"></div>
-        <details style="margin-top:8px;">
-          <summary style="font-size:0.72rem;color:var(--text-muted);cursor:pointer;">Preview selected prompt</summary>
-          <pre id="wizPromptPreview" style="white-space:pre-wrap;background:var(--bg-2,#f6f7f9);padding:10px;font-size:0.72rem;max-height:240px;overflow-y:auto;border:1px solid var(--border);margin-top:6px;color:var(--text);font-family:Georgia,serif;line-height:1.5;"></pre>
-        </details>
+      <div class="wiz-row-2" style="margin-bottom:16px;">
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">AI Model <span style="color:var(--text-muted);font-weight:400;">(optional — overrides default)</span></label>
+          <select id="wizModel" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+            <option value="">— Use category default model —</option>
+            <optgroup label="── Recommended (Free) ──">
+              <option value="arcee-ai/trinity-large-preview:free">Arcee AI: Trinity Large ★</option>
+              <option value="minimax/minimax-m1:extended">MiniMax M1 ★</option>
+              <option value="deepseek/deepseek-r1-0528:free">DeepSeek R1 0528 ★</option>
+              <option value="qwen/qwen3-235b-a22b:free">Qwen3 235B ★</option>
+              <option value="google/gemma-3-27b-it:free">Google: Gemma 3 27B ★</option>
+              <option value="google/gemma-3-12b-it:free">Google: Gemma 3 12B ★</option>
+            </optgroup>
+            <optgroup label="── Free Models ──">
+              <option value="meta-llama/llama-3.3-70b-instruct:free">Meta: Llama 3.3 70B</option>
+              <option value="mistralai/mistral-small-3.1-24b-instruct:free">Mistral Small 3.1 24B</option>
+              <option value="qwen/qwen3-30b-a3b:free">Qwen3 30B</option>
+              <option value="qwen/qwen3-14b:free">Qwen3 14B</option>
+              <option value="deepseek/deepseek-r1:free">DeepSeek R1</option>
+            </optgroup>
+            <optgroup label="── Premium (key required) ──">
+              <option value="claude-opus-4-5">Claude Opus (Anthropic)</option>
+              <option value="anthropic/claude-sonnet-4.5">Claude Sonnet 4.5 (Anthropic)</option>
+              <option value="gpt-4o">GPT-4o (OpenAI)</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash (Google)</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Prompt</label>
+          <select id="wizPromptSelect" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+            <option value="">— Use category default —</option>
+          </select>
+          <p style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">Add/edit on the <a href="#" onclick="event.preventDefault();switchTab('categories');">Categories page</a>.</p>
+          <div id="wizSubCatRouteWrap" style="display:none;margin-top:10px;">
+            <label style="display:block;font-size:0.75rem;font-weight:600;margin-bottom:4px;color:var(--text);">WP sub-category</label>
+            <select id="wizSubCategorySelect" onchange="_wizUpdateSubCatRoute()" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+              <option value="">— Auto (derive from prompt name) —</option>
+              <option value="Clinical Trial Abstracts">Clinical Trial Abstracts</option>
+              <option value="Clinical Trial Reviews">Clinical Trial Reviews</option>
+            </select>
+            <p style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">Set explicitly so renaming the prompt above can never silently change where this rule publishes. Leave on Auto only for legacy rules.</p>
+          </div>
+          <div id="wizSubCatRoute" style="font-size:0.7rem;margin-top:6px;"></div>
+          <details style="margin-top:8px;">
+            <summary style="font-size:0.72rem;color:var(--text-muted);cursor:pointer;">Preview selected prompt</summary>
+            <pre id="wizPromptPreview" style="white-space:pre-wrap;background:var(--bg-2,#f6f7f9);padding:10px;font-size:0.72rem;max-height:240px;overflow-y:auto;border:1px solid var(--border);margin-top:6px;color:var(--text);font-family:Georgia,serif;line-height:1.5;"></pre>
+          </details>
+        </div>
       </div>
       <div style="margin-bottom:16px;">
         <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Source handling</label>
-        <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizCombine" value="one-per-item" checked> One article per source item</label>
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizCombine" value="combine"> Summarise all into one article</label>
         </div>
@@ -4545,7 +4561,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <div id="wizPanel4" style="display:none;">
       <div style="margin-bottom:16px;">
         <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Does this content require human review before publishing?</label>
-        <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizReview" value="yes" checked onchange="wizUpdateReviewUI()"> Yes &mdash; hold in Automation Inbox</label>
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizReview" value="no" onchange="wizUpdateReviewUI()"> No &mdash; publish automatically</label>
         </div>
@@ -4553,7 +4569,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div id="wizReviewOpts">
         <div style="margin-bottom:14px;">
           <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Approval threshold</label>
-          <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;gap:24px;flex-wrap:wrap;">
             <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;">
               <input type="radio" name="wizReviewMode" value="any" checked> Any one reviewer can approve
             </label>
@@ -4563,17 +4579,17 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           </div>
           <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">A single Request Changes always sends the article back regardless of this setting.</p>
         </div>
-        <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Auto-approve after <input id="wizTimeoutHours" type="number" value="48" min="1" max="720" style="width:70px;padding:4px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;"> hours if no response</label>
-        </div>
-        <div>
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">On timeout:</label>
-          <select id="wizOnTimeout" style="width:220px;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
-            <option value="urgent_reminder" selected>Resend as URGENT (hold)</option>
-            <option value="approve">Approve automatically</option>
-            <option value="reject">Reject</option>
-            <option value="skip">Skip (hold indefinitely)</option>
-          </select>
+        <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start;">
+          <label style="font-size:0.8rem;font-weight:600;color:var(--text);">Auto-approve after <input id="wizTimeoutHours" type="number" value="48" min="1" max="720" style="width:70px;padding:4px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;"> hours if no response</label>
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">On timeout:</label>
+            <select id="wizOnTimeout" style="width:220px;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+              <option value="urgent_reminder" selected>Resend as URGENT (hold)</option>
+              <option value="approve">Approve automatically</option>
+              <option value="reject">Reject</option>
+              <option value="skip">Skip (hold indefinitely)</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -4623,10 +4639,13 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div id="wizSummary" style="display:none;background:var(--bg);border:1px solid var(--border);padding:16px;font-size:0.85rem;line-height:1.8;"></div>
     </div>
     <!-- Footer -->
-    <div style="display:flex;justify-content:space-between;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
+    <div style="display:flex;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
       <button id="wizBtnBack" onclick="wizBack()" style="display:none;padding:8px 20px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;cursor:pointer;">&#8592; Back</button>
-      <span></span>
-      <button id="wizBtnNext" onclick="wizNext()" style="padding:8px 20px;border:none;background:var(--vance-primary);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Next &#8594;</button>
+      <div style="display:flex;gap:10px;margin-left:auto;">
+        <button onclick="closeRuleWizard()" class="wiz-footer-btn">Cancel</button>
+        <button id="wizBtnSave" onclick="wizSaveNow()" class="wiz-footer-save">Save</button>
+        <button id="wizBtnNext" onclick="wizNext()" style="padding:8px 20px;border:none;background:var(--vance-primary);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Next &#8594;</button>
+      </div>
     </div>
     </div><!-- /wiz-body -->
    </div><!-- /wiz-page -->
@@ -8262,6 +8281,7 @@ var _wizBibCache = []; // bibliographies, fetched lazily when a bibliography sou
 var _wizEmails = [];
 var _wizEmailUserIds = []; // selected user ids for email notifications
 var _wizPendingPromptText = null; // prompt text from loaded rule; consumed when Step 3 renders
+var _wizPendingSubCategory = null; // explicit WP sub-category from loaded rule; consumed when Step 3 renders
 
 // Populate the prompt <select> with this category's saved prompts (from the
 // Categories page localStorage). The first option is always "Use category
@@ -8319,16 +8339,22 @@ function _wizUpdateSubCatRoute() {
   if (!el) return;
   var catSel = document.getElementById('wizCategory');
   var catId = catSel ? catSel.value : '';
+  var wrapEl = document.getElementById('wizSubCatRouteWrap');
+  if (wrapEl) wrapEl.style.display = (catId === 'clinical-reviews') ? '' : 'none';
+  var explicitSel = document.getElementById('wizSubCategorySelect');
+  var explicit = explicitSel ? explicitSel.value.trim() : '';
   var name = (typeof _wizGetSelectedPromptName === 'function' ? _wizGetSelectedPromptName() : '').trim();
-  // Reuse the saved-rule resolver by faking the rule shape it expects.
+  // Reuse the saved-rule resolver by faking the rule shape it expects — explicit
+  // selection wins, falling back to the prompt-name heuristic when left on Auto.
   var subCat = (typeof subCategoryForRule === 'function')
-    ? subCategoryForRule({ category: catId, generation: { promptName: name } })
+    ? subCategoryForRule({ category: catId, generation: { subCategory: explicit, promptName: name } })
     : null;
   if (subCat) {
     el.innerHTML = '<span style="color:var(--vance-dark);font-weight:700;">WP sub-category:</span> ' +
-      '<span style="display:inline-block;padding:1px 7px;background:var(--vance-dark);color:#fff;font-size:0.62rem;font-weight:700;">' + escHtml(subCat) + '</span>';
+      '<span style="display:inline-block;padding:1px 7px;background:var(--vance-dark);color:#fff;font-size:0.62rem;font-weight:700;">' + escHtml(subCat) + '</span>' +
+      (explicit ? '' : ' <span style="color:var(--text-muted);">(auto, from prompt name — set explicitly above to make this safe against prompt renames)</span>');
   } else if (catId === 'clinical-reviews') {
-    el.innerHTML = '<span style="color:#b45309;">⚠ Posts under the parent category only. Pick a patient or practitioner prompt to route it to a sub-category.</span>';
+    el.innerHTML = '<span style="color:#b45309;">⚠ Posts under the parent category only. Pick a WP sub-category above (or a patient/practitioner-named prompt) to route it.</span>';
   } else {
     el.innerHTML = '';
   }
@@ -8401,6 +8427,7 @@ async function openRuleWizard(editId) {
 
   document.getElementById('ruleWizardTitle').textContent = editId ? 'Edit Rule' : 'New Automation Rule';
   document.getElementById('wizName').value = '';
+  wizUpdateHeroName();
   document.getElementById('wizSourcesList').innerHTML = '';
   document.getElementById('wizEmailChips').innerHTML = '';
   document.getElementById('wizTgEnabled').checked = false;
@@ -8417,6 +8444,7 @@ async function openRuleWizard(editId) {
       var rule = await apiFetch('/api/automation/rules/' + editId);
       console.log('[wizard] rule loaded:', JSON.stringify(rule));
       document.getElementById('wizName').value = rule.name || '';
+      wizUpdateHeroName();
       if (catSel && rule.category) catSel.value = rule.category;
       if (tplSel && rule.generation && rule.generation.template) tplSel.value = rule.generation.template;
 
@@ -8487,6 +8515,7 @@ async function openRuleWizard(editId) {
         // Stash the stored prompt text; the prompt <select> is populated when
         // Step 3 renders (after the category dropdown's current value is known).
         _wizPendingPromptText = rule.generation.prompt || '';
+        _wizPendingSubCategory = rule.generation.subCategory || '';
         if (wizModelSel && rule.generation.model) wizModelSel.value = rule.generation.model;
         if (rule.generation.combineMode) {
           var combineRadio = document.querySelector('input[name="wizCombine"][value="' + rule.generation.combineMode + '"]');
@@ -8547,6 +8576,29 @@ function closeRuleWizard() {
   switchTab('automation-rules');
 }
 
+function wizUpdateHeroName() {
+  var nameEl = document.getElementById('wizName');
+  var heroEl = document.getElementById('wizHeroName');
+  if (!nameEl || !heroEl) return;
+  var name = nameEl.value.trim();
+  if (name) {
+    heroEl.textContent = name;
+    heroEl.style.display = '';
+  } else {
+    heroEl.style.display = 'none';
+  }
+}
+
+function wizSaveNow() {
+  if (!document.getElementById('wizName').value.trim()) {
+    alert('Please enter a rule name.'); return;
+  }
+  if (!_wizSources.length) {
+    alert('Please add at least one source.'); return;
+  }
+  _wizSubmit();
+}
+
 function _wizRenderStep(step) {
   _wizStep = step;
   for (var i = 1; i <= 5; i++) {
@@ -8566,10 +8618,13 @@ function _wizRenderStep(step) {
     // _wizPendingPromptText is set by the rule loader; null/'' means a fresh rule.
     var wizCatSel = document.getElementById('wizCategory');
     var _catId3 = (wizCatSel && wizCatSel.value) || '';
+    var subCatSel = document.getElementById('wizSubCategorySelect');
+    if (subCatSel) subCatSel.value = _wizPendingSubCategory || '';
     if (typeof _wizPopulatePromptSelect === 'function') {
       _wizPopulatePromptSelect(_catId3, _wizPendingPromptText || '');
     }
     _wizPendingPromptText = null;
+    _wizPendingSubCategory = null;
   }
   if (step === 5) _wizBuildSummary();
 }
@@ -8899,9 +8954,12 @@ async function _wizSubmit() {
       template: document.getElementById('wizTemplate').value,
       maxArticlesPerRun: parseInt(document.getElementById('wizMaxArticles').value || '3'),
       prompt: (typeof _wizGetSelectedPromptText === 'function' ? _wizGetSelectedPromptText() : ''),
-      // Prompt preset NAME — used by run.js to route the WP sub-category
-      // (patient/practitioner) for clinical reviews. '' for category default.
+      // Prompt preset NAME — used by run.js as a fallback to route the WP
+      // sub-category when subCategory below is left on Auto. '' for category default.
       promptName: (typeof _wizGetSelectedPromptName === 'function' ? _wizGetSelectedPromptName() : ''),
+      // Explicit WP sub-category override, decoupled from the prompt preset name
+      // above. '' = derive from promptName via the legacy heuristic (Auto).
+      subCategory: (document.getElementById('wizSubCategorySelect')?.value || '').trim(),
       combineMode: combineEl ? combineEl.value : 'one-per-item',
       model: document.getElementById('wizModel').value || null,
       heroImage: document.getElementById('wizHeroImage').checked,
@@ -8931,7 +8989,9 @@ async function _wizSubmit() {
   };
 
   var btnNext = document.getElementById('wizBtnNext');
+  var btnSave = document.getElementById('wizBtnSave');
   if (btnNext) btnNext.disabled = true;
+  if (btnSave) btnSave.disabled = true;
   try {
     if (_wizEditId) {
       await apiFetch('/api/automation/rules/' + _wizEditId, { method: 'PATCH', body: JSON.stringify(payload) });
@@ -8946,6 +9006,7 @@ async function _wizSubmit() {
     alert('Failed to save rule: ' + err.message);
   } finally {
     if (btnNext) btnNext.disabled = false;
+    if (btnSave) btnSave.disabled = false;
   }
 }
 
@@ -9845,6 +9906,7 @@ function createBibAutomation(bibId, bibName) {
   setTimeout(function() {
     var nameEl = document.getElementById('wizName');
     if (nameEl) nameEl.value = 'Articles from ' + bibName;
+    wizUpdateHeroName();
     wizAddSource('bibliography');
     // Set the bibliography ID after cache loads
     var attempts = 0;
@@ -11605,6 +11667,7 @@ function formatArticleHTML(text, category) {
   let openingWrapped = false; // true once the opening paragraph has been blockquoted
   let inMeta = (cat === 'clinical-reviews'); // clinical lead-in lines → .meta-block
   let pendingListClass = null; // class to attach to the *next* <ul>/<ol> opened
+  let inTable = false; // true while consuming a markdown pipe-table's data rows
 
   // Known clinical-review section headers (mirrors the server list)
   const sectionHeaders = /^(Background|Study Design|Patient Population|Key Findings|Discussion|Safety|Authors|Reference|Clinical Relevance|Conclusions|Disclaimer)/i;
@@ -11636,12 +11699,45 @@ function formatArticleHTML(text, category) {
     pendingListClass = LIST_STYLE_MAP[key] || null;
   };
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) { closeList(); continue; }
+  const isTableRow = (s) => /^\|.*\|$/.test(s);
+  const isTableSeparatorRow = (s) => /^\|?[\s:|-]+\|?$/.test(s) && s.includes('-');
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (!trimmed) { closeList(); inTable = false; continue; }
 
     // Drop the "Reading Time" meta line — editorial label, not published body.
     if (/^\**\s*reading time\b/i.test(trimmed)) continue;
+
+    // Markdown pipe tables (e.g. the LLM writing "Study at a glance" as a table
+    // instead of the requested bullet list) — collapse into the same styled <ul>
+    // a bullet list produces. Mirrors api/publish/index.js markdownToWpHtml() so
+    // the in-app preview matches the published WP post. Header + separator rows
+    // are dropped; only data rows become <li>s.
+    if (isTableRow(trimmed)) {
+      if (!inTable && isTableSeparatorRow((lines[i + 1] || '').trim())) {
+        inTable = true;
+        i++; // also consume the separator row
+        continue;
+      }
+      if (inTable) {
+        const cells = trimmed.split('|').map(c => c.trim());
+        cells.shift(); cells.pop(); // drop the empty segments outside the outer pipes
+        if (cells.length >= 2) {
+          const label = cells[0].replace(/^\*\*(.+)\*\*$/, '$1');
+          const value = cells.slice(1).join(' — ');
+          if (listType && listType !== 'ul') closeList();
+          if (!listType) {
+            listType = 'ul';
+            out.push(pendingListClass ? `<ul class="${pendingListClass}">` : '<ul>');
+            pendingListClass = null;
+          }
+          out.push(`<li><strong>${inline(label)}:</strong> ${inline(value)}</li>`);
+          continue;
+        }
+      }
+    }
+    inTable = false;
 
     // List items group into one <ul>/<ol>; any other line closes the block.
     const ulMatch = trimmed.match(/^[-*•]\s+(.*)$/);
@@ -11832,6 +11928,11 @@ function subCategoryForActivePrompt(catId) {
 function subCategoryForRule(rule) {
   if (!rule) return null;
   var catId = rule.category;
+  // Explicit override (set directly in the wizard) always wins — decoupled from
+  // whatever the prompt preset happens to be named. Falls back to the legacy
+  // promptName heuristic below only when unset (older rules never re-saved).
+  var explicit = ((rule.generation && rule.generation.subCategory) || '').trim();
+  if (explicit) return explicit;
   var name = ((rule.generation && rule.generation.promptName) || '').trim().toLowerCase();
   if (!name) return null;
   var map = PROMPT_SUBCATEGORY_MAP[catId];

@@ -53,3 +53,27 @@ test('buildWpPayload does not blockquote a body paragraph when there is no openi
   assert.doesNotMatch(content, /<blockquote>/);
   assert.match(content, /<p>First body sentence\.<\/p>/);
 });
+
+test('buildWpPayload collapses a markdown pipe table into the styled fact-box list', () => {
+  const body = [
+    '# Clinical Review: Drug X in ulcerative colitis',
+    'Smith J, et al. Lancet. 2024;403:1.',
+    '## Study at a glance',
+    '| **Category** | **Details** |',
+    '|---|---|',
+    '| **Study type** | Consensus statement |',
+    '| **Participants** | 82 adults with IBD |',
+    '## Why was this study done?',
+    'Because it matters.',
+  ].join('\n');
+  const item = { title: 'Clinical Review: Drug X', body, excerpt: '', category: 'clinical-reviews' };
+  const { content } = buildWpPayload(item, [5]);
+  // No leaked markdown-table syntax anywhere in the output.
+  assert.doesNotMatch(content, /\|/);
+  // Collapsed into the same boxed <ul> a bullet list would produce for this heading.
+  assert.match(content, /<ul style="list-style:none[^"]*">/);
+  assert.match(content, /<li><strong>Study type:<\/strong> Consensus statement<\/li>/);
+  assert.match(content, /<li><strong>Participants:<\/strong> 82 adults with IBD<\/li>/);
+  // The header/separator rows were dropped, not turned into bogus list items.
+  assert.doesNotMatch(content, /Category/);
+});
