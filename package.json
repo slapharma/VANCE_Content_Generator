@@ -5,11 +5,15 @@
   "type": "module",
   "dependencies": {
     "@composio/core": "^0.13.1",
+    "@resvg/resvg-js": "^2.6.2",
+    "@vercel/functions": "^3.7.6",
     "@vercel/kv": "^1.0.0",
     "cron-parser": "^5.5.0",
     "jose": "^5.2.0",
+    "jpeg-js": "^0.4.4",
     "oauth-1.0a": "^2.2.6",
-    "resend": "^3.0.0"
+    "resend": "^3.0.0",
+    "satori": "^0.29.0"
   },
   "engines": {
     "node": "24.x"

@@ -1,5 +1,7 @@
 import { kv } from '../../lib/kv.js';
 import { resolveOrCreateWpCategory, resolveOrCreateWpTags, parseTagList } from '../../lib/wp-taxonomy.js';
+import { uploadImageUrlToWp } from '../../lib/social/wp-media.js';
+import { carouselOnPublish } from '../../lib/social/carousel-on-publish.js';
 
 // Map app category IDs → WordPress category slugs. Mirrors BUILTIN_CATEGORY_META in index.html.
 // Acts as the *parent* category when a content item arrives with a sub-category
@@ -34,75 +36,22 @@ async function resolveWpCategoryId(slug, siteUrl, authHeader) {
 /**
  * Download an external image URL and upload it to the WordPress media library.
  * Returns the WP media object ID, or null on failure.
+ *
+ * The mechanics now live in lib/social/wp-media.js, shared with the Article
+ * Carousel renderer, which uploads its rendered slides the same way. The
+ * attribution stamp (alt text + caption + description on the media item, never a
+ * visible line in the post body) moved with it unchanged.
  */
 async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader, credit = null) {
-  try {
-    // Fetch the image binary from the external URL
-    const imgResp = await fetch(imageUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; VanceBot/1.0; +https://vancehealthhub.co.uk)',
-        'Accept': 'image/*',
-      },
-      redirect: 'follow',
-    });
-    if (!imgResp.ok) {
-      console.warn(`[publish] Hero image fetch failed ${imgResp.status}: ${imageUrl}`);
-      return null;
-    }
-
-    const contentType = imgResp.headers.get('content-type') || 'image/jpeg';
-    if (!contentType.startsWith('image/')) {
-      console.warn(`[publish] Hero image URL returned non-image content-type: ${contentType}`);
-      return null;
-    }
-
-    const buffer = Buffer.from(await imgResp.arrayBuffer());
-    const ext    = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
-    const slug   = (postTitle || 'hero').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
-    const filename = `${slug}-hero.${ext}`;
-
-    const mediaResp = await fetch(`${siteUrl}/wp-json/wp/v2/media`, {
-      method: 'POST',
-      headers: {
-        'Authorization':        authHeader,
-        'Content-Type':         contentType,
-        'Content-Disposition':  `attachment; filename="${filename}"`,
-      },
-      body: buffer,
-    });
-
-    if (!mediaResp.ok) {
-      const err = await mediaResp.text();
-      console.warn(`[publish] WP media upload failed ${mediaResp.status}: ${err}`);
-      return null;
-    }
-
-    const media = await mediaResp.json();
-
-    // Stamp stock-photo attribution onto the media item itself — alt text,
-    // caption, and description — so the credit ships with the image without
-    // adding any visible line to the post. Non-fatal: a failed metadata write
-    // never blocks the publish.
-    if (media.id && credit?.plain) {
-      try {
-        await fetch(`${siteUrl}/wp-json/wp/v2/media/${media.id}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
-          body: JSON.stringify({
-            alt_text:    credit.plain,
-            caption:     credit.html || credit.plain,
-            description: credit.html || credit.plain,
-          }),
-        });
-      } catch (metaErr) {
-        console.warn(`[publish] Hero credit metadata write failed: ${metaErr.message}`);
-      }
-    }
-    return media.id ?? null;
-  } catch (err) {
-    console.warn(`[publish] Hero image upload error: ${err.message}`);
-    return null;
-  }
+  const media = await uploadImageUrlToWp(imageUrl, {
+    title: postTitle || 'hero',
+    siteUrl,
+    authHeader,
+    credit,
+    suffix: 'hero',
+    logPrefix: 'publish',
+  });
+  return media?.id ?? null;
 }
 
 // Convert raw markdown/LLM output to clean WordPress HTML.
@@ -428,6 +377,32 @@ async function publishToWordPress(item, { fallbackHeroImageUrl } = {}) {
   };
 }
 
+/**
+ * Run background work without making the caller wait for it.
+ *
+ * The carousel build takes 60-100s. Two of the four callers of this endpoint are
+ * humans holding a click — a reviewer following an approval link out of their
+ * email, and the "Publish Now" button — and neither should sit on a blank tab
+ * while Instagram slides render. `waitUntil` is Vercel's mechanism for exactly
+ * this: the response flushes immediately and the invocation stays alive until the
+ * promise settles, within the function's maxDuration.
+ *
+ * Imported dynamically with a blocking fallback so a missing/renamed
+ * @vercel/functions can only ever cost us latency, never the carousel.
+ */
+async function defer(promise) {
+  // Swallow first, hand the settled-either-way promise onwards: an unhandled
+  // rejection reaching waitUntil would be reported as a function error on a
+  // request that actually succeeded.
+  const safe = promise.catch((err) => console.error('[publish] deferred work failed:', err?.message));
+  try {
+    const { waitUntil } = await import('@vercel/functions');
+    waitUntil(safe);
+  } catch {
+    await safe;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
@@ -462,6 +437,18 @@ export default async function handler(req, res) {
     updatedAt: new Date().toISOString(),
   };
   await kv.set(`content:${contentId}`, updated);
+
+  // The article is live and its record is committed — the only point at which
+  // building an Instagram carousel is safe. The hero image and the copy are now
+  // final, and `wpPostUrl` exists for the deck's "read the full article" CTA.
+  //
+  // Deliberately placed here rather than in the automation run or the approve
+  // handler (where it used to live, in two divergent copies): this is the single
+  // choke point shared by auto-publish, approve-on-review, the scheduled cron
+  // sweep and the manual button, so all four now behave identically. Non-fatal
+  // and non-blocking — see carouselOnPublish, which never throws.
+  await defer(carouselOnPublish(updated));
+
   return res.json({
     wpPostId: wpPost.id,
     wpPostUrl: wpPost.link,

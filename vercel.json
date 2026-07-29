@@ -5,7 +5,9 @@
   },
   "functions": {
     "api/automation/[...slug].js": { "maxDuration": 300 },
-    "api/social/[...slug].js":    { "maxDuration": 300 }
+    "api/social/[...slug].js":    { "maxDuration": 300 },
+    "api/publish/index.js":       { "maxDuration": 300 },
+    "api/cron/publish.js":        { "maxDuration": 300 }
   },
   "rewrites": [
     { "source": "/api/automation/:slug*", "destination": "/api/automation/[...slug]" },
@@ -14,7 +16,7 @@
   "crons": [
     { "path": "/api/cron/publish",     "schedule": "0 8 * * *" },
     { "path": "/api/automation/run",   "schedule": "0 7 * * *" },
-    { "path": "/api/social/cron",      "schedule": "0 9 * * *" },
+    { "path": "/api/social/cron",      "schedule": "0 * * * *" },
     { "path": "/api/social/connections/check", "schedule": "0 6 * * *" }
   ]
 }
