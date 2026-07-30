@@ -2384,67 +2384,86 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <div class="nav-section-label">Main</div>
     <button class="nav-item active" onclick="switchTab('dashboard')" id="tab-dashboard">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
-      <span>Home</span>
+      <span>Dashboard</span>
     </button>
+    <button class="nav-item" onclick="openUserGuide()" id="tab-user-guide">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <span>User Guide</span>
+    </button>
+
+    <div class="nav-section-label">Infrastructure</div>
     <button class="nav-item" onclick="switchTab('generator')" id="tab-generator">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
       <span>Generate</span>
     </button>
-    <button class="nav-item" onclick="switchTab('archive')" id="tab-archive">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      <span>Library</span>
-    </button>
-    <div class="nav-section-label">Workflow</div>
     <button class="nav-item" onclick="switchTab('pipeline')" id="tab-pipeline">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="13" rx="1"/><rect x="17" y="3" width="5" height="8" rx="1"/></svg>
       <span>Pipeline</span>
       <span class="nav-badge" id="nav-badge-pipeline"></span>
     </button>
-    <button class="nav-item" onclick="switchTab('distribution')" id="tab-distribution">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      <span>Social</span>
+    <button class="nav-item" onclick="switchTab('archive')" id="tab-archive">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>Library</span>
     </button>
     <button class="nav-item" onclick="switchTab('calendar')" id="tab-calendar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span>Calendar</span>
     </button>
-
-    <div class="nav-group-header">Automation</div>
-    <button class="nav-item nav-item-child" onclick="openRuleWizard()" id="tab-automation-new">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      <span>Create New</span>
-    </button>
-    <button class="nav-item nav-item-child" onclick="switchTab('automation-rules')" id="tab-automation-rules">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span>Automations</span>
-    </button>
-    <button class="nav-item nav-item-child" onclick="switchTab('automation-inbox')" id="tab-automation-inbox">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
-      <span>Operations Logs</span>
-      <span class="nav-badge" id="automationInboxBadge" style="display:none;">0</span>
-    </button>
-    <div class="nav-section-label">Research</div>
-    <button class="nav-item" onclick="switchTab('bibliography')" id="tab-bibliography">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      <span>Bibliography</span>
-    </button>
-    <div class="nav-section-label">System</div>
     <button class="nav-item" onclick="switchTab('categories')" id="tab-categories">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       <span>Categories</span>
     </button>
-    <button class="nav-item" onclick="switchTab('llm')" id="tab-llm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
-      <span>LLM</span>
+    <button class="nav-item" onclick="switchTab('bibliography')" id="tab-bibliography">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>Bibliography</span>
     </button>
-    <button class="nav-item" onclick="switchTab('settings')" id="tab-settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      <span>Settings</span>
+
+    <div class="nav-section-label">Workflow</div>
+    <button class="nav-item" onclick="openRuleWizard()" id="tab-automation-new">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>Create New Article</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('automation-rules')" id="tab-automation-rules">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Article Automations</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('distribution')" id="tab-distribution">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      <span>Social Automations</span>
+    </button>
+
+    <div class="nav-section-label">Prompt Library</div>
+    <button class="nav-item" onclick="gotoArticlePrompts()" id="tab-prompts-articles">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+      <span>Articles</span>
+    </button>
+    <button class="nav-item" onclick="gotoSocialPrompts()" id="tab-prompts-social">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Social</span>
+    </button>
+    <button class="nav-item" onclick="gotoImagePrompts()" id="tab-prompts-images">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      <span>Images</span>
+    </button>
+
+    <div class="nav-section-label">System</div>
+    <button class="nav-item" onclick="switchTab('automation-inbox')" id="tab-automation-inbox">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+      <span>Operations Logs</span>
+      <span class="nav-badge" id="automationInboxBadge" style="display:none;">0</span>
     </button>
     <button class="nav-item" onclick="switchTab('trash')" id="tab-trash">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      <span>Trash</span>
+      <span>Archive &amp; Trash</span>
       <span class="nav-badge" id="trashBadge" style="display:none;">0</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('llm')" id="tab-llm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+      <span>LLM Settings</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('settings')" id="tab-settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>System Settings</span>
     </button>
   </nav>
 
@@ -2454,10 +2473,6 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <button onclick="openChangePwd(false);toggleUserMenu();" style="width:100%;padding:9px 12px;background:transparent;border:none;color:#fff;text-align:left;font-family:inherit;font-size:0.72rem;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);">Change password</button>
       <button onclick="logout();" style="width:100%;padding:9px 12px;background:transparent;border:none;color:#e74c3c;text-align:left;font-family:inherit;font-size:0.72rem;cursor:pointer;">Sign out</button>
     </div>
-    <button class="sidebar-guide-btn" onclick="openUserGuide()" title="Open the user guide">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:13px;height:13px;flex-shrink:0;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-      <span>User Guide</span>
-    </button>
   </div>
 </aside>
 
@@ -4103,7 +4118,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     </div>
 
     <!-- Section A2: Hero Image Prompts — image generation prompt library -->
-    <div class="llm-section">
+    <div class="llm-section" id="llmHeroPromptsSection">
       <div class="llm-section-header">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
         <div style="flex:1;">
@@ -7179,18 +7194,18 @@ const TAB_TITLES = {
   archive:      'Content Library',
   pipeline:     'Content Pipeline',
   article:      'View Article',
-  distribution: 'Social',
+  distribution: 'Social Automations',
   calendar:     'Content Calendar',
-  settings:     'Settings',
-  llm:          'LLM Management',
+  settings:     'System Settings',
+  llm:          'LLM Settings',
   automation:         'Automation',
-  'automation-new':   'Create Automation',
-  'automation-rules': 'Automations',
+  'automation-new':   'Create New Article',
+  'automation-rules': 'Article Automations',
   'automation-inbox': 'Operations Logs',
   bibliography:       'Bibliography',
   'bibliography-new': 'Bibliography Wizard',
   categories:         'Content Categories',
-  trash:              'Trash',
+  trash:              'Archive & Trash',
 };
 
 function closeMobileNav() {
@@ -10688,6 +10703,12 @@ function switchTab(tab, fromHistory) {
     if (v) v.classList.toggle('active', t === tab);
     if (b) b.classList.toggle('active', t === tab);
   });
+  // Prompt Library shortcuts aren't real tabs — clear any lingering highlight
+  // (their goto* handlers re-apply it after this runs when appropriate).
+  ['tab-prompts-articles', 'tab-prompts-social', 'tab-prompts-images'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.classList.remove('active');
+  });
   if (tab === 'archive')           renderArchive();
   if (tab === 'pipeline')          loadPipeline();
   // The shared article panel lives on the Generate tab; relocate it into the
@@ -10731,6 +10752,32 @@ function switchTab(tab, fromHistory) {
   if (!fromHistory && location.hash.slice(1) !== tab) {
     history.pushState({ tab: tab }, '', '#' + tab);
   }
+}
+
+// ── Prompt Library nav shortcuts ──────────────────────────────────────────────
+// The three prompt libraries live inside other pages; these jump straight to
+// the right surface. Active-state highlighting is handled manually because the
+// destinations share tab ids with other nav items.
+function markPromptNavActive(id) {
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(function(b) { b.classList.remove('active'); });
+  var btn = document.getElementById(id);
+  if (btn) btn.classList.add('active');
+}
+function gotoArticlePrompts() {
+  switchTab('categories');   // article prompts are managed per category
+  markPromptNavActive('tab-prompts-articles');
+}
+function gotoSocialPrompts() {
+  switchTab('prompts');      // retired route → Social ▸ Prompts & Connections ▸ Social Prompts
+  markPromptNavActive('tab-prompts-social');
+}
+function gotoImagePrompts() {
+  switchTab('llm');
+  markPromptNavActive('tab-prompts-images');
+  setTimeout(function() {
+    var sec = document.getElementById('llmHeroPromptsSection');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 120);
 }
 
 // Resolve a valid tab from the URL hash; falls back to dashboard. A tab is valid
