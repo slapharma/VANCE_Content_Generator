@@ -8,48 +8,38 @@ re-deriving anything. Companion reading is `tasks/todo.md` (the two 2026-07-29 s
 
 ## 1. Where things stand
 
-**As of 2026-07-29 the live artifacts are the three published brand templates in section 6** — the
-editable source designs listed below were consumed by publishing (trap 6) and no longer exist as
-designs. To edit a live template now, use the cycle in trap 10, never the table below.
+**As of 2026-07-30 the live artifacts are the three published brand templates in section 6.** Their
+source designs were consumed by publishing (trap 6) and no longer exist, so there is nothing to
+edit by hand: to change a template, either edit it via the cycle in trap 10, or regenerate and
+reimport from `scripts/build-canva-style-decks.mjs` (section 4) — the latter is cheap and is what
+the 2026-07-30 rebuild did.
 
 Folder: Vance-Social Media Kit — `FAHQyMs34l4` — https://www.canva.com/folder/FAHQyMs34l4
 
-Historical record of the source designs (all now consumed):
-
-| Style | Design id (gone) |
-|---|---|
-| Education | `DAHQx3TBHW0` |
-| Relatable | `DAHQx_QjfTE` |
-| Breaking News | `DAHQx09-cEI` |
-
-Each was 8 pages at 1080x1350, FIXED pages, real editable text, carrying the real two-tone Vance
-mark, with 14 autofill placeholders whose text is the app's own field name. The published templates
-inherit all of that.
+Each deck is 8 pages at 1080x1350, FIXED pages, real editable text, carrying the real two-tone
+Vance mark, with 14 autofill placeholders whose text is the app's own field name. The published
+templates inherit all of that.
 
 ### Stale objects to delete (no delete API — do it in the Canva UI)
 
-Updated 2026-07-29 after the publish-and-revise session. The logo-less duplicate designs
-(`DAHQx0BDG3k`, `DAHQx2UsNY4`) no longer need deleting — both were consumed by mistaken publishes
-(traps 11); their junk OUTPUT templates are in the list below instead.
+Updated 2026-07-30 after the rebuild. Most of the earlier list is already gone — the operator's
+cleanup pass removed nine templates, and the mistaken publishes consumed the logo-less duplicate
+designs. What remains:
 
-**Brand templates to delete (7):**
+**Brand templates to delete (3), all pre-rebuild leftovers:**
 
-- v1s, the flat ones whose covers are all identical navy: `EAHQxC4zKec`, `EAHQxI8Pqbg`,
-  `EAHQxHHuL0w`.
-- Superseded by the chip revision (narrow chip, otherwise fine): `EAHQyMbCWZc`, `EAHQyE_EzxU`,
-  `EAHQyEA1Boo`.
-- `EAHQyAYHmBE` — junk from a mistaken publish of the logo-less Relatable duplicate; only 2 of 14
-  fields tagged, so it DOES appear in the app's picker.
-- Also present but hidden from the picker by the `dataset=non_empty` filter (delete anyway):
-  `EAHQyMgJHYY` (accidental untagged publish), `EAHQyCMzQEo` (mistaken publish of the logo-less
-  Education duplicate, 0 fields).
+- `EAHQxC4zKec` (Education) and `EAHQxHHuL0w` (Breaking News) — the flat v1s. Both are tagged, so
+  they DO appear in the app's picker alongside the real ones. Deleting them is what makes the
+  picker show exactly three.
+- `EAHQyMgJHYY` (Breaking News) — the accidental untagged publish. Hidden from the picker by the
+  `dataset=non_empty` filter (trap 12), so harmless, but delete it: its navy cover reads as
+  Education at a glance, which is what caused the wrong-template confusion in the first place.
 
-**Designs to delete:**
+Keep only `EAHQ2VHRuUU`, `EAHQ2RZD31o`, `EAHQ2cILWCE` (section 6).
 
-- Test artefacts: `DAHQxNm8Sks`, `DAHQxEM-Tw0`, `DAHQxG17qY4`, `DAHQxHvheiQ`.
-- Smoke-test decks minted by preview runs on 2026-07-29, titled `check-education-template` and
-  `ZZ check…- safe to delete` (each `canva-template` preview mints a real design; that is expected
-  and the cost of the smoke test).
+**Designs to delete:** the smoke-test decks minted by preview runs, titled `check-education-template`
+and `ZZ …- safe to delete`. Each `canva-template` preview mints a real design; that is expected and
+is the cost of the smoke test.
 
 ---
 
@@ -222,30 +212,35 @@ Tagging applies `update_autofill_field` to each of the 14 placeholders (8 `edit-
 deck, one per page, since all operations in a call must target the same page), then a commit, then
 `publish-brand-template`.
 
-**STATUS: PUBLISHED 2026-07-29, then revised same day. These are the LIVE template ids:**
+**STATUS: REBUILT 2026-07-30. These are the LIVE template ids:**
 
-| Style | Live brand template | Superseded ids (delete in UI) |
+| Style | Live brand template | Source design |
 |---|---|---|
-| Education | `EAHQyOwrEn0` | `EAHQyMbCWZc` |
-| Relatable | `EAHQyJKSvzM` | `EAHQyE_EzxU` |
-| Breaking News | `EAHQyCVP_uQ` | `EAHQyEA1Boo` |
+| Education | `EAHQ2VHRuUU` | `DAHQ2RnK7pQ` (consumed) |
+| Relatable | `EAHQ2RZD31o` | `DAHQ2ZKaLdY` (consumed) |
+| Breaking News | `EAHQ2cILWCE` | `DAHQ2QWxqS8` (consumed) |
 
-Each live dataset was confirmed via `get-brand-template-dataset`: all 14 canonical field names,
-all `{"type":"text"}`. Field distribution landed exactly as expected (page 1: eyebrow + hookTitle;
+Each dataset was confirmed via `get-brand-template-dataset`: all 14 canonical field names, all
+`{"type":"text"}`. Field distribution landed exactly as expected (page 1: eyebrow + hookTitle;
 2: brief; 3-6: pointN + pointNbody; 7: update; 8: cta + domain). Education's page 7 static citation
 placeholders (journal, authors, study type, sample size) were left untagged deliberately — they
-have no autofill fields, per section 2b's blocker list.
+have no autofill fields, per section 2b's blocker list. The CTA chip is the widened one (the fix
+is now in the generator, so every future import has it).
 
-The same-day revision widened the page-8 CTA chip on all three (RECT 860x112.8 at left 110, `cta`
-text 800 wide, centred): the imported chip was shrink-wrapped around the 3-letter placeholder and
-the first real autofill overflowed it — trap 7 in the flesh. The superseded ids still exist with
-the narrow chip; they work but should be deleted in the Canva UI (no delete API).
+**Why a rebuild.** The first generation (2026-07-29) published fine, but the account then held ten
+same-titled templates with near-identical navy thumbnails and no visible ids in the Canva UI. A
+cleanup pass deleted the three good ones and kept three wrong ones. Rebuilding from
+`scripts/build-canva-style-decks.mjs` cost about fifteen minutes, which is the real lesson: **the
+decks are cheap to regenerate and the ids are disposable, so never hand-reconcile a pile of
+same-titled templates — delete broadly and rebuild.** To make that recoverable rather than
+alarming, avoid letting duplicates accumulate: delete the superseded template immediately after
+every republish, while you still know which id is which.
 
 **Template ids are NOT stable across edits — see traps 10-11.** Every edit-and-republish mints a
 new EA id; whatever stores a template id (campaigns store `canvaBrandTemplateId`) must be repointed
 after any template revision, and the superseded template deleted in the UI.
 
-End-to-end verified against `EAHQyOwrEn0` on 2026-07-29: 8 slides, one per page, every field
+End-to-end verified against `EAHQ2VHRuUU` on 2026-07-30: 8 slides, one per page, every field
 filled, CTA chip holding "SHOP THE RANGE" (the themed default now applied by `promo-run.js` when a
 campaign sets no `ctaLabel` — autofill has no draw time, so satori's draw-time fallback chain is
 resolved before the payload is built).
