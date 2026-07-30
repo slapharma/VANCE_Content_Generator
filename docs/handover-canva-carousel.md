@@ -158,6 +158,12 @@ Blockers this design routes around rather than solves — they are why full repl
    the live account): fully-untagged templates are excluded from the list even though the list
    still never returns the dataset itself (trap 3). Partially-tagged junk (e.g. 2 of 14 fields)
    still shows.
+13. **Brand templates do not appear in folder listings.** Even the Canva MCP connector's
+   `list-folder-items` returns `[]` for the "Vance-Social Media Kit" folder after the operator
+   filed all three templates into it in the UI — folder listings cover designs, folders and
+   images, not brand templates. So filing templates in a folder is useful human organisation and
+   nothing more: it is invisible to every API surface, which closes off option 3 in section 2a for
+   good, on top of Composio not exposing folder-items at all.
 
 ---
 
