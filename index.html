@@ -2419,10 +2419,6 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     </button>
 
     <div class="nav-section-label">Workflow</div>
-    <button class="nav-item" onclick="openRuleWizard()" id="tab-automation-new">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      <span>Create New Article</span>
-    </button>
     <button class="nav-item" onclick="switchTab('automation-rules')" id="tab-automation-rules">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span>Article Automations</span>
@@ -7199,7 +7195,7 @@ const TAB_TITLES = {
   settings:     'System Settings',
   llm:          'LLM Settings',
   automation:         'Automation',
-  'automation-new':   'Create New Article',
+  'automation-new':   'Create Automation',
   'automation-rules': 'Article Automations',
   'automation-inbox': 'Operations Logs',
   bibliography:       'Bibliography',
@@ -16643,9 +16639,10 @@ function applyRoleGating() {
   const navItems = {
     'tab-automation':  isContentPlus(),
     'tab-automation-rules': isContentPlus(),
-    'tab-automation-new': isContentPlus(),
     'tab-automation-inbox': isContentPlus(),
-    'tab-prompts':     isContentPlus(),
+    'tab-prompts-articles': isContentPlus(),
+    'tab-prompts-social':   isContentPlus(),
+    'tab-prompts-images':   isContentPlus(),
     'tab-categories':  isContentPlus(),
     'tab-llm':         isContentPlus(),
     'tab-settings':    isAdmin(),
