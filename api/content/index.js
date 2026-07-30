@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { getCurrentUser, requireRole } from '../../lib/auth.js';
 import { countBodyWords } from '../../lib/word-count.js';
 import { withErrorBoundary } from '../../lib/api.js';
+import { markStockUsed, heroAsStockPhoto } from '../../lib/social/stock-ledger.js';
 
 // ── Pure helpers (exported for testing) ─────────────────────────────────────
 
@@ -24,6 +25,10 @@ export function buildContentItem(data) {
     // rendered as a credit line in-app and appended to the published WP post
     // (required by the Unsplash API guidelines). Null for AI/uploaded heroes.
     heroImageCredit: data.heroImageCredit ?? null,
+    // Provider photo id ('12345' / 'n7a2OJDSZns') for stock heroes. Kept so the
+    // one-use-only stock ledger identifies the photo exactly instead of inferring
+    // it from the image URL. Null for AI/uploaded heroes.
+    heroImagePhotoId: data.heroImagePhotoId ?? null,
     wpCategorySlug: data.wpCategorySlug ?? null, // per-category WP slug override
     // Per-row sub-category name (from the multi-column bulk-upload spreadsheet,
     // e.g. "Lifestyle & Wellbeing"). When set, the publish endpoint resolves it
@@ -474,6 +479,10 @@ async function handler(req, res) {
     const item = buildContentItem(req.body);
     await kv.set(`content:${item.id}`, item);
     await kv.lpush('content:index', item.id);
+    // A stock hero is spent the moment it lands on a saved article, so the picker
+    // never offers it again. Marking here rather than on click is deliberate:
+    // clicking through five thumbnails must not burn the four that were rejected.
+    await markStockUsed(heroAsStockPhoto(item));
     return res.status(201).json(item);
   }
 

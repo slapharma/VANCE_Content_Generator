@@ -2,6 +2,7 @@ import { kv } from '../../lib/kv.js';
 import { getCurrentUser } from '../../lib/auth.js';
 import { logEvent, snapshotBody } from '../../lib/article-history.js';
 import { withErrorBoundary } from '../../lib/api.js';
+import { markStockUsed, heroAsStockPhoto } from '../../lib/social/stock-ledger.js';
 
 // Note: 'rejected' is intentionally absent from in_review's allowed targets.
 // Reviewers' "Request Changes" feedback is stored as comments on the article but
@@ -77,6 +78,10 @@ async function handler(req, res) {
 
     const updated = { ...item, ...updates, ...statusTimestamps, updatedAt: now };
     await kv.set(`content:${id}`, updated);
+    // Spend the stock hero on save (idempotent), so a photo picked by hand is never
+    // offered again. Swapping a hero therefore spends both photos — deliberate, and
+    // cheap against a pool of millions.
+    await markStockUsed(heroAsStockPhoto(updated));
     return res.json(updated);
   }
 

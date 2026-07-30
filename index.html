@@ -6291,6 +6291,10 @@ let heroImageType     = null; // 'ai' | 'pexels' | 'unsplash' | 'upload'
 // Required by the Unsplash API guidelines (photographer + Unsplash links with
 // UTM params wherever the photo is displayed); null for AI/uploaded heroes.
 let heroImageCredit   = null;
+// Provider photo id for a stock hero ('pexels_12345' / 'unsplash_n7a2OJDSZns'),
+// saved with the article so the used-photo ledger identifies this exact photo
+// rather than inferring it from the image URL. Null for AI/uploaded heroes.
+let heroImagePhotoId  = null;
 
 function updateArticleHeroPreview() {
   var wrap = document.getElementById('articleHeroPreview');
@@ -6315,6 +6319,7 @@ function removeArticleHero() {
   heroImageUrl = null;
   heroImageType = null;
   heroImageCredit = null;
+  heroImagePhotoId = null;
   updateArticleHeroPreview();
 }
 let extractedText   = '';
@@ -6496,6 +6501,7 @@ function switchCategory(catId) {
   heroImageUrl   = null;
   heroImageType  = null;
   heroImageCredit = null;
+  heroImagePhotoId = null;
   updateArticleHeroPreview();
   // Default the Hero Image card mode to this category's configured source
   // ('stock' => Pexels Auto-Search, else AI Auto-Generate). User can still switch.
@@ -10085,8 +10091,13 @@ async function imgPickerSearch() {
         }),
       });
       _imgStockResults = (out && out.results) || [];
+      // Photos already used as an article hero or another cover are filtered out
+      // server-side, so an empty grid can mean "all spent" rather than "no matches".
+      var hiddenUsed = (out && Number(out.hiddenUsed)) || 0;
       if (!_imgStockResults.length) {
-        imgPickerStatus('error', 'No photos matched that search. Try a broader term.');
+        imgPickerStatus('error', hiddenUsed
+          ? 'Every photo for that search has already been used. Try a different term.'
+          : 'No photos matched that search. Try a broader term.');
         return;
       }
       grid.innerHTML = _imgStockResults.map(function(p, i) {
@@ -10096,7 +10107,9 @@ async function imgPickerSearch() {
           + (p.photographer ? '<span class="promo-stock-credit">' + escHtml(p.photographer) + '</span>' : '')
           + '</button>';
       }).join('');
-      imgPickerStatus('ok', _imgStockResults.length + ' photos from ' + out.provider + '. Photographer credit is kept with your choice.');
+      imgPickerStatus('ok', _imgStockResults.length + ' photos from ' + out.provider
+        + (hiddenUsed ? ' (' + hiddenUsed + ' already used elsewhere, hidden)' : '')
+        + '. Photographer credit is kept with your choice.');
     });
   } catch (err) {
     imgPickerStatus('error', err.message);
@@ -14206,7 +14219,7 @@ async function saveReviewToArchive() {
       excerpt: rawArticleText.split(/\s+/).slice(0, 30).join(' ') + '…',
       category: currentCategory,
       ...(subCat ? { subCategory: subCat } : {}),
-      ...(heroImageUrl ? { heroImageUrl, heroImageType, heroImageCredit } : {}),
+      ...(heroImageUrl ? { heroImageUrl, heroImageType, heroImageCredit, heroImagePhotoId } : {}),
       ...(wpSlug ? { wpCategorySlug: wpSlug } : {}),
       ...(typeof currentSourceLabel !== 'undefined' && currentSourceLabel ? { sourceDocName: currentSourceLabel } : {}),
       ...(typeof currentSourceUrl !== 'undefined' && currentSourceUrl ? { sourceDocUrl: currentSourceUrl } : {}),
@@ -14344,6 +14357,7 @@ async function viewArticleFromPipeline(itemId) {
   heroImageUrl  = item.heroImageUrl || null;
   heroImageType = item.heroImageType || null;
   heroImageCredit = item.heroImageCredit || null;
+  heroImagePhotoId = item.heroImagePhotoId || null;
   if (typeof updateArticleHeroPreview === 'function') updateArticleHeroPreview();
   // Article body
   document.getElementById('articleContent').innerHTML = formatArticleHTML(text, item.category);
@@ -15288,7 +15302,7 @@ async function queueCurrentForPublishing() {
     excerpt: rawArticleText.split(/\s+/).slice(0, 30).join(' ') + '…',
     category: currentCategory,
     ...(subCat ? { subCategory: subCat } : {}),
-    ...(heroImageUrl ? { heroImageUrl, heroImageType, heroImageCredit } : {}),
+    ...(heroImageUrl ? { heroImageUrl, heroImageType, heroImageCredit, heroImagePhotoId } : {}),
     ...(wpSlug ? { wpCategorySlug: wpSlug } : {}),
     ...(currentSourceLabel ? { sourceDocName: currentSourceLabel } : {}),
     ...(currentSourceUrl ? { sourceDocUrl: currentSourceUrl } : {}),
@@ -17457,8 +17471,12 @@ let heroLeftPage  = 1;
  * a query string visible in dev tools, and the Pexels key was inlined in this
  * file. Neither key reaches the client now.
  *
- * Returns { results, hasMore } in the shape this picker already used, so nothing
- * downstream of here changed.
+ * Photos already used elsewhere are filtered out server-side, so a page can come
+ * back shorter than perPage (or the endpoint may skip ahead to find a page with
+ * fresh photos on it — hence `page` in the response rather than the one asked for).
+ *
+ * Returns { results, hasMore, page, hiddenUsed } — the first two in the shape this
+ * picker already used, so nothing downstream of here changed.
  */
 async function heroLeftFetchPage(query, page) {
   const provider = (heroPromptsConfig && heroPromptsConfig.stockProvider === 'unsplash') ? 'unsplash' : 'pexels';
@@ -17484,9 +17502,17 @@ async function heroLeftFetchPage(query, page) {
       link: p.sourceUrl,
       provider: p.provider,
       dl: p.downloadLocation,
+      // Provider photo id ('pexels_12345' / 'unsplash_n7a2OJDSZns'), saved with the
+      // article so the used-photo ledger can identify this exact photo later.
+      photoId: p.id,
     };
   });
-  return { results: results, hasMore: !!out.hasMore };
+  return {
+    results: results,
+    hasMore: !!out.hasMore,
+    page: Number(out.page) || page,
+    hiddenUsed: Number(out.hiddenUsed) || 0,
+  };
 }
 
 function heroLeftThumbHtml(img, i) {
@@ -17581,15 +17607,22 @@ async function heroLeftSearch() {
       page = await heroLeftFetchPage(q, 1);
       if (page.results.length) { matched = q; break; }
     }
-    if (!matched) { showHeroLeftStatus('error', 'No photos found. Try different keywords.'); return; }
+    if (!matched) { showHeroLeftStatus('error', 'No unused photos found. Try different keywords.'); return; }
     heroLeftQuery   = matched;
-    heroLeftPage    = 1;
+    // The endpoint skips ahead past pages whose photos are all spent, so continue
+    // "See more" from the page it actually returned, not from 1.
+    heroLeftPage    = page.page;
     heroLeftResults = page.results;
     if (grid) grid.innerHTML = heroLeftResults.map(heroLeftThumbHtml).join('');
     heroLeftSetMoreBtn(page.hasMore);
+    // Photos used before are never offered twice, so say when some were withheld —
+    // otherwise a short grid reads as a thin search result.
+    var hidden = page.hiddenUsed ? ' (' + page.hiddenUsed + ' already used elsewhere, hidden)' : '';
     if (matched !== ladder[0]) {
       if (input) input.value = matched;
-      showHeroLeftStatus('info', 'No results for the full phrase — showing "' + matched + '" instead.');
+      showHeroLeftStatus('info', 'No results for the full phrase — showing "' + matched + '" instead.' + hidden);
+    } else if (hidden) {
+      showHeroLeftStatus('info', page.results.length + ' photos' + hidden);
     } else {
       showHeroLeftStatus('', '');
     }
@@ -17604,12 +17637,11 @@ async function heroLeftSeeMore() {
   const btn = document.getElementById('heroLeftMoreBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
   try {
-    const nextPage = heroLeftPage + 1;
-    const page = await heroLeftFetchPage(heroLeftQuery, nextPage);
+    const page = await heroLeftFetchPage(heroLeftQuery, heroLeftPage + 1);
     if (!page.results.length) { heroLeftSetMoreBtn(false); return; }
     const startIdx = heroLeftResults.length;
     heroLeftResults = heroLeftResults.concat(page.results);
-    heroLeftPage = nextPage;
+    heroLeftPage = page.page;
     const grid = document.getElementById('heroLeftGrid');
     if (grid) {
       grid.insertAdjacentHTML('beforeend',
@@ -17658,6 +17690,7 @@ async function heroLeftGenerate() {
     heroImageUrl  = url;
     heroImageType = 'ai';
     heroImageCredit = null;
+    heroImagePhotoId = null;
     updateArticleHeroPreview();
     heroLeftSelectImageDirect(url, 'AI Generated (' + model.split('/').pop() + ')', null);
     showHeroLeftStatus('', '');
@@ -17682,6 +17715,9 @@ function heroLeftSelectImage(idx) {
     photoUrl: img.link || null,
     provider: heroImageType,
   } : null;
+  // Recorded as used when the article is SAVED, not here — clicking through five
+  // thumbnails must not spend the four that were passed over.
+  heroImagePhotoId = img.photoId || null;
   updateArticleHeroPreview();
   const svc = img.provider === 'unsplash' ? 'Unsplash' : 'Pexels';
   const credit = img.author ? ('Photo by ' + img.author + ' on ' + svc) : ('Photo from ' + svc);
@@ -17737,6 +17773,7 @@ function heroUploadFile(input) {
       heroImageUrl  = dataUrl;
       heroImageType = 'upload';
       heroImageCredit = null;
+      heroImagePhotoId = null;
       updateArticleHeroPreview();
       heroLeftSelectImageDirect(dataUrl, 'Uploaded: ' + file.name, null);
       showHeroLeftStatus('', '');
@@ -17770,6 +17807,7 @@ function clearHeroLeftImage() {
   heroImageUrl        = null;
   heroImageType       = null;
   heroImageCredit     = null;
+  heroImagePhotoId    = null;
   heroLeftSelectedIdx = -1;
   heroLeftResults     = [];
   heroLeftQuery       = '';
@@ -19279,6 +19317,7 @@ async function saveArticleEdits(replace) {
       if (typeof heroImageUrl !== 'undefined' && heroImageUrl) payload.heroImageUrl = heroImageUrl;
       if (typeof heroImageType !== 'undefined' && heroImageType) payload.heroImageType = heroImageType;
       if (typeof heroImageCredit !== 'undefined' && heroImageCredit) payload.heroImageCredit = heroImageCredit;
+      if (typeof heroImagePhotoId !== 'undefined' && heroImagePhotoId) payload.heroImagePhotoId = heroImagePhotoId;
       const r = await fetch('/api/content/' + currentContentId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -19551,6 +19590,7 @@ async function saveHeroFromModal() {
     heroImageUrl: (typeof heroImageUrl !== 'undefined' ? heroImageUrl : null) || null,
     heroImageType: (typeof heroImageType !== 'undefined' ? heroImageType : null) || null,
     heroImageCredit: (typeof heroImageCredit !== 'undefined' ? heroImageCredit : null) || null,
+    heroImagePhotoId: (typeof heroImagePhotoId !== 'undefined' ? heroImagePhotoId : null) || null,
   };
   try {
     var r = await fetch('/api/content/' + currentContentId, {
@@ -20190,6 +20230,7 @@ var ADMIN_RESET_TARGETS = [
   { id: 'processed',    label: 'Reset source processed-state',  on: true },
   { id: 'usage',        label: 'LLM usage & cost stats',        on: false },
   { id: 'bibliography', label: 'Bibliography processed flags',  on: false },
+  { id: 'stockimages',  label: 'Used stock-photo ledger',       on: false },
 ];
 
 function renderAdminResetTargets() {
