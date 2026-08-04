@@ -7,12 +7,22 @@ export function validateReviewer(data) { return validUser(data); }
 export function buildReviewer(data) { return buildUser({ ...data, password: data.password ?? SEED_PASSWORD, mustChangePassword: false }); }
 
 export default async function handler(req, res) {
+  const me = await getCurrentUser(req);
+
+  // Reading the directory requires being signed in — any role, because reviewer
+  // names are resolved from it all over the app, not just in Settings.
+  //
+  // This branch used to sit ABOVE the auth check, so the whole user list was
+  // world-readable: names, email addresses, roles, Google account ids and
+  // profile picture URLs, returned to any anonymous caller. `safe()` strips the
+  // password hash and nothing else, so it looked deliberate. The write methods
+  // below were always admin-gated; only the read was missed.
   if (req.method === 'GET') {
+    if (!me) return res.status(401).json({ error: 'Not authenticated' });
     const users = await loadUsers();
     return res.json(users.map(safe));
   }
 
-  const me = await getCurrentUser(req);
   const guard = requireRole(me, 'admin');
   if (!guard.ok) return res.status(guard.status).json({ error: guard.error });
 
