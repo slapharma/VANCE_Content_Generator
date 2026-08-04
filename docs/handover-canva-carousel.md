@@ -220,6 +220,16 @@ Blockers this design routes around rather than solves — they are why full repl
    `design_metadata` *outside* the transaction and re-applying `update_title` before finalising.
    Any UI edit made after `read-design` is invisible to the transaction and is overwritten on
    commit. **When a session spans operator activity, re-read metadata before committing.**
+22. **Autofill replaces TEXT but not PARAGRAPH PROPERTIES, and a list marker is a paragraph
+   property.** On V3 Gastro Living page 2 the visible "1." was not in the text at all — it came
+   from `listMarker=decimal, level=1`, while pages 3-6 had "2." to "5." typed into their text with
+   no marker. Tagging all five as `point{N}` would therefore have left page 2 showing "1." in
+   front of the generated copy while pages 3-6 lost their numbers entirely: five slides, one
+   numbered, four not, and nothing in the returned spec to show it. The same applies to
+   `textAlign` (page 2 was `justify` against the others' `start`) — it survives the fill too.
+   **Read `listMarker`, `level` and `textAlign` on every element you tag, not just the text**, and
+   normalise them with `format_text` (`list_level: 0` removes the marker) before publishing.
+   Numbering that must survive belongs inside the autofilled value, per trap 17's logic.
 
 ---
 
@@ -433,15 +443,23 @@ only way to change it and losing the id means rebuilding by hand.
 
 ### Gastro Living carousels (operator-built 2026-08-04)
 
-A fourth family, also hand-built in the Canva UI. Two decks that share a name and nothing else.
+A fourth family, also hand-built in the Canva UI. Three decks that share a name and nothing else.
 
 | Deck | Live brand template | Fields | Pages | Superseded, DELETE in the UI | Source designs |
 |---|---|---|---|---|---|
 | V2 Gastro Living | `EAHRUbI_kV0` | 10 | 5 | — | `DAHRULz8eq8` (consumed) |
+| V3 Gastro Living | `EAHRUQAAU7c` | 12 | 6 | — | `DAHRUDTV-OY` (consumed) |
 | V4 Gastro Living | `EAHRUZDydoc` | 8 | 4 | **`EAHRUTCPrzw`** | `DAHRT9UEaXI`, `DAHRURBD38s` (consumed) |
 
 V2: `eyebrow`, `hookTitle`, `point1`-`point3` + bodies, `update`, `domain`. Cover, three point
 slides, recap. Comfortable capacity throughout and **safe in `topic` mode**.
+
+V3: `hookTitle`, `subhead`, `point1`-`point5` + bodies. Cover plus five point slides, no close and
+no link. **Every text element is fillable — this deck has no static text at all.** Its cover
+headline is a single non-wrapping line of about 31 characters, the tightest slot in the family, and
+carries the list count. Its numbering was built two different ways (an automatic list marker on
+page 2, typed numbers on pages 3-6) and was normalised so the number now travels inside the
+`point{N}` value. **Keep it on CSV.** The VANCE mark is missing from pages 3 and 5.
 
 V4: `eyebrow` (shared across all four pages, deliberately), `hookTitle`, `point1`-`point3` +
 bodies. Cover plus three point slides, **no close slide and no link anywhere**. Three display
@@ -449,7 +467,8 @@ headline slots are hard-capped at 2-4 lines against an 8-word generator cap, so 
 Its cover is a two-part lockup whose static "How to" means `hookTitle` must grammatically complete
 the phrase — which no messaging mode except CSV can be relied on to do.
 
-Neither deck uses `customFields`, so unlike V2 Education both fill in every messaging mode.
+No deck in this family uses `customFields`, so unlike V2 Education all three fill in every
+messaging mode.
 
 Full audit, per-slot capacities, element tables and CSV headers:
 `docs/canva-gastro-living-mapping.md`. **VERIFIED END TO END 2026-08-04** on downloaded artwork.
