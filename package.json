@@ -17,5 +17,8 @@
   },
   "engines": {
     "node": "24.x"
+  },
+  "scripts": {
+    "verify:login": "node scripts/verify-google-login.mjs"
   }
 }

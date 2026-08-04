@@ -6,6 +6,7 @@ import { withErrorBoundary } from '../../../lib/api.js';
 import {
   loginRedirectUri, parseCookies, appendCookie, clearStateCookieString,
   failRedirect, STATE_COOKIE, googleClientId, googleClientSecret,
+  matchGoogleUser, applyEmailMigration, loginDomain,
 } from '../../../lib/auth/google-login.js';
 
 async function handler(req, res) {
@@ -34,9 +35,31 @@ async function handler(req, res) {
     }
     if (claims.email_verified !== true) return failRedirect(res, 'email_unverified');
 
+    // `hd` is Google's hosted-domain claim: present and authoritative for
+    // Workspace accounts, absent for consumer ones. When it is there it must
+    // agree with our domain, which closes the gap where a consumer account has
+    // simply been *named* something@ourdomain. It tightens the email check
+    // rather than replacing it — absent `hd` is not by itself a refusal, or no
+    // legitimately-registered gmail account could ever sign in.
+    if (claims.hd && String(claims.hd).toLowerCase() !== loginDomain()) {
+      return failRedirect(res, 'not_authorized');
+    }
+
     const users = await loadUsers();
-    const user = users.find(u => u.email.toLowerCase() === String(claims.email).toLowerCase());
-    if (!user) return failRedirect(res, 'not_authorized');
+    const match = matchGoogleUser(users, claims.email);
+    if (!match) return failRedirect(res, 'not_authorized');
+
+    const { user, migrateTo } = match;
+    let dirty = false;
+
+    // Same person, address moved to the new domain. Their id, appRole and role
+    // are untouched: this recognises who they already are, it does not decide
+    // anything about what they may do.
+    if (migrateTo) {
+      const { previousEmail } = applyEmailMigration(user, migrateTo);
+      console.log(`[google-login] migrated ${previousEmail} → ${migrateTo} (id ${user.id}, role unchanged: ${user.appRole})`);
+      dirty = true;
+    }
 
     if (user.googleId !== claims.sub || user.picture !== claims.picture || user.mustChangePassword) {
       user.googleId = claims.sub;
@@ -44,8 +67,12 @@ async function handler(req, res) {
       user.googleLinkedAt = user.googleLinkedAt ?? new Date().toISOString();
       user.mustChangePassword = false;
       user.updatedAt = new Date().toISOString();
-      await saveUsers(users);
+      dirty = true;
     }
+
+    // One write covering both, so a migration cannot be persisted without the
+    // identity link that justified it.
+    if (dirty) await saveUsers(users);
 
     const token = await signSession(user.id);
     setSessionCookie(res, token);
