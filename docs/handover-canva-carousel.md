@@ -230,6 +230,16 @@ Blockers this design routes around rather than solves — they are why full repl
    **Read `listMarker`, `level` and `textAlign` on every element you tag, not just the text**, and
    normalise them with `format_text` (`list_level: 0` removes the marker) before publishing.
    Numbering that must survive belongs inside the autofilled value, per trap 17's logic.
+23. **An element's `mediaId` IS a usable `asset_id`, so repeating an existing image on another
+   page needs no upload.** The V3 Gastro Living mark was missing from pages 3 and 5. The pages
+   that had it showed `fill: IMAGE mediaId=MAHQ3UzVoGQ`; `get-assets` resolved that id directly
+   (image, 1024x576, the VANCE mark) and `insert_fill` accepted it as `asset_id`. Copy the
+   sibling's `pos` and `size` verbatim and the placement matches exactly — including a deliberate
+   bleed off the page edge, which negative `top`/`left` values reproduce fine. Note this is the
+   opposite of trap 17: **images can be cloned across pages through the API, text cannot**, because
+   `insert_fill` takes an existing asset while `add_text` cannot be given a font. So "an image is
+   missing from some slides" is a one-operation fix, while "this text needs the display face" is
+   a Canva UI job.
 
 ---
 
@@ -448,7 +458,7 @@ A fourth family, also hand-built in the Canva UI. Three decks that share a name 
 | Deck | Live brand template | Fields | Pages | Superseded, DELETE in the UI | Source designs |
 |---|---|---|---|---|---|
 | V2 Gastro Living | `EAHRUbI_kV0` | 10 | 5 | — | `DAHRULz8eq8` (consumed) |
-| V3 Gastro Living | `EAHRUQAAU7c` | 12 | 6 | — | `DAHRUDTV-OY` (consumed) |
+| V3 Gastro Living | `EAHRUledUQE` | 12 | 6 | **`EAHRUQAAU7c`** | `DAHRUDTV-OY`, `DAHRUXieNgs` (consumed) |
 | V4 Gastro Living | `EAHRUZDydoc` | 8 | 4 | **`EAHRUTCPrzw`** | `DAHRT9UEaXI`, `DAHRURBD38s` (consumed) |
 
 V2: `eyebrow`, `hookTitle`, `point1`-`point3` + bodies, `update`, `domain`. Cover, three point
@@ -459,7 +469,8 @@ no link. **Every text element is fillable — this deck has no static text at al
 headline is a single non-wrapping line of about 31 characters, the tightest slot in the family, and
 carries the list count. Its numbering was built two different ways (an automatic list marker on
 page 2, typed numbers on pages 3-6) and was normalised so the number now travels inside the
-`point{N}` value. **Keep it on CSV.** The VANCE mark is missing from pages 3 and 5.
+`point{N}` value. **Keep it on CSV.** The VANCE mark was missing from pages 3 and 5 and was added
+by reusing the existing element's `mediaId` as an `asset_id` — see trap 23.
 
 V4: `eyebrow` (shared across all four pages, deliberately), `hookTitle`, `point1`-`point3` +
 bodies. Cover plus three point slides, **no close slide and no link anywhere**. Three display

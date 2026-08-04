@@ -6,7 +6,7 @@ different page counts, different layouts, different typography, and very differe
 | Deck | Live brand template | Fields | Pages | Superseded, DELETE in the UI | Source designs (consumed) |
 |---|---|---|---|---|---|
 | Vance Carousel - V2 Gastro Living | `EAHRUbI_kV0` | 10 | 5 | — | `DAHRULz8eq8` |
-| Vance Carousel - V3 Gastro Living | `EAHRUQAAU7c` | 12 | 6 | — | `DAHRUDTV-OY` |
+| Vance Carousel - V3 Gastro Living | `EAHRUledUQE` | 12 | 6 | **`EAHRUQAAU7c`** | `DAHRUDTV-OY`, `DAHRUXieNgs` |
 | Vance Carousel - V4 Gastro Living | `EAHRUZDydoc` | 8 | 4 | **`EAHRUTCPrzw`** | `DAHRT9UEaXI`, `DAHRURBD38s` |
 
 Both confirmed via `get-brand-template-dataset`, all `{"type":"text"}`, no name collisions, and
@@ -98,7 +98,7 @@ In `topic` mode expect a paragraph under a "Recap" heading — legible, but not 
 
 ---
 
-## 3. Slot inventory — V3 Gastro Living (`EAHRUQAAU7c`)
+## 3. Slot inventory — V3 Gastro Living (`EAHRUledUQE`)
 
 6 pages at 1080x1350, FIXED. 12 text elements: **all 12 tagged, none static.**
 Layout is a full-bleed lifestyle photo with the headline in a teal highlight band and an italic
@@ -124,8 +124,8 @@ Five point slides against `MAX_POINTS = 6`, so the generator produces enough wit
 **Unused:** `eyebrow`, `update`, `cta`, `note`, `domain`, `point6`. Like V4 this deck has **no close
 slide and no link anywhere** — it ends on point 5.
 
-**The only non-text elements are the VANCE mark, and it is missing from pages 3 and 5.** Pages 1, 2,
-4 and 6 carry it; the other two have no brand mark at all. Adding it is a Canva UI job — see 5.4.
+**The only non-text elements are the VANCE mark, which now appears on all six pages** — see 5.4 for
+the two that were missing it and how they were fixed.
 
 ---
 
@@ -272,11 +272,22 @@ write any number, and a six-page deck announcing "7 habits" is the silent wrongn
 warning about. **Keep V3 on CSV**, or accept that risk. Splitting the count out is not possible
 through the API (handover trap 17) and would have to be done in the Canva UI.
 
-### 5.4 V3 is missing its brand mark on two slides
+### 5.4 V3 was missing its brand mark on two slides — FIXED
 
-The VANCE mark appears on pages 1, 2, 4 and 6 and is absent from pages 3 and 5. Adding it needs an
-image element placed in the artwork, which is a design decision and a UI job, not a tagging one.
-Left as found and flagged.
+As published at `EAHRUQAAU7c`, the VANCE mark appeared on pages 1, 2, 4 and 6 and was absent from
+pages 3 and 5. Fixed through the trap 10 cycle, which is why that id is superseded.
+
+**An existing element's `mediaId` IS a usable `asset_id`.** The mark is `MAHQ3UzVoGQ` on the pages
+that already carried it; `get-assets` resolves that id directly (image, 1024x576), and `insert_fill`
+accepts it. So adding an image already present elsewhere in a design needs **no upload** — read the
+`mediaId` off a sibling page and insert it. This is worth knowing generally: it makes "the logo is
+missing from two slides" a one-operation fix rather than a UI job.
+
+Both inserts reuse the exact geometry pages 1, 2 and 4 use — `top: -24.479450178247703`,
+`left: 21.98227186526185`, `325.3353041714795 x 183.00110859645724` — so the mark bleeds off the
+top edge identically. Its 16:9 aspect matches the asset's 1024x576 exactly, so nothing is squashed.
+Both pages carry their text at the bottom, so the top-left placement is clear of every tagged slot.
+Verified on exported artwork.
 
 ### 5.5 The cover headline box was wider than its clear area — FIXED
 
@@ -363,7 +374,8 @@ one row carrying every column. The campaign must be nested as `{"promo": {...}}`
 - **V3 Gastro Living** — 6 slides, all 12 fields verbatim. Pages 1, 2, 4 and 6 inspected. The
   numbering fix in 5.2 held: page 2 rendered a single "1." from the CSV value with normal word
   spacing, matching pages 3-6. The one-line cover took `"5 HABITS for a calmer gut"` (25 chars)
-  without wrapping. Clean, no defects.
+  without wrapping. Re-verified against `EAHRUledUQE` after the brand-mark insert: pages 3 and 5
+  export with the mark in the same top-left position as the rest, all 12 fields still filling.
 - **V4 Gastro Living** — 4 slides, all 8 fields verbatim, `eyebrow` correctly repeated on all four
   pages. Pages 1-4 inspected. Found and fixed the cover clipping in 5.5; re-verified against
   `EAHRUZDydoc`.
@@ -383,14 +395,13 @@ them, and losing an id means rebuilding by hand.
 
 ## 10. Operator to-do
 
-1. **Delete `EAHRUTCPrzw`** in the Canva UI — the superseded V4 publish with the clipping cover.
-   There is no delete API, and same-titled templates with near-identical thumbnails have already
-   forced one full rebuild on this project.
+1. **Delete `EAHRUTCPrzw` and `EAHRUQAAU7c`** in the Canva UI — the superseded V4 publish with the
+   clipping cover, and the superseded V3 publish missing its brand mark on two pages. There is no
+   delete API, and same-titled templates with near-identical thumbnails have already forced one
+   full rebuild on this project.
 2. **Set `ctaDomain` to `www.VanceHealthHub.co.uk`** on any campaign using V2 Gastro Living.
 3. **Keep V4 on CSV**, and write its cover headline to complete "How to …".
 4. **Keep V3 on CSV**, write the "1." to "5." prefixes into its `point{N}` columns, and keep its
    cover headline to about 30 characters — it is a single line and will not wrap.
-5. **Add the VANCE mark to V3's pages 3 and 5** in the Canva UI (5.4), then republish through the
-   trap 10 cycle and repoint any campaign storing `EAHRUQAAU7c`.
-6. Delete the `check-v2-gastro-living`, `check-v3-gastro-living` and `check-v4-gastro-living`
+5. Delete the `check-v2-gastro-living`, `check-v3-gastro-living` and `check-v4-gastro-living`
    smoke-test designs.
