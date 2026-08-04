@@ -265,8 +265,12 @@ inspected on the artwork, not just in the returned spec:
 commas, but treats every element of an *array* as a single tag and strips the spaces inside it.
 The model returned all its tags in one array element, which is a shape it is free to choose, so
 the caption shipped one unusable tag. This affects article carousels too, not just promos, and
-is invisible whenever a campaign sets its own hashtags. Fix is to run each array element through
-the same split rather than assuming one element is one tag.
+is invisible whenever a campaign sets its own hashtags.
+
+**FIXED.** Every element is now split, not just a bare string, and `#` joins whitespace and comma
+as a delimiter so the run-together variant (`#GutHealth#Nutrition`) separates too. The leading
+`replace(/^#+/, '')` became redundant and was dropped. Verified against the reported input and
+against bare strings, unhashed tags, case-differing duplicates, null, and the 8-tag cap.
 
 **Publishing consumes the design** (trap 6). `DAHRTxa6iH0` will disappear from the designs
 list. Take a copy first if you want an editable original, and record the new `EA…` id here.
