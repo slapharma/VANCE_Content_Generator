@@ -2351,6 +2351,27 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <input id="loginPassword" type="password" autocomplete="current-password" required style="width:100%;padding:10px 12px;border:1px solid #dde3ea;font-size:0.85rem;margin-bottom:6px;font-family:inherit;"/>
     <div id="loginError" style="font-size:0.7rem;color:#c0392b;min-height:16px;margin-bottom:10px;"></div>
     <button type="submit" id="loginSubmitBtn" style="width:100%;padding:11px;background:#f47920;color:#fff;border:none;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit;letter-spacing:0.4px;">Sign in</button>
+    <!-- Hidden until the server confirms GOOGLE_OAUTH_CLIENT_ID is set — see
+         googleLoginAvailability() below. /api/auth/google deliberately refuses
+         when it is not configured, so without this gate the button is visible,
+         inviting, and drops whoever presses it on a raw JSON error. A control
+         that cannot work should not be on screen. -->
+    <div id="googleLoginBlock" style="display:none;">
+    <div style="display:flex;align-items:center;gap:10px;margin:16px 0;">
+      <div style="flex:1;height:1px;background:#dde3ea;"></div>
+      <span style="font-size:0.65rem;color:#8b97a6;letter-spacing:0.4px;">OR</span>
+      <div style="flex:1;height:1px;background:#dde3ea;"></div>
+    </div>
+    <a href="/api/auth/google" id="googleLoginBtn" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:10px;background:#fff;color:#1e2d40;border:1px solid #dde3ea;font-weight:600;font-size:0.82rem;cursor:pointer;font-family:inherit;text-decoration:none;box-sizing:border-box;">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+        <path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/>
+        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.581C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 2.58 9 2.58z"/>
+      </svg>
+      Sign in with Google
+    </a>
+    </div>
   </form>
 </div>
 
@@ -3607,7 +3628,10 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           <div class="promo-field" id="promoCsvWrap" style="display:none;">
             <label for="promoCsvFile">Message CSV</label>
             <input class="promo-input" type="file" id="promoCsvFile" accept=".csv,text/csv,text/plain" onchange="promoUploadCsv(this)" style="padding:6px;cursor:pointer;" />
-            <span class="promo-hint" id="promoCsvStatus">Column 1 the message, column 2 the call to action. One row per occurrence.</span>
+            <div style="margin-top:8px;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="promoDownloadCsvTemplate()">Download CSV template</button>
+            </div>
+            <span class="promo-hint" id="promoCsvStatus">One row per occurrence. Add a header row naming the columns (headline, subhead, point1, point1body, update, note, ctaLink) and each column fills that field on the artwork exactly as written. Without a header, column 1 is the message and column 2 the call to action.</span>
           </div>
           <div class="promo-field" id="promoCsvWrapToggle" style="display:none;">
             <label for="promoCsvWrapInput">When rows run out</label>
@@ -3678,6 +3702,12 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <button type="button" class="btn btn-orange" id="promoSaveBtn" onclick="promoSave()">Save campaign</button>
         <button type="button" class="btn btn-outline" id="promoSaveActivateBtn" onclick="promoSave(true)">Save and activate</button>
         <button type="button" class="btn btn-outline" id="promoRunNowBtn" onclick="promoRunNow()" style="display:none;">Run one now</button>
+        <!-- Styled apart from "Run one now" and sitting last, matching the deck
+             card's own Post now: it publishes publicly and immediately, with no
+             scheduled window to cancel within. -->
+        <button type="button" class="btn" id="promoPostNowBtn" onclick="promoBuildAndPostNow()"
+          style="display:none;background:var(--vance-primary);color:#fff;"
+          title="Build one deck and publish it to Instagram straight away, whatever this campaign's posting setting says">Build &amp; post now</button>
       </div>
 
       <div class="promo-preview-slot"><div class="promo-preview" id="promoPreviewStrip"></div></div>
@@ -9089,7 +9119,7 @@ function promoUploadCsv(input) {
     var rows = promoParseCsv(String(reader.result || ''));
     var status = document.getElementById('promoCsvStatus');
     if (!rows.length) {
-      if (status) status.textContent = 'No usable rows found. Put the message in column 1 and the call to action in column 2.';
+      if (status) status.textContent = 'No usable rows found. Either name the columns in a header row (headline, subhead, domain, cta) or put the message in column 1 and the call to action in column 2.';
       promoSetStatus('error', 'That CSV had no usable rows.');
       return;
     }
@@ -9101,9 +9131,69 @@ function promoUploadCsv(input) {
   reader.readAsText(file);
 }
 
+/**
+ * Download a ready-to-fill CSV for the current promo templates.
+ *
+ * Built here rather than served as a static file so the header row cannot drift
+ * from the vocabulary promoParseCsv actually understands — the two are edited in
+ * the same place, and a downloaded template that no longer parses is worse than
+ * no template at all.
+ *
+ * The column list is a deliberate SUPERSET of any one template's fields. A
+ * template only receives the fields it declares (Canva ignores keys it does not
+ * know), so one file serves every deck: `domain` fills the decks that still
+ * carry a URL on the cover, `ctaLink` fills the closing slide on the rebuilt
+ * ones, and neither breaks the other.
+ */
+function promoDownloadCsvTemplate() {
+  var columns = ['headline', 'subhead', 'point1', 'point1body', 'update', 'note', 'domain', 'ctaLink'];
+  var example = [
+    'Ask anything. Get evidence-backed answers.',
+    'Every answer is grounded in articles from Vance Medical Hub, with sources linked.',
+    '3 ways VANCE-Ai helps you',
+    'Grounded in Vance Medical Hub, sources linked\nAvailable 24/7\nSaves to your dashboard automatically',
+    'Your questions, answered instantly.',
+    'Start a conversation with VANCE-Ai, free and grounded in trusted clinical content.',
+    'vancehealthhub.co.uk/ask-ai',
+    'Ask now → vancehealthhub.co.uk/ask-ai'
+  ];
+  // Quote anything containing a comma, quote or newline; double the quotes.
+  // Line breaks inside a cell are meaningful here: the artwork sets those lines
+  // separately, so they must survive the round trip.
+  function cell(v) {
+    var s = String(v == null ? '' : v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  var csv = [columns.join(','), example.map(cell).join(',')].join('\n') + '\n';
+
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'vance-promo-template.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  promoSetStatus('ok', 'CSV template downloaded. One row per occurrence; keep the header row.');
+}
+
 /** Client-side twin of parsePromoCsv in lib/social/promo-schema.js — same rules
- *  (quoted fields, doubled quotes, optional header) so the row count shown here
- *  is the row count the server will store. */
+ *  (quoted fields, doubled quotes, optional header row whose column names become
+ *  autofill field names) so the rows shown here are the rows the server stores.
+ *  Keep the two in step: this one decides what is uploaded, that one decides what
+ *  a campaign actually runs on. */
+var PROMO_CSV_HEADERS = [
+  'message', 'text', 'copy',
+  'headline', 'hooktitle', 'title', 'eyebrow',
+  'subhead', 'subheading', 'subtitle', 'brief',
+  'cta', 'ctalabel', 'domain'
+];
+
+function promoCsvKey(s) {
+  return String(s || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 function promoParseCsv(text) {
   var rows = [], record = [], field = '', inQuotes = false;
   var src = String(text || '').replace(/\r\n?/g, '\n');
@@ -9125,11 +9215,37 @@ function promoParseCsv(text) {
   }
   if (field || record.length) endRecord();
   if (!rows.length) return [];
-  var first = (rows[0][0] || '').trim().toLowerCase();
-  var body = ['message', 'text', 'copy', 'headline'].indexOf(first) !== -1 ? rows.slice(1) : rows;
-  return body.map(function(r) {
-    return { message: (r[0] || '').trim(), cta: (r[1] || '').trim() };
-  }).filter(function(r) { return r.message; });
+
+  var header = PROMO_CSV_HEADERS.indexOf(promoCsvKey(rows[0][0])) !== -1 ? rows[0] : null;
+  var body = header ? rows.slice(1) : rows;
+
+  if (!header) {
+    return body.map(function(r) {
+      return { message: (r[0] || '').trim(), cta: (r[1] || '').trim(), fields: {} };
+    }).filter(function(r) { return r.message; });
+  }
+
+  var names = header.map(function(h) { return String(h || '').trim().slice(0, 60); });
+  function column(row, wanted) {
+    for (var i = 0; i < names.length; i++) {
+      if (wanted.indexOf(promoCsvKey(names[i])) !== -1) return (row[i] || '').trim();
+    }
+    return '';
+  }
+
+  return body.map(function(row) {
+    var fields = {};
+    names.forEach(function(name, i) {
+      var value = (row[i] || '').trim().slice(0, 600);
+      if (name && value) fields[name] = value;
+    });
+    return {
+      message: column(row, ['message', 'text', 'copy'])
+        || column(row, ['headline', 'hooktitle', 'title']),
+      cta: column(row, ['cta', 'ctalabel']).slice(0, 120),
+      fields: fields
+    };
+  }).filter(function(r) { return r.message || Object.keys(r.fields).length; });
 }
 
 // ── prompt presets ───────────────────────────────────────────────────────────
@@ -9405,6 +9521,7 @@ function promoNewCampaign() {
   document.getElementById('promoBuilderTitle').textContent = 'New Campaign';
   document.getElementById('promoNewBtn').style.display = 'none';
   document.getElementById('promoRunNowBtn').style.display = 'none';
+  document.getElementById('promoPostNowBtn').style.display = 'none';
   document.getElementById('promoPreviewStrip').innerHTML = '';
   promoSetStatus('', '');
 }
@@ -9417,6 +9534,7 @@ async function promoEditCampaign(id) {
     document.getElementById('promoBuilderTitle').textContent = 'Editing: ' + p.name;
     document.getElementById('promoNewBtn').style.display = '';
     document.getElementById('promoRunNowBtn').style.display = '';
+    document.getElementById('promoPostNowBtn').style.display = '';
     document.getElementById('promoPreviewStrip').innerHTML = '';
     promoSetStatus('info', 'Editing "' + p.name + '". Saving re-arms the schedule.');
     document.getElementById('promoForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -9459,6 +9577,7 @@ async function promoSave(activate) {
       document.getElementById('promoBuilderTitle').textContent = 'Editing: ' + saved.name;
       document.getElementById('promoNewBtn').style.display = '';
       document.getElementById('promoRunNowBtn').style.display = '';
+      document.getElementById('promoPostNowBtn').style.display = '';
       promoSetStatus('ok', saved.status === 'active'
         ? 'Saved and active. Next run ' + promoFormatWhen(saved.nextRunAt) + '.'
         : 'Saved as a draft. Activate it when you are ready.');
@@ -9519,18 +9638,47 @@ async function promoRunNow() {
   await promoRunOne(_promoEditingId, 'promoRunNowBtn');
 }
 
-async function promoRunOne(id, btnId) {
-  if (!confirm('Build one carousel for this campaign now?\n\nIt will follow the campaign\'s posting setting, so if that is "post as soon as it is built" it will go to Instagram.')) return;
-  promoSetStatus('info', 'Building an occurrence. This usually takes 30 to 90 seconds.');
+// The one-off override: build an occurrence AND publish it, without having to
+// change the campaign's standing posting setting to "immediate" and remember to
+// change it back. The campaign record is untouched — only this deck goes live.
+async function promoBuildAndPostNow() {
+  if (!_promoEditingId) { promoSetStatus('error', 'Save the campaign before running it.'); return; }
+  await promoRunOne(_promoEditingId, 'promoPostNowBtn', true);
+}
+
+async function promoRunOne(id, btnId, postNow) {
+  // Two different warnings because these are two different risks. The plain run
+  // *might* post, depending on a setting the operator has to remember; the
+  // post-now branch definitely will, so it says so without hedging.
+  var ask = postNow
+    ? 'Build one carousel and publish it to Instagram now?\n\n'
+      + 'It goes live publicly as soon as the slides finish, ignoring this campaign\'s posting setting. '
+      + 'There is no scheduled window to cancel within.'
+    : 'Build one carousel for this campaign now?\n\nIt will follow the campaign\'s posting setting, so if that is "post as soon as it is built" it will go to Instagram.';
+  if (!confirm(ask)) return;
+  promoSetStatus('info', postNow
+    ? 'Building and posting an occurrence. This usually takes 30 to 90 seconds.'
+    : 'Building an occurrence. This usually takes 30 to 90 seconds.');
   try {
-    await promoWithBusy(btnId || 'promoRunNowBtn', 'Building…', async function() {
-      var out = await apiFetch('/api/social/promos/' + encodeURIComponent(id) + '/run', { method: 'POST' });
-      promoSetStatus('ok', 'Built ' + out.slides + ' slides. The deck is ' + (out.schedule && out.schedule.action ? out.schedule.action : out.status)
-        + '. Find it under Social ▸ Instagram.');
+    await promoWithBusy(btnId || 'promoRunNowBtn', postNow ? 'Posting…' : 'Building…', async function() {
+      var out = await apiFetch('/api/social/promos/' + encodeURIComponent(id) + '/run', {
+        method: 'POST',
+        body: JSON.stringify({ postNow: postNow === true }),
+      });
+      var action = out.schedule && out.schedule.action ? out.schedule.action : out.status;
+      // A posting failure comes back inside a 201 — the deck built fine, it just
+      // did not go out — so surface it as an error rather than reporting success.
+      if (out.schedule && out.schedule.error) {
+        promoSetStatus('error', 'Built ' + out.slides + ' slides, but posting ' + action + ': '
+          + out.schedule.error + '. The deck is under Social ▸ Instagram.');
+      } else {
+        promoSetStatus('ok', 'Built ' + out.slides + ' slides. The deck is ' + action
+          + '. Find it under Social ▸ Instagram.');
+      }
       await loadPromos();
     });
   } catch (err) {
-    promoSetStatus('error', 'Run failed: ' + err.message);
+    promoSetStatus('error', (postNow ? 'Build and post failed: ' : 'Run failed: ') + err.message);
   }
 }
 
@@ -9933,9 +10081,15 @@ function promoCanvaPick(index) {
     _promoCanvaTemplate = d;
     _promoCanvaDesign = null;
     if (chosen) {
-      chosen.innerHTML = 'Selected <strong>' + escHtml(d.title) + '</strong> — fields: '
-        + (d.fields || []).map(function(f) { return escHtml(f.name); }).join(', ')
-        + '. Name them hookTitle, brief, point1, point1body, update or cta so the generated copy maps onto them.';
+      // Canva's brand-template list endpoint omits the dataset, so `fields` is
+      // normally empty and that is not the same as "this template has none".
+      // Saying so beats rendering an empty list as if it were the answer.
+      var names = (d.fields || []).map(function(f) { return escHtml(f.name); });
+      chosen.innerHTML = 'Selected <strong>' + escHtml(d.title) + '</strong>'
+        + (names.length
+            ? ' — fields: ' + names.join(', ') + '.'
+            : '. Canva does not report a template\'s fields to this app, so every known name is sent and the template takes the ones it declares.')
+        + ' Name the fields in Canva headline (or hookTitle), subhead (or brief), update, cta, domain, or point1 / point1body for a multi-page deck, and the generated copy lands on them.';
     }
   } else {
     _promoCanvaDesign = d;
@@ -16535,13 +16689,39 @@ function isRole(...roles) { return _currentUser && roles.includes(_currentUser.a
 function isAdmin()        { return isRole('admin'); }
 function isContentPlus()  { return isRole('admin','content'); }
 
+function clearLoginErrorParam() {
+  const params = new URLSearchParams(location.search);
+  if (!params.has('login_error')) return;
+  params.delete('login_error');
+  const qs = params.toString();
+  history.replaceState(null, '', location.pathname + (qs ? `?${qs}` : ''));
+}
+
+/* Show the Google button only if the server says it can work.
+   Fails closed on purpose: a network error, a 404 from an older deployment, or
+   anything unexpected leaves the button hidden and email/password — which
+   always works — as the only route in. Better a missing option than one that
+   greets you with an error. */
+async function revealGoogleLoginIfConfigured() {
+  const block = document.getElementById('googleLoginBlock');
+  if (!block) return;
+  try {
+    const r = await fetch('/api/auth/google?probe=1', { credentials: 'same-origin' });
+    if (!r.ok) return;
+    const { configured } = await r.json();
+    if (configured) block.style.display = 'block';
+  } catch {}
+}
+
 async function bootAuth() {
+  const loginError = new URLSearchParams(location.search).get('login_error');
   try {
     const r = await fetch('/api/auth/me', { credentials: 'same-origin' });
     if (r.ok) {
       _currentUser = await r.json();
       document.getElementById('loginOverlay').style.display = 'none';
       document.getElementById('authBootCover').style.display = 'none';
+      clearLoginErrorParam();
       // Load the user directory so reviewer-name lookups work in comments / dashboards
       if (typeof loadReviewers === 'function') loadReviewers().catch(() => {});
       applyRoleGating();
@@ -16552,6 +16732,20 @@ async function bootAuth() {
   // Not authed → show login
   document.getElementById('authBootCover').style.display = 'none';
   document.getElementById('loginOverlay').style.display = 'flex';
+  revealGoogleLoginIfConfigured();
+  if (loginError) {
+    const messages = {
+      not_authorized: 'That Google account is not registered for this app. Contact an admin, or sign in with email and password.',
+      google_denied: 'Google sign-in was cancelled.',
+      invalid_state: 'Google sign-in session expired. Please try again.',
+      email_unverified: "That Google account's email is not verified.",
+      not_configured: 'Google sign-in is not set up on this deployment yet. Please use email and password.',
+      oauth_failed: 'Google sign-in failed. Please try again or use email and password.',
+    };
+    const errEl = document.getElementById('loginError');
+    if (errEl) errEl.textContent = messages[loginError] || 'Sign-in failed. Please try again.';
+    clearLoginErrorParam();
+  }
   setTimeout(() => document.getElementById('loginEmail')?.focus(), 50);
   return false;
 }
