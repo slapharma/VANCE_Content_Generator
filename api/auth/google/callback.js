@@ -5,7 +5,7 @@ import { exchangeGoogleCode } from '../../../lib/auth/oauth.js';
 import { withErrorBoundary } from '../../../lib/api.js';
 import {
   loginRedirectUri, parseCookies, appendCookie, clearStateCookieString,
-  failRedirect, STATE_COOKIE,
+  failRedirect, STATE_COOKIE, googleClientId, googleClientSecret,
 } from '../../../lib/auth/google-login.js';
 
 async function handler(req, res) {
@@ -17,8 +17,10 @@ async function handler(req, res) {
   if (error) return failRedirect(res, 'google_denied');
   if (!state || !cookieState || state !== cookieState) return failRedirect(res, 'invalid_state');
 
-  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+  // Trimmed at the same accessor the authorize step uses, so the credential that
+  // starts the flow is byte-for-byte the one that finishes it.
+  const clientId = googleClientId();
+  const clientSecret = googleClientSecret();
   if (!clientId || !clientSecret) return failRedirect(res, 'oauth_failed');
 
   try {

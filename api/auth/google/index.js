@@ -1,11 +1,12 @@
 import { withErrorBoundary } from '../../../lib/api.js';
 import {
   loginRedirectUri, buildGoogleLoginUrl, generateState, stateCookieString,
+  googleClientId, googleClientSecret,
 } from '../../../lib/auth/google-login.js';
 
 async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const clientId = googleClientId();
 
   // Availability probe for the login screen, so the button is only rendered
   // when pressing it can actually work. Deliberately reports a boolean and
@@ -13,7 +14,7 @@ async function handler(req, res) {
   // the pair is missing.
   if (req.query?.probe === '1') {
     return res.status(200).json({
-      configured: Boolean(clientId && process.env.GOOGLE_OAUTH_CLIENT_SECRET),
+      configured: Boolean(clientId && googleClientSecret()),
     });
   }
 
