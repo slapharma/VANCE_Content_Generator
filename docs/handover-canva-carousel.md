@@ -135,6 +135,11 @@ Blockers this design routes around rather than solves — they are why full repl
    positions, so any box sized to its placeholder is overrun by the first real autofill. The
    generator reserves the height each field's longest realistic copy needs — that is what the
    visible whitespace under placeholders is for. Do not "tighten" it.
+   *How many lines a box actually holds:* `height = (lines - 1) × fontSize × lineHeight +
+   fontSize × 1.19`. The last line takes the font's bounding box, not a full leading step, so
+   the obvious `height / (fontSize × lineHeight)` under-reports by a whole line on nearly every
+   slot. Solved 2026-08-04 from four V2 Education boxes against their exported artwork, and
+   implemented in `.claude/skills/canva-promo-template/scripts/capacity.mjs`.
 8. **The importer drops alpha on text colours** and lands on `#000000`. The generator flattens every
    `MUTED.*` value against its known ground first (`#BFC6CF` on ink, etc). This is exact, not an
    approximation: alpha over a known opaque ground is the calculation the measured contrast ratios
@@ -158,12 +163,63 @@ Blockers this design routes around rather than solves — they are why full repl
    the live account): fully-untagged templates are excluded from the list even though the list
    still never returns the dataset itself (trap 3). Partially-tagged junk (e.g. 2 of 14 fields)
    still shows.
-13. **Brand templates do not appear in folder listings.** Even the Canva MCP connector's
+14. **Composio and the Canva MCP connector disagree about the separator in a title.** Verified
+   2026-07-31 by querying both for the same id: Composio (the path the app uses) returns
+   `EAHQ8c2j3xE` as `Vance Carousel - Dashboard` with a **hyphen**; the Canva MCP connector
+   returns it as `Vance Carousel — Dashboard` with an **em dash**. Worse, copying a template
+   through the MCP connector (`create-design-from-brand-template`, the trap 10 edit cycle) writes
+   the em dash into the copy for real, so the templates republished on 2026-07-31 genuinely carry
+   one and an exact hyphen match drops all four.
+   Fixed by `isHouseTitle()` in `lib/social/canva.js`, which compares on letters and digits only.
+   **Never compare a Canva title with `startsWith` on a punctuated prefix, and never trust one
+   connector's rendering of a title as ground truth for another's.**
+   *Correction to an earlier draft of this note: the em dash was NOT why the operator's original
+   templates were missing from the picker. Under the old hyphen filter production returned six
+   templates including Dashboard, Health Quiz and Meal Planner. Only Vance-Ai was absent, and the
+   cause was the `dataset=non_empty` filter (it had no autofill fields at all), not the title.*
+15. **Brand templates do not appear in folder listings.** Even the Canva MCP connector's
    `list-folder-items` returns `[]` for the "Vance-Social Media Kit" folder after the operator
    filed all three templates into it in the UI — folder listings cover designs, folders and
    images, not brand templates. So filing templates in a folder is useful human organisation and
    nothing more: it is invisible to every API surface, which closes off option 3 in section 2a for
    good, on top of Composio not exposing folder-items at all.
+17. **`add_text` cannot be given a font, and no other operation can fix that.** Elements created
+   by `add_text` land in the design's default face; `format_text` exposes size, colour,
+   alignment, line height, italic and bold, but no font family, and only `normal`/`bold`
+   weights, so a `thin` display face is unreachable. There is also no duplicate-element op, so
+   the display face cannot be cloned from the element that already has it. **Splitting a styled
+   text element in two is therefore not something the API can finish** — one half always lands
+   in the wrong typeface. Learned the expensive way on the V2 Education cover 2026-08-04:
+   split, published, then unpicked and republished as a merge, costing two template ids. Either
+   do the split in the Canva UI, or keep the text as one element and accept that everything in
+   it is autofilled together.
+18. **A design created by `create-design-from-brand-template` keeps the ORIGINAL page and
+   element locator ids**, not just the `dataFieldLabel` tags. Verified 2026-08-04: the copy of
+   `EAHRT0smcak` carried `PBv79ZNnChrbdJsK-LB8vGKRcZBWgQf9T` exactly as the source did. So a
+   mapping table written against a published template stays valid through the trap 10 edit
+   cycle, and the `read-design` in step 1 is a confirmation rather than a rediscovery. Do not
+   assume the reverse and skip it: unverified ids are how the wrong element gets tagged.
+19. **A text box can be WIDER than its clear area, and the overflow is clipped, not wrapped.**
+   Distinct from trap 7 and worse. On the V4 Gastro Living cover the headline box sat at
+   `left: 108` with `width: 864` (right edge 972) while the photo panel started at **x=857**.
+   The photo is layered in front, so every line longer than ~10 characters slid *underneath* it
+   and was cut off mid-glyph — "EASE BLOATING" lost its G. An overrun is ugly but readable; this
+   is silently truncated. **Nothing in the CDF flags it**: you only see it by comparing a text
+   element's `left + width` against the `left` of a neighbouring image on the same page, or by
+   exporting real copy. Fixed with `resize_element` (text elements take width only; height
+   auto-calculates), which converts the failure back into an honest wrap.
+20. **A box's CDF height is its CURRENT RENDERED CONTENT height, not a ceiling.** Canva text boxes
+   auto-size to their copy, so `scripts/capacity.mjs` reports the line count the designer laid
+   out, which is a sensible budget but not the limit. The real ceiling is the vertical gap to the
+   next element below: generous on V2 Gastro Living (a whole circle of clear space), 35px — under
+   half a line — between every headline and body on V4. Read the script's output as "what the
+   design intends", then check the gap to the neighbour for "what it will tolerate".
+21. **An open editing transaction is a snapshot, not a live view.** The operator renamed a design
+   in the Canva UI on 2026-08-04 while a transaction was open on it; the transaction still held
+   the old title and committing would have silently reverted the rename. Caught by re-reading
+   `design_metadata` *outside* the transaction and re-applying `update_title` before finalising.
+   Any UI edit made after `read-design` is invisible to the transaction and is overwritten on
+   commit. **When a session spans operator activity, re-read metadata before committing.**
 
 ---
 
@@ -226,6 +282,96 @@ deck, one per page, since all operations in a call must target the same page), t
 | Relatable | `EAHQ2RZD31o` | `DAHQ2ZKaLdY` (consumed) |
 | Breaking News | `EAHQ2cILWCE` | `DAHQ2QWxqS8` (consumed) |
 
+### Three-slide promo decks (operator-built 2026-07-30, retagged and republished 2026-07-31)
+
+A second family, hand-built in the Canva UI rather than generated by
+`scripts/build-canva-style-decks.mjs`. Three pages at 1080x1350, nine text elements, seven
+distinct autofill fields. The house arc compressed: cover, points, close.
+
+**These are the LIVE ids. Repoint any campaign storing an old one.**
+
+**REBUILT 2026-07-31 from `scripts/build-canva-promo-decks.mjs`.** The hand-built decks were
+replaced wholesale: new fonts (Horizon headings, Montserrat body, Neo Tech name label), per-deck
+ground sequences, the Vance mark in place of the URL, and the template name at the top of every
+slide. Regenerate and reimport rather than editing these by hand — see section 4's rule, which
+applies here too: regenerate from tokens, never sync from artwork.
+
+| Deck | Live brand template | Superseded, DELETE in the UI | Source design |
+|---|---|---|---|
+| Dashboard | `EAHQ8-pwhWs` | `EAHQ89A02z0` | `DAHQ8_QcC68` (consumed) |
+| Health Quiz | `EAHQ8_7MNbo` | `EAHQ89A3lkc` | `DAHQ85CegBU` (consumed) |
+| Meal Planner | `EAHQ83g4UH0` | `EAHQ8_XwtMM` | `DAHQ8xaK7R0` (consumed) |
+| Vance-Ai | `EAHQ8wTqna0` | `EAHQ89Kp2gM` | `DAHQ84dd-Xs` (consumed) |
+
+Field layout, confirmed on all four via `get-brand-template-dataset` (7 fields):
+
+| Page | Ground (Health Quiz shown) | Fields |
+|---|---|---|
+| 1 cover | teal | `headline`, `subhead` |
+| 2 points | white | `point1`, `point1body` |
+| 3 close | navy | `update`, `note`, `ctaLink` |
+
+`domain` is GONE: the URL was replaced by the Vance mark on every slide, and only the closing
+slide carries a link, as `ctaLink`.
+
+**Grounds are per-deck and text colour is derived, not configured.** `inkFor()` in the generator
+picks white or dark from the ground's luminance and THROWS at build time if the best available
+option is under 7:1. Change a ground and the type inverts itself or the build fails. The brand
+kit's teal `#008080` is deliberately NOT a ground — white on it is 4.77:1, worse than the
+`#006868` that Note 2 in carousel-theme.js already rejected. Grounds use `#004d4d` (9.68:1) and
+`#008080` survives as an accent, where the 3:1 non-text floor applies. Likewise the light purple
+`#8e7dbe` is accent-only: 3.60:1 with white, 4.38:1 with dark, both large-text-only.
+
+**Known limit: headline length.** `TYPE.coverHead` is calibrated against the satori font; Horizon
+is much wider. Measured on the first import, a 33-character headline set FOUR lines in the 936px
+column. `buildPromoSpec` permits hookTitle up to ten words, which would overrun — and a fixed
+Canva page never reflows (trap 7), so it overlaps rather than pushing down. The generator now
+uses 72px covers and 520px of reserved height, but **the four templates published on 2026-07-31
+were built at the earlier 84px/360px and are safe to about six words.** Regenerate and reimport
+to lift that.
+
+`domain` is shared across pages 1 and 2 deliberately: Canva writes a value to **every** element
+carrying that label, and it is the same bare URL on both. Page 3's URL is a separate `ctaLink`
+field precisely because it is not the same string — it carries an action prefix
+("Go to dashboard → ..."), which a shared `domain` would have overwritten.
+
+**`ctaLink` needed no code change.** It matches nothing in `buildAutofillData`'s vocabulary, so
+it travels as an unknown CSV column through `spec.customFields` and is sent to Canva under its
+own name. That path is the intended extension point for any future template field: add a column,
+tag the element, done.
+
+**Trap 16: every page was tagged with the SAME three names.** As built, all three pages carried
+`headline`/`subhead`/`domain`, and Vance-Ai carried none at all. Colliding names are worse than
+missing ones, because the dataset dedupes by name and reports a tidy three fields, which reads as
+correct: only at autofill time would Canva stamp identical copy onto all three slides. Retagging
+pages 2 and 3 into the points and close vocabulary is the fix. **When a multi-page template's
+dataset looks suspiciously small, suspect collision before assuming the pages are untagged.**
+
+Three code changes this family forced, all 2026-07-31:
+
+- **`subhead` and `note` mapped to nothing** in `buildAutofillData`. `subhead` is now an alias of
+  the brief; `note` maps to `spec.cta.note`.
+- **`cta.note` was operator-only config** and usually blank, so page 3's second line had no
+  generated source at all. `buildPromoSpec` now asks the model for `ctaNote`, with the campaign's
+  own value still winning when set.
+- **`pointCount`, `hasBrief` and `hasClose` are forced for `canva-template`.** Those thresholds
+  describe slides *satori* draws; a Canva template's page count is fixed in Canva and the
+  campaign's `slideCount` has no say over it. A three-slide campaign generated no points at all,
+  leaving `point1` and `point1body` unfilled.
+
+**VERIFIED END TO END 2026-07-31**, after deploy, via `POST /api/social/promos/preview` in
+`messagingMode: 'csv'` driven by `docs/promo-csv/promo-3-slide.csv`: all four decks exported 3
+slides with **8/8 fields carrying the CSV value verbatim**, confirmed on the artwork as well as
+in the returned spec.
+
+**An unfilled field keeps the design's existing text, it does not blank.** On these hand-built
+decks that is the designer's own copy, so an unfilled slide publishes looking entirely normal
+while repeating itself every occurrence. On the generated house decks the retained text is the
+field name itself, so those fail loudly with "point1" on the artwork. The loud version is the
+lucky one. Verified 2026-07-31 by exporting a live preview of `EAHQ8lfv6lg` against the
+pre-fix production build: page 1's headline came through as generated copy while its `subhead`
+kept the hand-written line, and pages 2 and 3 were entirely original.
+
 Each dataset was confirmed via `get-brand-template-dataset`: all 14 canonical field names, all
 `{"type":"text"}`. Field distribution landed exactly as expected (page 1: eyebrow + hookTitle;
 2: brief; 3-6: pointN + pointNbody; 7: update; 8: cta + domain). Education's page 7 static citation
@@ -250,6 +396,65 @@ End-to-end verified against `EAHQ2VHRuUU` on 2026-07-30: 8 slides, one per page,
 filled, CTA chip holding "SHOP THE RANGE" (the themed default now applied by `promo-run.js` when a
 campaign sets no `ctaLabel` — autofill has no draw time, so satori's draw-time fallback chain is
 resolved before the payload is built).
+
+### Seven-slide education carousel (operator-built 2026-08-04)
+
+A third family, and the first built by the operator in the Canva UI from a stock layout rather
+than generated from tokens. Seven pages at 1080x1350: cover, five numbered point slides, close.
+
+| Deck | Live brand template | Superseded, DELETE in the UI | Source designs |
+|---|---|---|---|
+| V2 Education | `EAHRUQch1WM` | `EAHRT0smcak` | `DAHRTxa6iH0`, `DAHRUXLWkr4` (both consumed) |
+
+**20 fields**, all `{"type":"text"}`: page 1 `hookTitle` + `subhead`; pages 2-6 `point{N}` +
+`point{N}quote` + `point{N}body` for N = 1..5; page 7 `update` + `note` + `cta`.
+
+**`hookTitle` on this deck carries two lines, including the leading count** (`"5\nGut Habits"`).
+That is a consequence of trap 17, not a preference — see section 4.1 of the mapping doc. It
+means a non-CSV messaging mode can rewrite the count to a number that contradicts the five point
+slides, so keep this template on CSV.
+
+`point{N}quote` is a field this app does not model, so it travels through `spec.customFields`
+and **only fills in `messagingMode: 'csv'`** — the same extension point `ctaLink` uses. The
+full audit, per-slot capacity measurements, the outstanding defects and a ready CSV header are
+in `docs/canva-v2-education-mapping.md`. Read that before touching this template: three known
+problems (a wrong typeface on the cover number, display boxes sized for phrases against
+sentence-length fields, and no link element anywhere) are best fixed in one republish cycle
+rather than three.
+
+**VERIFIED END TO END 2026-08-04** via `POST /api/social/promos/preview` in `messagingMode:
+'csv'`: 7 slides exported, all 20 fields carrying the CSV value verbatim, confirmed on the
+downloaded artwork for pages 1, 2, 5 and 7 as well as in the returned spec. Re-verified against
+`EAHRUQch1WM` after the cover merge — both headline lines export in the display face.
+
+Being hand-built, this deck cannot be regenerated from tokens the way sections 4 and the promo
+family can. It is the one template where the artwork IS the source, so the trap 10 cycle is the
+only way to change it and losing the id means rebuilding by hand.
+
+### Gastro Living carousels (operator-built 2026-08-04)
+
+A fourth family, also hand-built in the Canva UI. Two decks that share a name and nothing else.
+
+| Deck | Live brand template | Fields | Pages | Superseded, DELETE in the UI | Source designs |
+|---|---|---|---|---|---|
+| V2 Gastro Living | `EAHRUbI_kV0` | 10 | 5 | — | `DAHRULz8eq8` (consumed) |
+| V4 Gastro Living | `EAHRUZDydoc` | 8 | 4 | **`EAHRUTCPrzw`** | `DAHRT9UEaXI`, `DAHRURBD38s` (consumed) |
+
+V2: `eyebrow`, `hookTitle`, `point1`-`point3` + bodies, `update`, `domain`. Cover, three point
+slides, recap. Comfortable capacity throughout and **safe in `topic` mode**.
+
+V4: `eyebrow` (shared across all four pages, deliberately), `hookTitle`, `point1`-`point3` +
+bodies. Cover plus three point slides, **no close slide and no link anywhere**. Three display
+headline slots are hard-capped at 2-4 lines against an 8-word generator cap, so **keep it on CSV**.
+Its cover is a two-part lockup whose static "How to" means `hookTitle` must grammatically complete
+the phrase — which no messaging mode except CSV can be relied on to do.
+
+Neither deck uses `customFields`, so unlike V2 Education both fill in every messaging mode.
+
+Full audit, per-slot capacities, element tables and CSV headers:
+`docs/canva-gastro-living-mapping.md`. **VERIFIED END TO END 2026-08-04** on downloaded artwork.
+
+---
 
 The runbook below is kept for tagging fresh imports (e.g. the future Promotional style). For
 EDITING an existing published template, do NOT use this runbook — see trap 10's cycle instead.
