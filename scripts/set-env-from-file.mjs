@@ -27,9 +27,27 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/* Run from the repo, whatever directory the caller is standing in. Derived from
+   this file's own location rather than process.cwd(): the Vercel CLI resolves
+   the project from .vercel/project.json in its working directory, so invoking
+   this from C:\WINDOWS\system32 — where a fresh PowerShell opens — otherwise
+   fails with a message about the project, not about the directory. */
+const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+/* Launching npx on Windows takes more care than it looks.
+   - `npx` alone: not an executable, so execFile cannot find it.
+   - `npx.cmd`: Node 24 refuses to spawn .cmd/.bat without a shell (a deliberate
+     security change), and fails so early that the child produces no output at
+     all — which looks like the CLI failing silently rather than never starting.
+   - `shell: true`: works, but puts the arguments back through cmd's quoting.
+   So: run cmd.exe, which is a real .exe, and hand it the arguments already
+   separated. No quoting to get wrong, and the value still goes down stdin. */
+const launcher = process.platform === 'win32' ? 'cmd.exe' : 'npx';
+const prefix = process.platform === 'win32' ? ['/c', 'npx'] : [];
 
 const [name, file, target = 'production'] = process.argv.slice(2);
 
@@ -59,30 +77,31 @@ if (/\s/.test(clean)) {
   process.exit(1);
 }
 
-const dir = mkdtempSync(join(tmpdir(), 'vercel-env-'));
-const exact = join(dir, 'value');
+// Remove any existing value first: `env add` refuses when the variable already
+// exists, and its message reads like a permissions problem rather than a
+// duplicate. Absent is the normal case, so a failure here is not interesting.
+try {
+  execFileSync(launcher, [...prefix, '--yes', 'vercel@latest', 'env', 'rm', name, target, '--yes'], {
+    cwd: REPO,
+    stdio: 'ignore',
+  });
+} catch {
+  /* not present */
+}
 
 try {
-  // No trailing newline: this file IS the value.
-  writeFileSync(exact, clean, { encoding: 'utf8' });
-
-  // Remove any existing value, so this is a set rather than an add that refuses.
-  try {
-    execFileSync('npx', ['--yes', 'vercel@latest', 'env', 'rm', name, target, '--yes'], {
-      stdio: 'ignore', shell: true,
-    });
-  } catch {
-    /* not present — that is the normal case */
-  }
-
-  execFileSync(
-    'cmd',
-    ['/c', `npx --yes vercel@latest env add ${name} ${target} < "${exact}"`],
-    { stdio: ['ignore', 'inherit', 'inherit'] }
-  );
-
-  console.log(`\n${name} set for ${target} — ${clean.length} characters, no surrounding whitespace.`);
-  console.log(`Delete ${file} now; it still holds the plaintext value.`);
-} finally {
-  rmSync(dir, { recursive: true, force: true });
+  execFileSync(launcher, [...prefix, '--yes', 'vercel@latest', 'env', 'add', name, target], {
+    cwd: REPO,
+    // The value goes straight down stdin as exact bytes — no temp file, no
+    // shell redirect, and no trailing newline. Node closes the pipe afterwards,
+    // which is the EOF the CLI reads as end-of-value.
+    input: clean,
+    stdio: ['pipe', 'inherit', 'inherit'],
+  });
+} catch (err) {
+  console.error(`\nFailed to set ${name}. Vercel's own output is above.`);
+  process.exit(err.status || 1);
 }
+
+console.log(`\n${name} set for ${target} — ${clean.length} characters, no surrounding whitespace.`);
+console.log(`Delete ${file} now; it still holds the plaintext value.`);
