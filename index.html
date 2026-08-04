@@ -16713,6 +16713,19 @@ async function revealGoogleLoginIfConfigured() {
   } catch {}
 }
 
+/* One definition, used by both paths below — the login screen when signed out,
+   and a toast when a Google attempt fails while an ordinary session is still
+   valid. Two copies would drift, and the copy that drifts is the one nobody
+   sees until it matters. */
+const LOGIN_ERROR_MESSAGES = {
+  not_authorized: 'That Google account is not registered for this app. Contact an admin, or sign in with email and password.',
+  google_denied: 'Google sign-in was cancelled.',
+  invalid_state: 'Google sign-in session expired. Please try again.',
+  email_unverified: "That Google account's email is not verified.",
+  not_configured: 'Google sign-in is not set up on this deployment yet. Please use email and password.',
+  oauth_failed: 'Google sign-in failed. Please try again or use email and password.',
+};
+
 async function bootAuth() {
   const loginError = new URLSearchParams(location.search).get('login_error');
   try {
@@ -16721,6 +16734,15 @@ async function bootAuth() {
       _currentUser = await r.json();
       document.getElementById('loginOverlay').style.display = 'none';
       document.getElementById('authBootCover').style.display = 'none';
+      // A Google sign-in can fail while an ordinary session is still valid —
+      // the callback leaves an existing session alone, by design. Without this
+      // the refusal is silent: the redirect carries login_error, this branch
+      // logs you straight back in from the old cookie, and the param is
+      // stripped before anything renders it. Pressing "Sign in with Google"
+      // then looks like it simply did nothing.
+      if (loginError && typeof showToast === 'function') {
+        showToast(LOGIN_ERROR_MESSAGES[loginError] || 'Google sign-in did not complete.');
+      }
       clearLoginErrorParam();
       // Load the user directory so reviewer-name lookups work in comments / dashboards
       if (typeof loadReviewers === 'function') loadReviewers().catch(() => {});
@@ -16734,16 +16756,8 @@ async function bootAuth() {
   document.getElementById('loginOverlay').style.display = 'flex';
   revealGoogleLoginIfConfigured();
   if (loginError) {
-    const messages = {
-      not_authorized: 'That Google account is not registered for this app. Contact an admin, or sign in with email and password.',
-      google_denied: 'Google sign-in was cancelled.',
-      invalid_state: 'Google sign-in session expired. Please try again.',
-      email_unverified: "That Google account's email is not verified.",
-      not_configured: 'Google sign-in is not set up on this deployment yet. Please use email and password.',
-      oauth_failed: 'Google sign-in failed. Please try again or use email and password.',
-    };
     const errEl = document.getElementById('loginError');
-    if (errEl) errEl.textContent = messages[loginError] || 'Sign-in failed. Please try again.';
+    if (errEl) errEl.textContent = LOGIN_ERROR_MESSAGES[loginError] || 'Sign-in failed. Please try again.';
     clearLoginErrorParam();
   }
   setTimeout(() => document.getElementById('loginEmail')?.focus(), 50);
