@@ -1,13 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- data-theme is pinned light. vance-ui.css ships both themes, but this app's
+     layout was built light-only — bespoke panels, hard-coded white surfaces and
+     a tinted sidebar — so letting it follow the OS into dark mode would produce
+     a half-converted page rather than a dark one. Unifying the palette and the
+     type is this pass; a real dark mode here is its own piece of work. -->
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Vance Content Generator</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Georgia:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
+<!-- Montserrat now comes from /fonts, self-hosted, via vance-ui.css. The Google
+     Fonts CDN it replaces is itself a monitored dependency in this estate
+     (dep-google-fonts in the Alerts inventory), so linking it meant an internal
+     tool could be degraded by a third party we already watch. Georgia is a
+     system serif and never needed downloading at all. -->
+<link rel="preload" href="/fonts/montserrat-600.woff2" as="font" type="font/woff2" crossorigin/>
+<link rel="stylesheet" href="/vance-ui.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -16,27 +25,52 @@
 /* ══════════════════════════════════════════════════
    DESIGN TOKENS — Vance Health Hub Brand
 ══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   These names are kept and RE-POINTED at the shared Vance UI tokens rather
+   than being replaced. `--vance-dark` alone is used 242 times in this file;
+   swapping the values behind the names updates every one of them at once,
+   with no risk of missing a rule or disturbing a layout.
+
+   What actually changes, and why:
+     teal      #006868 → #008080  the estate teal, matching the public sites
+     navy      #1b3355 → #004D4D  the navy was off-brand; darkest teal instead
+     sage      #B8D4CC → #AEDBDB  same lightness, hue corrected onto the ramp
+     radius    0px     → 8px      square edges were unique to this app
+     status    bespoke → shared   one green, one amber, one red, estate-wide
+
+   Anything below that is still a literal is intentionally app-specific: the
+   sidebar width and topbar height are this layout's own geometry, not brand.
+══════════════════════════════════════════════════ */
 :root {
-  --vance-primary:   #006868;
-  --vance-accent:     #4DBDBD;
-  --vance-dark:     #1b3355;
-  --vance-dark-mid: #253d60;
-  --vance-dark-lt:  #2f5275;
-  --bg:           #EEF7F3;
-  --sidebar-bg:   #B8D4CC;   /* sage green — a few tones darker than --bg */
-  --header-green: #1b3355;   /* dark forest green for card headers */
-  --card:         #ffffff;
-  --border:       #dde3ea;
-  --text:         #1a2332;
-  --text-muted:   #6b7a8d;
-  --success:      #00C9A7;
-  --error:        #e74c3c;
-  --warning:      #f39c12;
-  --radius:       0px;       /* square edges throughout */
-  --shadow:       0 2px 12px rgba(27,63,48,0.08);
-  --shadow-lg:    0 8px 32px rgba(27,63,48,0.14);
-  --sidebar-w:    220px;
-  --topbar-h:     48px;
+  --vance-primary:  var(--brand);
+  --vance-accent:   var(--brand-lt);
+  --vance-dark:     var(--brand-dk);
+  --vance-dark-mid: #005E5E;   /* one step up the ramp, for hover on --vance-dark */
+  --vance-dark-lt:  #007373;   /* two steps, for active/selected rows */
+  --sidebar-bg:     var(--brand-pale);
+  --header-green:   var(--brand-dk);
+  --card:           var(--surface);
+  --text-muted:     var(--text-2);
+  --success:        var(--up);
+  --error:          var(--down);
+  --warning:        var(--degraded);
+
+  /* --bg, --border, --text and --radius are deliberately NOT redeclared here.
+     vance-ui.css already defines those exact names on :root, so this file's
+     existing var(--bg) / var(--border) / var(--text) / var(--radius) uses now
+     resolve to the shared values with no change needed at each call site.
+
+     Writing `--bg: var(--bg)` would look like a harmless re-point and is in
+     fact a cycle: a custom property that references itself on the same element
+     is invalid at computed-value time, and the four of them would have
+     resolved to nothing and taken the page's background, borders, text colour
+     and corner radius with them. */
+  /* Retinted from a green-black to a neutral, so the shadow no longer casts a
+     colour the palette does not contain. */
+  --shadow:         0 2px 12px rgba(11,18,32,0.08);
+  --shadow-lg:      0 8px 32px rgba(11,18,32,0.14);
+  --sidebar-w:      220px;
+  --topbar-h:       48px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; }
