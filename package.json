@@ -19,6 +19,8 @@
     "node": "24.x"
   },
   "scripts": {
-    "verify:login": "node scripts/verify-google-login.mjs"
+    "verify": "node scripts/verify-google-login.mjs && node scripts/verify-vance-sso.mjs",
+    "verify:login": "node scripts/verify-google-login.mjs",
+    "verify:sso": "node scripts/verify-vance-sso.mjs"
   }
 }
