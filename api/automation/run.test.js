@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateCron, isRuleDue } from '../../lib/automation/handlers/run.js';
+import { evaluateCron, isRuleDue, mentionsAnimals } from '../../lib/automation/handlers/run.js';
 
 // ── 1-3. evaluateCron ─────────────────────────────────────────────────────────
 
@@ -72,5 +72,39 @@ describe('isRuleDue', () => {
       lastRunAt,
     };
     assert.equal(isRuleDue(rule, now), false);
+  });
+});
+
+// ── mentionsAnimals (Industry News animal-story exclusion) ────────────────────
+
+describe('mentionsAnimals', () => {
+  it('flags a title mentioning a lab animal', () => {
+    assert.equal(mentionsAnimals({ title: 'New IBD drug shows promise in mice trial' }), true);
+  });
+
+  it('flags source body text even when the title is clean', () => {
+    assert.equal(mentionsAnimals({
+      title: 'Breakthrough therapy for Crohn\'s disease',
+      rawText: 'The murine model demonstrated reduced inflammation across all rodent cohorts.',
+    }), true);
+  });
+
+  it('flags feed description text', () => {
+    assert.equal(mentionsAnimals({
+      title: 'New findings published',
+      feedDescription: 'Researchers studied the effect in a canine model before human trials.',
+    }), true);
+  });
+
+  it('does not flag ordinary human clinical news', () => {
+    assert.equal(mentionsAnimals({
+      title: 'Phase 3 trial shows ulcerative colitis remission gains',
+      rawText: 'Patients receiving the biologic showed significant improvement over 52 weeks.',
+    }), false);
+  });
+
+  it('does not false-positive on unrelated substrings', () => {
+    // "cats" as a substring of "indicates" should not match with word boundaries
+    assert.equal(mentionsAnimals({ title: 'Study indicates biomarker link to flare risk' }), false);
   });
 });
