@@ -1,0 +1,500 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   VANCE UI — shared design tokens and primitives
+   vance-ui.css  v1.0.0
+
+   ONE source of truth for the look of every internal Vance system: V-Net,
+   the Content Generator, the Customer Service console and the Alerts
+   dashboard. Vendored into each repo rather than published as a package —
+   the Alerts dashboard is zero-dependency by design, and a copied file with
+   a version header is less coupling than a shared dependency would be.
+
+   When changing this file, bump the version above and copy it to every repo.
+   Divergence between copies is the failure mode to watch for; the version
+   header is how you spot it.
+
+   ── Two rules that are not style preferences ──────────────────────────────
+
+   1. BRAND TEAL IS NEVER A STATUS COLOUR. Teal is chrome and identity only.
+      A teal dot next to a system name would read as "green — healthy" to
+      anyone scanning quickly, and it would say that even when the system is
+      broken. Status has its own scale, deliberately chosen to sit away from
+      teal in hue.
+
+   2. COLOUR IS NEVER LOAD-BEARING ON ITS OWN. Every status is carried by
+      three redundant signals — colour, a distinct SVG glyph, and a text
+      label. This is what makes the systems readable for the ~8% of men with
+      a colour vision deficiency, and on a projector, and in sunlight.
+
+   Both rules are inherited from the Alerts dashboard, where they were
+   arrived at for a monitoring tool that has to be right at a glance. They
+   generalise, so they are now estate-wide.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Typography ────────────────────────────────────────────────────────────
+   Self-hosted, never CDN-linked. Two reasons: the Alerts dashboard must
+   render when other things are down (including a font CDN), and
+   fonts.googleapis.com is itself a monitored dependency in this estate — so
+   linking it would mean an internal tool could be degraded by the very
+   third party we watch. font-display:swap means the system fallback paints
+   instantly regardless, and if a woff2 ever fails to load everything simply
+   stays on that fallback.
+
+   Paths are root-relative, so each app must serve the woff2 files at
+   /fonts/. Copy them alongside this file.
+   ──────────────────────────────────────────────────────────────────────── */
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/montserrat-400.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/montserrat-500.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/montserrat-600.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/montserrat-700.woff2') format('woff2'); }
+
+/* ── Tokens: dark (default) ────────────────────────────────────────────────
+   Dark is the default because these are tools people keep open all day, and
+   because the Alerts dashboard — the most-stared-at surface in the estate —
+   was already dark. Light is a first-class alternative, not an afterthought:
+   every value below has a measured light counterpart.
+   ──────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Surfaces */
+  --bg:         #0B1220;
+  --surface:    #131C2E;
+  --surface-2:  #1B2740;
+  --border:     #2A3752;
+  --border-hi:  #3B4B6E;
+  /* The visible boundary of a form control, and ONLY that. WCAG 1.4.11 wants
+     3:1 for the edge of an input or button, because that edge is the only
+     thing telling you a control is there. --border-hi measures 1.96:1 on
+     --surface and cannot do this job — it stays for decorative emphasis and
+     card hover, where the border is never the sole signal. Verified by
+     scripts/verify-contrast.mjs. */
+  --border-input: #5E7398;   /* 3.55:1 on --surface, 3.91:1 on --bg */
+
+  /* Text — three levels, all AA or better on --surface */
+  --text:       #F1F5F9;
+  --text-2:     #A9B6CC;
+  --text-3:     #7185A3;
+
+  /* Brand. Chrome and identity ONLY — see rule 1 at the top of this file.
+     Four steps, matching the teal ramp already used by the Vance Medical
+     website's Tailwind config, so the internal tools and the public sites
+     draw from one ramp rather than two that merely look similar. */
+  --brand-dk:   #004D4D;   /* headers and filled bars that need white on them */
+  --brand:      #008080;
+  --brand-lt:   #78BFBF;
+  --brand-pale: #AEDBDB;
+
+  /* Status. Deliberately away from teal in hue so the two can never be
+     confused. `-dim` variants are for tracks, rails and inactive fills. */
+  --up:           #2FBF71;
+  --up-dim:       #1B7A47;
+  --degraded:     #E0A008;
+  --degraded-dim: #8A6205;
+  --down:         #F0523F;
+  --down-dim:     #92291C;
+  --idle:         #4A5B78;
+  --idle-dim:     #2E3B52;
+
+  /* Shape */
+  --radius:    8px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+
+  /* Type stacks */
+  --sans: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Montserrat", ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Menlo, Consolas, monospace;
+
+  /* Z-scale. A defined ladder, not arbitrary large numbers — z-index: 9999
+     is a symptom of not having one of these. */
+  --z-base:    10;
+  --z-sticky:  20;
+  --z-header:  30;
+  --z-overlay: 50;
+
+  /* Motion. Every transition in this file routes through these two, so
+     prefers-reduced-motion below can neutralise all of them in one place. */
+  --dur:  180ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  color-scheme: dark;
+}
+
+/* ── Tokens: light ─────────────────────────────────────────────────────────
+   Not a naive inversion. Three values genuinely have to change rather than
+   flip, and each is commented with its measured ratio:
+
+   --brand-lt is the big one. The pale teal used for links and disclosures is
+   designed for a dark ground; on white it measures 2.1:1 and is effectively
+   unreadable. It darkens to a different teal entirely in light mode.
+
+   The status scale also darkens — the dark-mode greens and ambers are tuned
+   to glow on near-black and would fail AA on white.
+   ──────────────────────────────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  --bg:        #F4F7FB;
+  --surface:   #FFFFFF;
+  --surface-2: #EEF3F9;
+  --border:    #D3DEEC;
+  --border-hi: #B4C4DA;
+  --border-input: #7C8DA8;   /* 3.37:1 on --surface, 3.14:1 on --bg */
+
+  --text:      #0F172A;
+  --text-2:    #43536B;   /* 7.4:1 on --surface */
+  --text-3:    #5A6B85;   /* 5.3:1 on --surface — still AA */
+
+  --brand-lt:  #0A6A6A;   /* 5.4:1 on white; the dark-mode value is 2.1:1 */
+
+  --up:           #17804A;
+  --up-dim:       #BFE6CE;
+  --degraded:     #8A5D00;
+  --degraded-dim: #F2E0B0;
+  --down:         #C22B18;
+  --down-dim:     #F3C9C2;
+  --idle:         #64748B;
+  --idle-dim:     #DBE3EE;
+
+  color-scheme: light;
+}
+
+/* Follow the operating system when the user has expressed no preference.
+   data-theme always wins, so an explicit toggle survives an OS change. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:        #F4F7FB;
+    --surface:   #FFFFFF;
+    --surface-2: #EEF3F9;
+    --border:    #D3DEEC;
+    --border-hi: #B4C4DA;
+    --border-input: #7C8DA8;
+    --text:      #0F172A;
+    --text-2:    #43536B;
+    --text-3:    #5A6B85;
+    --brand-lt:  #0A6A6A;
+    --up:           #17804A;
+    --up-dim:       #BFE6CE;
+    --degraded:     #8A5D00;
+    --degraded-dim: #F2E0B0;
+    --down:         #C22B18;
+    --down-dim:     #F3C9C2;
+    --idle:         #64748B;
+    --idle-dim:     #DBE3EE;
+    color-scheme: light;
+  }
+}
+
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  /* 16px, not the 15px the Alerts dashboard uses. That page is a dense
+     monitoring grid read at a desk; these are general-purpose tools that
+     have to stay comfortable on a phone, where 16px is the floor. */
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Cap measure for prose. Long lines are the most common readability bug in
+   internal tools, where nobody thinks about typography. */
+p { max-width: 68ch; }
+
+img { max-width: 100%; height: auto; }
+
+/* ── Focus ────────────────────────────────────────────────────────────────
+   :focus-visible, not :focus — a mouse click on a card should not leave a
+   ring behind, but a Tab to it must. The two-tone ring (pale teal core,
+   dark halo) is what keeps it visible against both a near-black and a white
+   ground without needing a per-theme rule.
+   ──────────────────────────────────────────────────────────────────────── */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--brand-lt);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Never remove an outline without replacing it. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── Skip link ────────────────────────────────────────────────────────────
+   Off-screen until focused. Without one, a keyboard user tabs through every
+   tile in the header before reaching content.
+   ──────────────────────────────────────────────────────────────────────── */
+.v-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: var(--z-overlay);
+  padding: 10px 16px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0 0 var(--radius) 0;
+  text-decoration: none;
+}
+.v-skip:focus { left: 0; }
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.v-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.v-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+
+.v-header-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.v-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: auto;
+  min-width: 0;
+  min-height: 44px;   /* touch target floor — the logo alone is shorter */
+  text-decoration: none;
+  color: inherit;
+}
+
+/* The supplied brand asset is a dark teal V that falls to roughly 3.5:1 on
+   the dark ground. A small brightness lift brings it back without shifting
+   the brand hue; light mode needs no help. */
+.v-brand-logo { height: 30px; width: auto; flex-shrink: 0; display: block; filter: brightness(1.22) saturate(1.04); }
+:root[data-theme="light"] .v-brand-logo { filter: none; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .v-brand-logo { filter: none; }
+}
+
+.v-brand-text h1 { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -0.01em; }
+.v-brand-text p  { margin: 0; font-size: 11.5px; color: var(--text-3); }
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+.v-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+/* A card that is itself a link. The whole tile is one anchor — never a card
+   containing separate nested interactives, which produces a confusing tab
+   order and an ambiguous hit target.
+
+   Hover moves colour and shadow only, never size: a transform: scale() here
+   would nudge neighbouring tiles and make the grid feel unstable under the
+   cursor. */
+a.v-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease),
+              background-color var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease);
+}
+
+a.v-card:hover {
+  border-color: var(--border-hi);
+  background: var(--surface-2);
+  box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.45);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.v-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  /* 44px minimum height — the touch target floor. Everything else about the
+     button is negotiable; this is not. */
+  min-height: 44px;
+  padding: 11px 18px;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              opacity var(--dur) var(--ease);
+}
+
+.v-btn:hover { background: var(--border); border-color: var(--brand-lt); }
+
+.v-btn-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.v-btn-primary:hover {
+  background: color-mix(in srgb, var(--brand) 85%, #fff);
+  border-color: color-mix(in srgb, var(--brand) 85%, #fff);
+}
+
+.v-btn[disabled], .v-btn[aria-busy="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Inputs ──────────────────────────────────────────────────────────────── */
+.v-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px; /* below 16px, iOS Safari zooms on focus */
+}
+.v-input::placeholder { color: var(--text-3); }
+
+.v-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* ── Badges and status ────────────────────────────────────────────────────
+   .v-badge carries a status. It always contains a glyph AND a text label —
+   see rule 2 at the top of this file. The dot below is decorative
+   reinforcement, never the only signal.
+   ──────────────────────────────────────────────────────────────────────── */
+.v-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.v-badge svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+.v-badge-up       { color: var(--up);       background: color-mix(in srgb, var(--up) 14%, transparent);       border-color: color-mix(in srgb, var(--up) 34%, transparent); }
+.v-badge-degraded { color: var(--degraded); background: color-mix(in srgb, var(--degraded) 14%, transparent); border-color: color-mix(in srgb, var(--degraded) 34%, transparent); }
+.v-badge-down     { color: var(--down);     background: color-mix(in srgb, var(--down) 14%, transparent);     border-color: color-mix(in srgb, var(--down) 34%, transparent); }
+.v-badge-idle     { color: var(--text-3);   background: color-mix(in srgb, var(--idle) 16%, transparent);     border-color: color-mix(in srgb, var(--idle) 32%, transparent); }
+
+/* Decorative reinforcement only — always paired with a label in the markup. */
+.v-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+.v-dot-up       { background: var(--up); }
+.v-dot-degraded { background: var(--degraded); }
+.v-dot-down     { background: var(--down); }
+.v-dot-idle     { background: var(--idle); }
+
+/* ── Section headings ────────────────────────────────────────────────────── */
+.v-section { margin-bottom: 36px; }
+
+.v-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.v-section-head h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.v-section-head p { margin: 0; font-size: 13px; color: var(--text-3); }
+
+/* ── Grid ─────────────────────────────────────────────────────────────────
+   auto-fit + minmax rather than breakpoint-stepped column counts: the grid
+   reflows continuously, so it is correct at every width including the ones
+   nobody tested. The 260px floor is what keeps a tile's title, description
+   and status badge on separate lines instead of wrapping raggedly.
+   ──────────────────────────────────────────────────────────────────────── */
+.v-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.v-grid-wide {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* ── Utilities ───────────────────────────────────────────────────────────── */
+.v-muted    { color: var(--text-2); }
+.v-dim      { color: var(--text-3); }
+.v-mono     { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.v-row      { display: flex; align-items: center; gap: 10px; }
+.v-row-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* Visible to screen readers, invisible on screen. For the text half of a
+   signal whose visual half is an icon. */
+.v-sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────
+   Honours the OS setting. Near-zero rather than `none` so that transitionend
+   handlers still fire and nothing hangs waiting for an event that never
+   comes.
+   ──────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Print ────────────────────────────────────────────────────────────────
+   Occasionally someone prints a status page for a meeting. Force the light
+   ground so it does not consume a toner cartridge.
+   ──────────────────────────────────────────────────────────────────────── */
+@media print {
+  :root { --bg: #fff; --surface: #fff; --text: #000; --border: #999; }
+  .v-header { position: static; backdrop-filter: none; }
+  .v-skip { display: none; }
+}
