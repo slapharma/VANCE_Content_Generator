@@ -2402,7 +2402,16 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
    ══════════════════════════════════════════════════ */
 .login-screen {
   position: fixed; inset: 0; z-index: 9999;
-  display: flex; align-items: center; justify-content: center;
+  /* `align-items: flex-start` plus `margin: auto` on the card, NOT
+     `align-items: center`. The two centre identically while the card fits, and
+     differ entirely once it does not.
+
+     A 320x568 phone with the password disclosure open makes this card 732px.
+     Centring an over-tall flex item pushes its top ABOVE the scroll origin, and
+     nothing can scroll back past that origin — so 82px of the card, the Vance
+     mark included, was cut off and unreachable by any gesture. Auto margins
+     centre the same way and overflow correctly in both directions. */
+  display: flex; align-items: flex-start; justify-content: center;
   /* Opaque, never a scrim. Nothing behind this holds data when signed out, and
      a half-visible shell invites someone to read an empty board as the current
      state of their pipeline. */
@@ -2415,6 +2424,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 .login-screen[hidden] { display: none; }
 
 .login-card { width: 100%; max-width: 400px; text-align: center; padding: 32px 28px 26px; }
+.login-screen > .login-card { margin: auto; }
 .login-logo { height: 34px; width: auto; margin: 0 auto 18px; display: block; }
 .login-card h1 { margin: 0 0 6px; font-size: 21px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
 .login-sub { margin: 0 auto 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted); max-width: 34ch; }
@@ -2466,9 +2476,13 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 /* The forced change-password step, which is the second half of a first
    sign-in and therefore wears the same card. A scrim rather than an opaque
    ground here, because by this point there IS a signed-in app behind it. */
-.pwd-modal { position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center;
-  background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 24px; }
-.pwd-modal .login-card { max-width: 400px; text-align: left; }
+   Same flex-start + auto-margin centring as .login-screen above, and for the
+   same reason: three password fields and a hint make this the tallest card in
+   the app, so on a short screen the centred version put its heading out of
+   reach. This one is opened by JS setting display:flex. */
+.pwd-modal { position: fixed; inset: 0; z-index: 10000; align-items: flex-start; justify-content: center;
+  background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 24px; overflow: auto; }
+.pwd-modal .login-card { max-width: 400px; text-align: left; margin: auto; }
 .pwd-modal h2 { margin: 0 0 6px; font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
 .pwd-modal .login-sub { margin: 0 0 14px; max-width: none; }
 .pwd-actions { display: flex; gap: 8px; margin-top: 18px; }
@@ -22518,163 +22532,6 @@ function updateTrashBadge(count) {
 // _renderUnifiedGoogleStatus() as part of the unified Google connection.
 </script>
 
-<!-- ═══ RULE WIZARD MODAL (shell kept for legacy references; content moved to view-automation-new) ═══ -->
-<div id="ruleWizardModal" style="display:none;">
-  <div>
-
-    <!-- Header -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h2 id="ruleWizardTitle" style="margin:0; font-size:1.1rem; color:var(--text);">New Automation Rule</h2>
-      <button onclick="closeRuleWizard()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-muted);">&#x2715;</button>
-    </div>
-
-    <!-- Step indicator -->
-    <div style="display:flex; gap:4px; margin-bottom:24px;" id="wizardSteps">
-      <div class="wiz-step active" id="wizStep1">&#9312; Sources</div>
-      <div class="wiz-step" id="wizStep2">&#9313; Trigger</div>
-      <div class="wiz-step" id="wizStep3">&#9314; Generation</div>
-      <div class="wiz-step" id="wizStep4">&#9315; Review</div>
-      <div class="wiz-step" id="wizStep5">&#9316; Notify</div>
-    </div>
-
-    <!-- Step 1: Sources -->
-    <div id="wizPanel1">
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Rule Name *</label>
-        <input id="wizName" type="text" maxlength="60" placeholder="e.g. NHS Clinical Weekly Digest" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;">
-      </div>
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Category *</label>
-        <select id="wizCategory" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;"></select>
-      </div>
-      <div style="margin-bottom:12px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Sources *</label>
-        <div id="wizSourcesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button onclick="wizAddSource('rss')" style="padding:5px 12px;border-radius:6px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ RSS Feed</button>
-          <button onclick="wizAddSource('url')" style="padding:5px 12px;border-radius:6px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ URL</button>
-          <button onclick="wizAddSource('github')" style="padding:5px 12px;border-radius:6px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ GitHub</button>
-          <button disabled style="padding:5px 12px;border-radius:6px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;opacity:0.4;cursor:not-allowed;" title="Coming soon">+ Google Drive</button>
-          <button disabled style="padding:5px 12px;border-radius:6px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;opacity:0.4;cursor:not-allowed;" title="Coming soon">+ Dropbox</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 2: Trigger -->
-    <div id="wizPanel2" style="display:none;">
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">When should this rule run?</label>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="schedule" checked onchange="wizUpdateTriggerUI()"> Schedule</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="event" onchange="wizUpdateTriggerUI()"> Event-driven (when new source items appear)</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="volume" onchange="wizUpdateTriggerUI()"> Volume-based (when N items accumulate)</label>
-        </div>
-      </div>
-      <div id="wizTrigSchedule">
-        <!-- Legacy modal content — duplicate IDs intentionally omitted. The active wizard lives in view-automation-new. -->
-        <div style="font-size:0.75rem;color:var(--text-muted);padding:8px 10px;border:1px solid var(--border);background:var(--bg);">Schedule controls are in the in-page wizard.</div>
-      </div>
-      <div id="wizTrigEvent" style="display:none;">
-        <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Minimum gap between runs (hours)</label>
-          <input id="wizMinGap" type="number" value="4" min="1" max="168" style="width:120px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;">
-        </div>
-      </div>
-      <div style="margin-bottom:12px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Max articles per run</label>
-        <input id="wizMaxArticles" type="number" value="3" min="1" max="10" style="width:120px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;">
-      </div>
-    </div>
-
-    <!-- Step 3: Generation -->
-    <div id="wizPanel3" style="display:none;">
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Template</label>
-        <select id="wizTemplate" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;"></select>
-      </div>
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Custom prompt <span style="color:var(--text-muted);font-weight:400;">(optional override)</span></label>
-        <textarea id="wizPrompt" maxlength="2000" rows="4"style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;resize:vertical;"></textarea>
-      </div>
-      <div>
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Source handling</label>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizCombine" value="one-per-item" checked> One article per source item</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizCombine" value="combine"> Summarise all into one article</label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 4: Review -->
-    <div id="wizPanel4" style="display:none;">
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Does this content require human review before publishing?</label>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizReview" value="yes" checked onchange="wizUpdateReviewUI()"> Yes &mdash; hold in Automation Inbox</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizReview" value="no" onchange="wizUpdateReviewUI()"> No &mdash; publish automatically</label>
-        </div>
-      </div>
-      <div id="wizReviewOpts">
-        <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Auto-approve after <input id="wizTimeoutHours" type="number" value="48" min="1" max="720" style="width:70px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);font-size:0.875rem;"> hours if no response</label>
-        </div>
-        <div>
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">On timeout:</label>
-          <select id="wizOnTimeout" style="width:220px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;">
-            <option value="approve">Approve automatically</option>
-            <option value="reject">Reject</option>
-            <option value="urgent_reminder">Resend as URGENT (hold)</option>
-            <option value="skip">Skip (hold indefinitely)</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 5: Notify -->
-    <div id="wizPanel5" style="display:none;">
-      <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;">
-        <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;font-weight:600;cursor:pointer;margin-bottom:10px;">
-          <input type="checkbox" id="wizTgEnabled" onchange="wizUpdateNotifUI()"> Enable Telegram notifications
-        </label>
-        <div id="wizTgOpts" style="display:none;padding-left:24px;">
-          <div style="margin-bottom:10px;">
-            <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:4px;color:var(--text);">Chat ID</label>
-            <input id="wizTgChatId" type="text"style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;">
-          </div>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;margin-bottom:8px;cursor:pointer;">
-            <input type="checkbox" id="wizTgApprove" checked> Allow approval via Telegram inline buttons
-          </label>
-          <button onclick="wizTestTelegram()" style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text-muted);font-size:0.78rem;cursor:pointer;">Send test message</button>
-        </div>
-      </div>
-      <div style="margin-bottom:16px;">
-        <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;font-weight:600;cursor:pointer;margin-bottom:10px;">
-          <input type="checkbox" id="wizEmailEnabled" onchange="wizUpdateNotifUI()"> Enable email notifications
-        </label>
-        <div id="wizEmailOpts" style="display:none;padding-left:24px;">
-          <div id="wizEmailChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
-          <div style="display:flex;gap:8px;margin-bottom:8px;">
-            <input id="wizEmailNew" type="email"style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.875rem;">
-            <button onclick="wizAddEmail()" style="padding:8px 14px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;cursor:pointer;">+ Add</button>
-          </div>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;">
-            <input type="checkbox" id="wizEmailApprove" checked> Allow approval via email link
-          </label>
-        </div>
-      </div>
-
-      <!-- Summary -->
-      <div id="wizSummary" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:0.85rem;line-height:1.8;"></div>
-    </div>
-
-    <!-- Wizard footer -->
-    <div style="display:flex;justify-content:space-between;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
-      <button id="wizBtnBack" onclick="wizBack()" style="display:none;padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;cursor:pointer;">&#8592; Back</button>
-      <span></span>
-      <button id="wizBtnNext" onclick="wizNext()" style="padding:8px 20px;border-radius:6px;border:none;background:var(--vance-primary);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Next &#8594;</button>
-    </div>
-  </div>
-</div>
 
 <!-- ══════════════════════════════════════════════════
      BOTTOM NAVIGATION — phones only (see vance-ui.css)
