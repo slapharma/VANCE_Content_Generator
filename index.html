@@ -40,252 +40,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-/* ══════════════════════════════════════════════════
-   DESIGN TOKENS — Vance Health Hub Brand
-══════════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════════
-   These names are kept and RE-POINTED at the shared Vance UI tokens rather
-   than being replaced. `--vance-dark` alone is used 242 times in this file;
-   swapping the values behind the names updates every one of them at once,
-   with no risk of missing a rule or disturbing a layout.
+/* The design tokens, the base typography, the app shell (sidebar, topbar,
+   main-content), the page-header block and the card / button / alert
+   primitives that used to live here have moved to vance-cs.css, which
+   mirrors the Customer Service console at cs.vancemedicalfoods.co.uk.
 
-   What actually changes, and why:
-     teal      #006868 → #008080  the estate teal, matching the public sites
-     navy      #1b3355 → #004D4D  the navy was off-brand; darkest teal instead
-     sage      #B8D4CC → #AEDBDB  same lightness, hue corrected onto the ramp
-     radius    0px     → 8px      square edges were unique to this app
-     status    bespoke → shared   one green, one amber, one red, estate-wide
-
-   Anything below that is still a literal is intentionally app-specific: the
-   sidebar width and topbar height are this layout's own geometry, not brand.
-══════════════════════════════════════════════════ */
-:root {
-  --vance-primary:  var(--brand);
-  --vance-accent:   var(--brand-lt);
-  --vance-dark:     var(--brand-dk);
-  --vance-dark-mid: #005E5E;   /* one step up the ramp, for hover on --vance-dark */
-  --vance-dark-lt:  #007373;   /* two steps, for active/selected rows */
-  --sidebar-bg:     var(--brand-pale);
-  --header-green:   var(--brand-dk);
-  --card:           var(--surface);
-  --text-muted:     var(--text-2);
-  --success:        var(--up);
-  --error:          var(--down);
-  --warning:        var(--degraded);
-
-  /* --bg, --border, --text and --radius are deliberately NOT redeclared here.
-     vance-ui.css already defines those exact names on :root, so this file's
-     existing var(--bg) / var(--border) / var(--text) / var(--radius) uses now
-     resolve to the shared values with no change needed at each call site.
-
-     Writing `--bg: var(--bg)` would look like a harmless re-point and is in
-     fact a cycle: a custom property that references itself on the same element
-     is invalid at computed-value time, and the four of them would have
-     resolved to nothing and taken the page's background, borders, text colour
-     and corner radius with them. */
-  /* Retinted from a green-black to a neutral, so the shadow no longer casts a
-     colour the palette does not contain. */
-  --shadow:         0 2px 12px rgba(11,18,32,0.08);
-  --shadow-lg:      0 8px 32px rgba(11,18,32,0.14);
-  --sidebar-w:      220px;
-  --topbar-h:       48px;
-}
+   That file loads AFTER this block — see the stylesheet link just below the
+   closing tag — so it wins every equal-specificity contest with whatever is
+   left here, and a legacy class can be restyled without its original rule
+   having to be hunted down and deleted first. What
+   is left is this app's own feature CSS: the generator, the pipeline board,
+   the calendar, the social console, the category editor and the wizards. */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; }
-body { font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: row; }
-
-/* ── Typography ── */
-h1, h2, h3, label, button, select, input, textarea, .brand-name, .brand-sub, .header-tab, .card-header h2, .cat-label {
-  font-family: 'Montserrat', sans-serif;
-}
-
-/* ══════════════════════════════════════════════════
-   SIDEBAR NAVIGATION
-══════════════════════════════════════════════════ */
-.sidebar {
-  width: var(--sidebar-w);
-  flex-shrink: 0;
-  background: var(--sidebar-bg);
-  border-right: 1px solid rgba(27,63,48,0.15);
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  position: sticky;
-  top: 0;
-  z-index: 300;
-  overflow: hidden;
-  transition: width 0.2s ease;
-}
-
-/* ── Hamburger toggle button ── */
-.sidebar-toggle-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--vance-dark);
-  border-radius: 0;
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-.sidebar-toggle-btn:hover { background: var(--bg); opacity: 1; }
-
-/* ── Sidebar collapsed state ── */
-body.sidebar-collapsed .sidebar { width: 52px; }
-body.sidebar-collapsed .sidebar-logo-text { display: none; }
-body.sidebar-collapsed .sidebar-logo { padding: 12px; justify-content: center; }
-body.sidebar-collapsed .nav-item { padding: 10px; justify-content: center; }
-body.sidebar-collapsed .nav-item span { display: none; }
-body.sidebar-collapsed .nav-section-label { display: none; }
-body.sidebar-collapsed .sidebar-footer { padding: 8px; align-items: center; }
-body.sidebar-collapsed .sidebar-guide-btn span { display: none; }
-body.sidebar-collapsed .sidebar-guide-btn { width: auto; justify-content: center; padding: 8px; }
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  padding: 14px 12px;
-  border-bottom: 2px solid rgba(27,63,48,0.12);
-  flex-shrink: 0;
-  text-decoration: none;
-  background: #ffffff;
-}
-.sidebar-logo-img { width: 100%; max-width: 100%; height: auto; max-height: 72px; object-fit: contain; background: transparent; padding: 0; flex-shrink: 0; }
-body.sidebar-collapsed .sidebar-logo-img { max-height: 36px; }
-.sidebar-logo-text { display: flex; flex-direction: column; gap: 1px; }
-.sidebar-logo-name { color: var(--vance-dark); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.3px; line-height: 1.1; }
-.sidebar-logo-name span { color: var(--vance-primary); }
-.sidebar-logo-sub { color: rgba(27,63,48,0.55); font-size: 0.55rem; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; }
-
-.sidebar-nav {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 0;
-  scrollbar-width: none;
-}
-.sidebar-nav::-webkit-scrollbar { display: none; }
-
-.nav-section-label {
-  font-size: 0.55rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(27,63,48,0.45);
-  padding: 10px 16px 4px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 16px;
-  background: none;
-  border: none;
-  border-left: 3px solid transparent;
-  color: var(--vance-dark);
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: left;
-  width: 100%;
-  position: relative;
-}
-.nav-item:hover { background: rgba(27,63,48,0.08); color: var(--vance-dark); }
-.nav-item.active {
-  background: rgba(27,63,48,0.12);
-  border-left-color: var(--vance-dark);
-  color: var(--vance-dark);
-  font-weight: 700;
-}
-.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.6; color: var(--vance-dark); }
-.nav-item.active svg { opacity: 1; color: var(--vance-dark); }
-.nav-item .nav-badge {
-  margin-left: auto;
-  background: var(--vance-primary);
-  color: #fff;
-  font-size: 0.58rem;
-  font-weight: 800;
-  padding: 1px 6px;
-  border-radius: 99px;
-  min-width: 18px;
-  text-align: center;
-  display: none;
-}
-.nav-item .nav-badge.visible { display: inline-block; }
-
-.sidebar-footer {
-  padding: 12px 16px;
-  border-top: 1px solid rgba(27,63,48,0.12);
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-/* ── Topbar (inside main area) ── */
-.topbar {
-  height: var(--topbar-h);
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 1.5rem;
-  gap: 10px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.topbar-title {
-  font-size: 0.82rem;
-  font-weight: 800;
-  color: var(--vance-dark);
-  letter-spacing: 0.2px;
-  flex: 1;
-}
-.topbar-title span { color: var(--vance-accent); }
-
-/* ── App main (right of sidebar) ── */
-.app-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-width: 0;
-  overflow: hidden;
-}
-.scroll-area {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-/* Legacy compat — header-tab maps to nav-item for switchTab() */
-.header-tab { display: none; }
-
-.status-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px; border-radius: 0; font-size: 0.65rem; font-weight: 700;
-  font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px; text-transform: uppercase;
-  background: rgba(27,63,48,0.07); color: var(--text-muted); border: 1px solid var(--border);
-}
-.sidebar-guide-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  width: 100%; padding: 9px 12px; border-radius: 0;
-  font-size: 0.7rem; font-weight: 700; font-family: 'Montserrat', sans-serif;
-  letter-spacing: 0.5px; text-transform: uppercase;
-  background: #008080; color: #fff; border: 1px solid #008080;
-  cursor: pointer; transition: background 0.15s, color 0.15s;
-}
-.sidebar-guide-btn:hover { background: #006868; border-color: #006868; }
 
 /* ── User guide modal ── */
 .userguide-modal {
@@ -382,42 +149,6 @@ body.sidebar-collapsed .sidebar-logo-img { max-height: 36px; }
   text-align: center;
 }
 .cat-btn.active .cat-count { background: var(--vance-primary); color: #fff; }
-
-/* ══════════════════════════════════════════════════
-   MAIN CONTENT AREA
-══════════════════════════════════════════════════ */
-.main-content { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-
-/* ── Standard page header (used across all tab views) ── */
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-  flex-wrap: wrap;
-}
-.page-header-left { flex: 1; min-width: 0; }
-.page-header-title {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--vance-dark);
-  margin: 0 0 3px;
-  line-height: 1.2;
-}
-.page-header-subtitle {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  margin: 0;
-}
-.page-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
 
 /* ── Dynamic Category Header ── */
 .category-header {
@@ -912,88 +643,6 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .al-event.al-title .al-ev-dot { background: #9aa5b4; }
 
 /* ══════════════════════════════════════════════════
-   PUBLISHING QUEUE PANEL
-══════════════════════════════════════════════════ */
-.queue-panel {
-  position: fixed; top: 58px; right: 0; width: 360px; height: calc(100vh - 58px);
-  background: var(--vance-dark); border-left: 3px solid var(--vance-primary);
-  z-index: 300; display: flex; flex-direction: column;
-  transform: translateX(100%); transition: transform 0.25s ease;
-  box-shadow: -4px 0 24px rgba(0,0,0,0.25);
-}
-.queue-panel.open { transform: translateX(0); }
-.queue-panel-header {
-  padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
-  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-}
-.queue-panel-title {
-  font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 800;
-  color: #fff; letter-spacing: 0.3px; display: flex; align-items: center; gap: 8px;
-}
-.queue-panel-title svg { color: var(--vance-primary); }
-.queue-count-badge {
-  background: var(--vance-primary); color: #fff; font-family: 'Montserrat', sans-serif;
-  font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 99px;
-}
-.queue-close-btn {
-  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.7); border-radius: 6px; cursor: pointer;
-  padding: 4px 8px; font-size: 0.7rem; font-family: 'Montserrat', sans-serif;
-}
-.queue-close-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
-.queue-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-.queue-empty {
-  text-align: center; padding: 40px 20px;
-  font-family: 'Montserrat', sans-serif; font-size: 0.75rem; color: rgba(255,255,255,0.35);
-  line-height: 1.6;
-}
-.queue-item {
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px; padding: 10px 12px; border-left: 3px solid var(--vance-primary);
-}
-.queue-item-title {
-  font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 700;
-  color: #fff; margin-bottom: 4px; line-height: 1.3;
-}
-.queue-item-meta {
-  font-family: 'Montserrat', sans-serif; font-size: 0.6rem; color: rgba(255,255,255,0.45);
-  margin-bottom: 8px;
-}
-.queue-item-actions { display: flex; gap: 5px; flex-wrap: wrap; }
-.queue-item-actions .btn { font-size: 0.62rem; padding: 3px 8px; }
-.queue-btn-header {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 6px; cursor: pointer; font-family: 'Montserrat', sans-serif;
-  font-size: 0.62rem; font-weight: 700; color: rgba(255,255,255,0.7);
-  white-space: nowrap; transition: all 0.15s; position: relative;
-}
-.queue-btn-header:hover { background: rgba(255,255,255,0.13); color: #fff; }
-.queue-btn-header .queue-header-count {
-  position: absolute; top: -5px; right: -5px;
-  background: var(--vance-primary); color: #fff;
-  font-size: 0.55rem; font-weight: 800; padding: 1px 5px; border-radius: 99px;
-  display: none;
-}
-.queue-btn-header.has-items .queue-header-count { display: inline; }
-
-/* ── Approved badge on archive cards ── */
-.approved-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  background: rgba(39,174,96,0.12); border: 1px solid rgba(39,174,96,0.3);
-  color: var(--success); font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem; font-weight: 700; padding: 2px 7px; border-radius: 99px;
-  letter-spacing: 0.3px;
-}
-.queued-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  background: rgba(244,121,32,0.12); border: 1px solid rgba(244,121,32,0.3);
-  color: var(--vance-primary); font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem; font-weight: 700; padding: 2px 7px; border-radius: 99px;
-  letter-spacing: 0.3px;
-}
-
-/* ══════════════════════════════════════════════════
    CATEGORY-SPECIFIC INPUT PANELS
 ══════════════════════════════════════════════════ */
 .cat-input-panel { display: none; }
@@ -1125,16 +774,6 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
    RESPONSIVE — Tablet (≤900px)
 ══════════════════════════════════════════════════ */
 @media (max-width: 900px) {
-  /* Sidebar collapses to icon-only strip */
-  .sidebar { width: 52px; }
-  .sidebar-logo-text { display: none; }
-  .sidebar-logo { padding: 12px; justify-content: center; }
-  .nav-item { padding: 10px; justify-content: center; }
-  .nav-item span { display: none; }
-  .nav-section-label { display: none; }
-  .sidebar-footer { padding: 8px; align-items: center; }
-  .sidebar-guide-btn span { display: none; }
-  .sidebar-guide-btn { width: auto; justify-content: center; padding: 8px; }
 
   /* Layout adjustments */
   .app-container { grid-template-columns: 1fr; padding: 1rem; gap: 1rem; }
@@ -1165,74 +804,16 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
   .cat-stat-num { font-size: 0.9rem; }
   .cat-stat-label { font-size: 0.55rem; }
 
-  /* Queue panel full width on tablet */
-  .queue-panel { width: 100%; }
 
   /* Article toolbar wrapping */
   .article-toolbar { gap: 5px; padding: 8px 10px; }
 }
 
 /* ══════════════════════════════════════════════════
-   RESPONSIVE — Mobile (≤860px) — sidebar becomes drawer
-══════════════════════════════════════════════════
-
-   This block used to carry its own drawer: position/left/transition/z-index on
-   .sidebar, a .nav-overlay backdrop, and a body.mobile-nav-open class, all
-   firing below 480px. All of that now comes from .v-drawer in vance-ui.css,
-   which the other consoles use too — so there is one drawer implementation in
-   the estate instead of three, and one place to fix when it is wrong.
-
-   Two things changed besides the ownership:
-
-   1. The breakpoint moved 480px → 860px. At 481-900px the sidebar used to
-      shrink to a 52px icon-only strip with every label hidden, which is a
-      worse answer than a drawer on every phone held in landscape and on every
-      small tablet.
-   2. What remains here is only what the drawer cannot know: how THIS app's
-      sidebar contents should lay out once they are inside it — undoing the
-      icon-only strip rules from the ≤900px block above.
-   ══════════════════════════════════════════════════ */
-@media (max-width: 859.98px) {
-  /* Never the 52px strip while off-canvas — inside a drawer there is room for
-     the labels, and an icon-only drawer is a menu of unlabelled glyphs.
-     BOTH selectors are needed. `.v-drawer` in vance-ui.css sets this width at
-     the same specificity as the `.sidebar { width: 52px }` rule in the ≤900px
-     block above, and this file's <style> loads after vance-ui.css — so the
-     strip width won, and the drawer opened 52px wide. Restating it here, later
-     in the same stylesheet, is what actually settles it. */
-  .sidebar,
-  body.sidebar-collapsed .sidebar { width: min(86vw, 320px); }
-
-  /* Restore full sidebar layout inside the drawer */
-  .sidebar-logo { display: flex; padding: 12px 16px; justify-content: flex-start; }
-  .sidebar-logo-text { display: block; }
-  .sidebar-nav { flex-direction: column; padding: 10px 0; overflow-y: auto; }
-  .nav-section-label { display: block; }
-  .nav-item {
-    flex-direction: row; gap: 9px; padding: 12px 16px;
-    border-left: 3px solid transparent; border-top: none;
-    justify-content: flex-start; align-items: center;
-  }
-  .nav-item span { display: block; font-size: 0.78rem; }
-  .nav-item.active { border-left-color: var(--vance-dark); border-top-color: transparent; }
-  .sidebar-footer { display: flex; padding: 10px 16px; align-items: stretch; }
-  .sidebar-guide-btn { width: 100%; justify-content: flex-start; padding: 10px 12px; }
-  .sidebar-guide-btn span { display: inline; }
-}
-
-/* ══════════════════════════════════════════════════
    RESPONSIVE — Mobile (≤640px)
 ══════════════════════════════════════════════════ */
 @media (max-width: 640px) {
-  /* ── Mobile topbar compact ── */
-  .sidebar-toggle-btn { display: flex; }
-  .topbar { padding: 0 0.75rem; gap: 8px; }
-  .topbar-title { font-size: 0.78rem; }
 
-  .app-main { padding-bottom: 0; }
-  .status-badge { font-size: 0.6rem; padding: 3px 7px; }
-  .queue-btn-header { padding: 4px 8px; font-size: 0.62rem; }
-  .queue-btn-header svg { display: none; }
 
   /* Category header compact */
   .category-header { flex-wrap: wrap; padding: 10px 0.75rem; gap: 8px; }
@@ -1271,8 +852,6 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
   .archive-container { padding: 0.75rem; }
   .archive-header-row { flex-direction: column; align-items: flex-start; gap: 8px; }
 
-  /* Queue panel full screen */
-  .queue-panel { width: 100%; top: 0; height: 100vh; }
 
 
   /* White paper word count */
@@ -1832,9 +1411,6 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 }
 
 /* ══════════════════════════════════════════════════
-   MONITORING TAB
-══════════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════════
    SOCIAL TAB
 ══════════════════════════════════════════════════ */
 /* width:100% is load-bearing, not decoration. .tab-view.active is a column flex
@@ -2254,10 +1830,6 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 .llm-save-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
 .llm-tip { font-size: 0.65rem; color: var(--text-muted); margin-top: 4px; }
 
-  padding: 14px 20px; border-top: 1px solid var(--border);
-  display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap;
-}
-
 /* ── Automation Module ─────────────────────────────────── */
 .btn-sub-tab {
   padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
@@ -2569,6 +2141,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
   .v-bottomnav [aria-current="page"]::before { background: var(--vance-primary); }
 }
 </style>
+<link rel="stylesheet" href="/vance-cs.css"/>
 <script>
 /* ── Per-domain branding override ──────────────────────────────────────────
    Default branding = Vance Health Hub (vance-content-generator.vercel.app).
@@ -2654,106 +2227,6 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
   </form>
 </div>
 
-<!-- ══════════════════════════════ SIDEBAR NAV ══════════════════════════════ -->
-<!-- v-drawer is inert above 860px: the element keeps this app's own sticky
-     sidebar layout exactly as before. Below it, vance-ui.css turns THIS element
-     into the off-canvas drawer, so there is only ever one copy of the nav. -->
-<aside class="sidebar v-drawer" id="sidebar">
-  <a class="sidebar-logo" href="#">
-    <img class="sidebar-logo-img" id="brandLogoImg" src="logo-vance-content.png" alt="Vance Content Generator"/>
-  </a>
-
-  <nav class="sidebar-nav">
-    <div class="nav-section-label">Main</div>
-    <button class="nav-item active" onclick="switchTab('dashboard')" id="tab-dashboard">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
-      <span>Dashboard</span>
-    </button>
-    <button class="nav-item" onclick="openUserGuide()" id="tab-user-guide">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-      <span>User Guide</span>
-    </button>
-
-    <div class="nav-section-label">Infrastructure</div>
-    <button class="nav-item" onclick="switchTab('generator')" id="tab-generator">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      <span>Generate</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('pipeline')" id="tab-pipeline">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="13" rx="1"/><rect x="17" y="3" width="5" height="8" rx="1"/></svg>
-      <span>Pipeline</span>
-      <span class="nav-badge" id="nav-badge-pipeline"></span>
-    </button>
-    <button class="nav-item" onclick="switchTab('archive')" id="tab-archive">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      <span>Library</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('calendar')" id="tab-calendar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      <span>Calendar</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('categories')" id="tab-categories">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      <span>Categories</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('bibliography')" id="tab-bibliography">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      <span>Bibliography</span>
-    </button>
-
-    <div class="nav-section-label">Workflow</div>
-    <button class="nav-item" onclick="switchTab('automation-rules')" id="tab-automation-rules">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span>Article Automations</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('distribution')" id="tab-distribution">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      <span>Social Automations</span>
-    </button>
-
-    <div class="nav-section-label">Prompt Library</div>
-    <button class="nav-item" onclick="gotoArticlePrompts()" id="tab-prompts-articles">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
-      <span>Articles</span>
-    </button>
-    <button class="nav-item" onclick="gotoSocialPrompts()" id="tab-prompts-social">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span>Social</span>
-    </button>
-    <button class="nav-item" onclick="gotoImagePrompts()" id="tab-prompts-images">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-      <span>Images</span>
-    </button>
-
-    <div class="nav-section-label">System</div>
-    <button class="nav-item" onclick="switchTab('automation-inbox')" id="tab-automation-inbox">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
-      <span>Operations Logs</span>
-      <span class="nav-badge" id="automationInboxBadge" style="display:none;">0</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('trash')" id="tab-trash">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      <span>Archive &amp; Trash</span>
-      <span class="nav-badge" id="trashBadge" style="display:none;">0</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('llm')" id="tab-llm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
-      <span>LLM Settings</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('settings')" id="tab-settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      <span>System Settings</span>
-    </button>
-  </nav>
-
-  <div class="sidebar-footer">
-    <div id="userChip" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.04);margin-bottom:8px;cursor:pointer;" onclick="toggleUserMenu()" title="Account menu"></div>
-    <div id="userMenu" style="display:none;position:absolute;bottom:64px;left:8px;right:8px;background:#1e2d40;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:50;">
-      <button onclick="openChangePwd(false);toggleUserMenu();" style="width:100%;padding:9px 12px;background:transparent;border:none;color:#fff;text-align:left;font-family:inherit;font-size:0.72rem;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);">Change password</button>
-      <button onclick="logout();" style="width:100%;padding:9px 12px;background:transparent;border:none;color:#e74c3c;text-align:left;font-family:inherit;font-size:0.72rem;cursor:pointer;">Sign out</button>
-    </div>
-  </div>
-</aside>
 
 <!-- Mobile nav overlay backdrop -->
 <!-- The backdrop that used to live here is now .v-scrim, created on demand by
@@ -2786,43 +2259,188 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
   </div>
 </div>
 
-<!-- ══════════════════════════════ APP MAIN ══════════════════════════════ -->
-<div class="app-main">
+<!-- ══════════════════════════════════════════════════════════════════════════
+     APP SHELL — mirrors the Customer Service console (cs.vancemedicalfoods.co.uk)
 
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <!-- One button, two jobs, split by viewport. Below 860px vance-mobile.js
-         picks up data-v-drawer-toggle and opens the drawer, keeping
-         aria-expanded honest; above it that handler no-ops and toggleSidebar()
-         collapses the sidebar to the icon strip as before. -->
-    <button class="sidebar-toggle-btn" onclick="toggleSidebar()"
-            data-v-drawer-toggle aria-expanded="false" aria-controls="sidebar"
-            aria-label="Toggle navigation" title="Toggle sidebar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+     .app is a two-row grid: a fixed-height header over a row that fills what is
+     left. html/body are overflow:hidden (vance-cs.css §2), so the window never
+     scrolls — .content does. That is what holds the header and the sidebar still
+     without either of them being position:fixed.
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div class="app">
+
+  <!-- ── HEADER ──────────────────────────────────────────────────────────────
+       Above 860px vance-ui.css hides the burger and this is a plain brand bar.
+       Below it, the burger and the bottom bar's Menu tab drive the same drawer;
+       vance-mobile.js keeps aria-expanded in step across both.
+       ────────────────────────────────────────────────────────────────────── -->
+  <div class="header">
+    <button class="v-burger" data-v-drawer-toggle aria-expanded="false"
+            aria-controls="sidebar" aria-label="Menu" title="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+
+    <button class="brand brand-home" type="button" onclick="switchTab('dashboard')"
+            aria-label="Dashboard" title="Dashboard">
+      <img class="brand-logo" id="brandLogoImg" src="/vance-logo.png" alt="Vance Medical Foods"/>
+      <span class="brand-sep"></span>
+      <div class="brand-text"><b>Vance Content Generator</b></div>
     </button>
-    <div class="topbar-title" id="topbarTitle">Dashboard</div>
-    <button type="button" id="hardRefreshBtn" class="hard-refresh-btn" onclick="hardRefresh()" title="Hard refresh — clears cache and reloads. Use this after a new Vercel deploy.">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;flex-shrink:0;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      <span id="hardRefreshText">Hard Refresh</span>
+
+    <div class="spacer"></div>
+
+    <button type="button" id="hardRefreshBtn" class="icon-btn" onclick="hardRefresh()"
+            title="Hard refresh — clears cache and reloads. Use this after a new Vercel deploy.">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><span id="hardRefreshText">Hard Refresh</span>
     </button>
+
+    <!-- setStatus(state, text) rewrites this element's whole className, so the
+         state class has to land on .status-badge, not on the dot. -->
     <div id="statusBadge" class="status-badge idle">
       <div class="status-dot"></div>
       <span id="statusText">Ready</span>
     </div>
+
+    <div class="whoami">
+      <span class="whoami-email" id="whoamiEmail">not signed in</span>
+      <span class="role-pill" id="whoamiRole" title="Your role decides what you can approve"></span>
+    </div>
+    <button class="signout-btn" type="button" onclick="logout()" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
   </div>
 
-  <div class="scroll-area">
+  <div class="main">
 
-<!-- ══════════════════════════════ APP LAYOUT ══════════════════════════════ -->
-<div class="app-layout">
+  <!-- ── SIDEBAR ─────────────────────────────────────────────────────────────
+       Not a list — a stack of cards, as the CS console does it. The filled teal
+       card at the top is for what changes minute to minute; the white panels
+       below hold everything that is a place you go rather than a thing that is
+       happening.
 
-  <!-- MAIN CONTENT -->
-  <div class="main-content">
+       v-drawer is inert above 860px, so this element lays out as the grid's
+       first column. Below it vance-ui.css turns THIS element into the
+       off-canvas drawer — there is only ever one copy of the navigation.
+       ────────────────────────────────────────────────────────────────────── -->
+  <aside class="sidebar v-drawer" id="sidebar">
+
+    <div class="review-hub">
+      <div class="rh-title">Operations</div>
+      <button class="rh-row" id="tab-dashboard" onclick="switchTab('dashboard')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg></span>
+        <span class="rh-label">Dashboard</span>
+      </button>
+      <button class="rh-row" id="tab-generator" onclick="switchTab('generator')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+        <span class="rh-label">Generate</span>
+      </button>
+      <button class="rh-row" id="tab-pipeline" onclick="switchTab('pipeline')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="13" rx="1"/><rect x="17" y="3" width="5" height="8" rx="1"/></svg></span>
+        <span class="rh-label">Pipeline</span>
+        <span class="rh-count" id="nav-badge-pipeline"></span>
+      </button>
+      <button class="rh-row" id="tab-calendar" onclick="switchTab('calendar')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        <span class="rh-label">Calendar</span>
+      </button>
+      <button class="rh-row" id="tab-automation-inbox" onclick="switchTab('automation-inbox')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></span>
+        <span class="rh-label">Operations Logs</span>
+        <span class="rh-count" id="automationInboxBadge"></span>
+      </button>
+    </div>
+
+    <div class="nav-panel">
+      <div class="rh-title">Content</div>
+      <button class="rh-row" id="tab-archive" onclick="switchTab('archive')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+        <span class="rh-label">Library</span>
+      </button>
+      <button class="rh-row" id="tab-categories" onclick="switchTab('categories')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+        <span class="rh-label">Categories</span>
+      </button>
+      <button class="rh-row" id="tab-bibliography" onclick="switchTab('bibliography')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></span>
+        <span class="rh-label">Bibliography</span>
+      </button>
+
+      <div class="rh-title" style="margin-top:14px">Automations</div>
+      <button class="rh-row" id="tab-automation-rules" onclick="switchTab('automation-rules')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+        <span class="rh-label">Article Automations</span>
+      </button>
+
+      <div class="np-group" id="navGroup-social">
+        <button class="np-btn" id="tab-distribution" aria-expanded="false" onclick="toggleNavGroup('navGroup-social')">
+          <span class="np-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+          <span class="np-label">Social Automations</span>
+          <span class="np-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg></span>
+        </button>
+        <div class="np-menu">
+          <button class="np-item" onclick="gotoSocial('kit')"><span class="np-num"></span><span>Kit Builder</span></button>
+          <button class="np-item" onclick="gotoSocial('queue')"><span class="np-num"></span><span>Post Queue</span></button>
+          <button class="np-item" onclick="gotoSocial('instagram')"><span class="np-num"></span><span>Instagram</span></button>
+          <button class="np-item" onclick="gotoSocial('promos')"><span class="np-num"></span><span>Promotional Carousels</span></button>
+          <button class="np-item" onclick="gotoSocial('posted')"><span class="np-num"></span><span>Posted</span></button>
+          <button class="np-item" onclick="gotoSocial('library')"><span class="np-num"></span><span>Prompts &amp; Connections</span></button>
+        </div>
+      </div>
+
+      <div class="np-group" id="navGroup-prompts">
+        <button class="np-btn" aria-expanded="false" onclick="toggleNavGroup('navGroup-prompts')">
+          <span class="np-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          <span class="np-label">Prompt Library</span>
+          <span class="np-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg></span>
+        </button>
+        <div class="np-menu">
+          <button class="np-item" id="tab-prompts-articles" onclick="gotoArticlePrompts()"><span class="np-num"></span><span>Articles</span></button>
+          <button class="np-item" id="tab-prompts-social" onclick="gotoSocialPrompts()"><span class="np-num"></span><span>Social</span></button>
+          <button class="np-item" id="tab-prompts-images" onclick="gotoImagePrompts()"><span class="np-num"></span><span>Images</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-panel">
+      <div class="rh-title">System</div>
+      <button class="rh-row" id="tab-trash" onclick="switchTab('trash')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></span>
+        <span class="rh-label">Archive &amp; Trash</span>
+        <span class="rh-count" id="trashBadge"></span>
+      </button>
+      <button class="rh-row" id="tab-llm" onclick="switchTab('llm')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg></span>
+        <span class="rh-label">LLM Settings</span>
+      </button>
+      <button class="rh-row" id="tab-settings" onclick="switchTab('settings')">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        <span class="rh-label">System Settings</span>
+      </button>
+      <button class="rh-row" id="tab-user-guide" onclick="openUserGuide()">
+        <span class="rh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+        <span class="rh-label">User Guide</span>
+      </button>
+    </div>
+
+    <!-- Identity and sign-out, which the header gives up below 860px. Hidden by
+         CSS on desktop, where the header still has room for both. -->
+    <div class="drawer-account">
+      <div class="da-email" id="drawerEmail">not signed in</div>
+      <span class="role-pill da-role" id="drawerRole"></span>
+      <button class="signout-btn" type="button" onclick="logout()" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+    </div>
+  </aside>
+
+  <!-- ── CONTENT ─────────────────────────────────────────────────────────────
+       The only scrolling region on the page. .content-inner is left-justified
+       against a deliberate gutter rather than centred — with a fixed left
+       sidebar a centred column drifts right of the visual middle and reads as a
+       mistake rather than as a choice. See vance-cs.css §2 for why the measure
+       is wider than the CS console's 860px.
+       ────────────────────────────────────────────────────────────────────── -->
+  <div class="content" id="content">
+    <div class="content-inner">
 
 
 <!-- ══════════════════════════════ TAB 1: GENERATOR ══════════════════════════════ -->
 <div class="tab-view" id="view-generator">
-<div style="padding:1.5rem 1.5rem 0;">
+<div>
   <div class="page-header">
     <div class="page-header-left">
       <h1 class="page-header-title">Generate Content</h1>
@@ -3281,7 +2899,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
 <!-- ══════════════════════════════ VIEW ARTICLE (dedicated, sidebar-less) ══════════════════════════════ -->
 <div class="tab-view" id="view-article">
-  <div style="padding:1rem 1.5rem 0;display:flex;align-items:center;gap:10px;">
+  <div class="back-bar" style="align-items:center;gap:10px;">
     <button class="btn btn-outline btn-sm" onclick="backFromArticleView()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="15 18 9 12 15 6"/></svg>
       Back
@@ -4105,16 +3723,16 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <div id="manualAccountForm" style="display:none;background:#fff;border:1px solid var(--border);padding:12px 14px;">
       <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Register an Account</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:8px;">
-        <select id="manAcctPlatform" style="padding:7px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.75rem;">
+        <select id="manAcctPlatform" class="input">
           <option value="instagram">Instagram</option>
           <option value="facebook">Facebook</option>
           <option value="linkedin">LinkedIn</option>
           <option value="twitter">X / Twitter</option>
           <option value="tiktok">TikTok</option>
         </select>
-        <input id="manAcctLabel" type="text" placeholder="Label (e.g. account name)" style="padding:7px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.75rem;" />
-        <input id="manAcctConnectedId" type="text" placeholder="Composio connectedAccountId (ca_…)" style="padding:7px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.75rem;" />
-        <input id="manAcctConfigVal" type="text" placeholder="Platform id (igUserId / pageId / authorUrn)" style="padding:7px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.75rem;" />
+        <input id="manAcctLabel" type="text" placeholder="Label (e.g. account name)" class="input" />
+        <input id="manAcctConnectedId" type="text" placeholder="Composio connectedAccountId (ca_…)" class="input" />
+        <input id="manAcctConfigVal" type="text" placeholder="Platform id (igUserId / pageId / authorUrn)" class="input" />
       </div>
       <button class="btn btn-navy btn-sm" onclick="submitManualAccount()">Register</button>
     </div>
@@ -5070,12 +4688,12 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
               <div class="settings-gcal-status disconnected" id="googleDriveStatus" style="margin-left:auto;">Not connected</div>
             </div>
             <div style="margin-bottom:8px;">
-              <label style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--vance-dark);display:block;margin-bottom:4px;">Client ID</label>
-              <input id="googleClientId" type="text" placeholder="xxxx.apps.googleusercontent.com" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.72rem;">
+              <label class="field-label">Client ID</label>
+              <input id="googleClientId" type="text" placeholder="xxxx.apps.googleusercontent.com" class="input">
             </div>
             <div style="margin-bottom:12px;">
-              <label style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--vance-dark);display:block;margin-bottom:4px;">Client Secret</label>
-              <input id="googleClientSecret" type="password" placeholder="••••••••" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.72rem;">
+              <label class="field-label">Client Secret</label>
+              <input id="googleClientSecret" type="password" placeholder="••••••••" class="input">
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <button class="btn btn-outline btn-sm" onclick="saveCloudCreds('google')">Save credentials</button>
@@ -5094,12 +4712,12 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
               <div class="settings-gcal-status disconnected" id="dropboxStatus" style="margin-left:auto;">Not connected</div>
             </div>
             <div style="margin-bottom:8px;">
-              <label style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--vance-dark);display:block;margin-bottom:4px;">App Key</label>
-              <input id="dropboxAppKey" type="text" placeholder="your app key" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.72rem;">
+              <label class="field-label">App Key</label>
+              <input id="dropboxAppKey" type="text" placeholder="your app key" class="input">
             </div>
             <div style="margin-bottom:12px;">
-              <label style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--vance-dark);display:block;margin-bottom:4px;">App Secret</label>
-              <input id="dropboxAppSecret" type="password" placeholder="••••••••" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.72rem;">
+              <label class="field-label">App Secret</label>
+              <input id="dropboxAppSecret" type="password" placeholder="••••••••" class="input">
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <button class="btn btn-outline btn-sm" onclick="saveCloudCreds('dropbox')">Save credentials</button>
@@ -5123,7 +4741,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
 <!-- Automation: Create New -->
 <div class="tab-view" id="view-automation-new">
-  <div style="padding:24px; overflow-y:auto;">
+  <div>
    <div class="wiz-page">
     <!-- Hero header -->
     <div class="wiz-hero">
@@ -5142,36 +4760,42 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div class="wiz-step" id="wizStep5">&#9316; Notify</div>
     </div>
     <div class="wiz-body">
+    <!-- Validation, announced. Replaces the native alert() the step machinery
+         used to raise: an alert cannot say which field is wrong, it blocks the
+         page while it is up, and on a phone it covers the field you have to fix. -->
+    <div class="callout critical wiz-error" id="wizError" role="alert" hidden>
+      <div class="c-body" id="wizErrorText"></div>
+    </div>
     <!-- Step 1: Sources -->
     <div id="wizPanel1">
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Rule Name *</label>
-        <input id="wizName" type="text" maxlength="60" oninput="wizUpdateHeroName()" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+        <label class="field-label">Rule Name *</label>
+        <input id="wizName" type="text" maxlength="60" oninput="wizUpdateHeroName()" class="input">
       </div>
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Category *</label>
-        <select id="wizCategory" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;"></select>
+        <label class="field-label">Category *</label>
+        <select id="wizCategory" class="input"></select>
       </div>
       <div style="margin-bottom:12px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Sources *</label>
+        <label class="field-label">Sources *</label>
         <div id="wizSourcesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button onclick="wizAddSource('rss')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ RSS Feed</button>
-          <button onclick="wizAddSource('url')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ URL</button>
-          <button onclick="wizAddSource('github')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ GitHub</button>
-          <button onclick="wizAddSource('upload')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ Upload</button>
-          <button onclick="wizAddSource('google_drive')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ Google Drive</button>
-          <button onclick="wizAddSource('dropbox')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ Dropbox</button>
-          <button onclick="wizAddSource('gmail')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ Gmail</button>
-          <button onclick="wizAddSource('google_sheets')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ Google Sheets</button>
-          <button onclick="wizAddSource('bibliography')" style="padding:5px 12px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;cursor:pointer;">+ Bibliography</button>
+          <button onclick="wizAddSource('rss')" class="btn small" style="border-style:dashed;">+ RSS Feed</button>
+          <button onclick="wizAddSource('url')" class="btn small" style="border-style:dashed;">+ URL</button>
+          <button onclick="wizAddSource('github')" class="btn small" style="border-style:dashed;">+ GitHub</button>
+          <button onclick="wizAddSource('upload')" class="btn small" style="border-style:dashed;">+ Upload</button>
+          <button onclick="wizAddSource('google_drive')" class="btn small" style="border-style:dashed;">+ Google Drive</button>
+          <button onclick="wizAddSource('dropbox')" class="btn small" style="border-style:dashed;">+ Dropbox</button>
+          <button onclick="wizAddSource('gmail')" class="btn small" style="border-style:dashed;">+ Gmail</button>
+          <button onclick="wizAddSource('google_sheets')" class="btn small" style="border-style:dashed;">+ Google Sheets</button>
+          <button onclick="wizAddSource('bibliography')" class="btn small" style="border-style:dashed;">+ Bibliography</button>
         </div>
       </div>
     </div>
     <!-- Step 2: Trigger -->
     <div id="wizPanel2" style="display:none;">
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">When should this rule run?</label>
+        <label class="field-label">When should this rule run?</label>
         <div style="display:flex;flex-direction:column;gap:8px;">
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="schedule" checked onchange="wizUpdateTriggerUI()"> Schedule</label>
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="event" onchange="wizUpdateTriggerUI()"> Event-driven (when new source items appear)</label>
@@ -5180,7 +4804,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       </div>
       <div id="wizTrigSchedule">
         <div style="margin-bottom:14px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Frequency</label>
+          <label class="field-label">Frequency</label>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <button type="button" data-wiz-freq="daily" onclick="wizSetFreq('daily')" style="padding:6px 14px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">Daily</button>
             <button type="button" data-wiz-freq="weekly" onclick="wizSetFreq('weekly')" style="padding:6px 14px;border:1px solid var(--vance-dark);background:var(--vance-dark);color:#fff;font-size:0.82rem;cursor:pointer;">Weekly</button>
@@ -5189,19 +4813,19 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           </div>
         </div>
         <div style="margin-bottom:14px;" id="wizDayRow">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Day</label>
+          <label class="field-label">Day</label>
           <div style="display:flex;gap:4px;flex-wrap:wrap;">
             <button type="button" data-wiz-dow="1" onclick="wizSetDay(1)" style="padding:5px 10px;border:1px solid var(--vance-dark);background:var(--vance-dark);color:#fff;font-size:0.8rem;cursor:pointer;">Mon</button>
-            <button type="button" data-wiz-dow="2" onclick="wizSetDay(2)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Tue</button>
-            <button type="button" data-wiz-dow="3" onclick="wizSetDay(3)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Wed</button>
-            <button type="button" data-wiz-dow="4" onclick="wizSetDay(4)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Thu</button>
-            <button type="button" data-wiz-dow="5" onclick="wizSetDay(5)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Fri</button>
-            <button type="button" data-wiz-dow="6" onclick="wizSetDay(6)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Sat</button>
-            <button type="button" data-wiz-dow="0" onclick="wizSetDay(0)" style="padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.8rem;cursor:pointer;">Sun</button>
+            <button type="button" data-wiz-dow="2" onclick="wizSetDay(2)" class="btn small">Tue</button>
+            <button type="button" data-wiz-dow="3" onclick="wizSetDay(3)" class="btn small">Wed</button>
+            <button type="button" data-wiz-dow="4" onclick="wizSetDay(4)" class="btn small">Thu</button>
+            <button type="button" data-wiz-dow="5" onclick="wizSetDay(5)" class="btn small">Fri</button>
+            <button type="button" data-wiz-dow="6" onclick="wizSetDay(6)" class="btn small">Sat</button>
+            <button type="button" data-wiz-dow="0" onclick="wizSetDay(0)" class="btn small">Sun</button>
           </div>
         </div>
         <div style="margin-bottom:14px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Time (GMT)</label>
+          <label class="field-label">Time (GMT)</label>
           <select id="wizHour" onchange="wizUpdateCronPreview()" style="padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
             <option value="0">00:00 GMT</option><option value="1">01:00 GMT</option><option value="2">02:00 GMT</option><option value="3">03:00 GMT</option><option value="4">04:00 GMT</option><option value="5">05:00 GMT</option><option value="6">06:00 GMT</option><option value="7" selected>07:00 GMT</option><option value="8">08:00 GMT</option><option value="9">09:00 GMT</option><option value="10">10:00 GMT</option><option value="11">11:00 GMT</option><option value="12">12:00 GMT</option><option value="13">13:00 GMT</option><option value="14">14:00 GMT</option><option value="15">15:00 GMT</option><option value="16">16:00 GMT</option><option value="17">17:00 GMT</option><option value="18">18:00 GMT</option><option value="19">19:00 GMT</option><option value="20">20:00 GMT</option><option value="21">21:00 GMT</option><option value="22">22:00 GMT</option><option value="23">23:00 GMT</option>
           </select>
@@ -5210,26 +4834,26 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       </div>
       <div id="wizTrigEvent" style="display:none;">
         <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Minimum gap between runs (hours)</label>
+          <label class="field-label">Minimum gap between runs (hours)</label>
           <input id="wizMinGap" type="number" value="4" min="1" max="168" style="width:120px;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
         </div>
       </div>
       <div style="margin-bottom:12px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Max articles per run</label>
+        <label class="field-label">Max articles per run</label>
         <input id="wizMaxArticles" type="number" value="3" min="1" max="10" style="width:120px;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
       </div>
     </div>
     <!-- Step 3: Generation -->
     <div id="wizPanel3" style="display:none;">
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Template</label>
+        <label class="field-label">Template</label>
         <select id="wizTemplate" disabled title="Template is locked to the selected Category — they always match." style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;opacity:0.7;cursor:not-allowed;"></select>
         <p style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">Locked — automatically matches the Category chosen in Step 1. Title prefix (e.g. "Clinical Review: …") is enforced for you.</p>
       </div>
       <div class="wiz-row-2" style="margin-bottom:16px;">
         <div>
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">AI Model <span style="color:var(--text-muted);font-weight:400;">(optional — overrides default)</span></label>
-          <select id="wizModel" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+          <label class="field-label">AI Model <span style="color:var(--text-muted);font-weight:400;">(optional — overrides default)</span></label>
+          <select id="wizModel" class="input">
             <option value="">— Use category default model —</option>
             <optgroup label="── Recommended (Free) ──">
               <option value="arcee-ai/trinity-large-preview:free">Arcee AI: Trinity Large ★</option>
@@ -5255,14 +4879,14 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           </select>
         </div>
         <div>
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Prompt</label>
-          <select id="wizPromptSelect" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+          <label class="field-label">Prompt</label>
+          <select id="wizPromptSelect" class="input">
             <option value="">— Use category default —</option>
           </select>
           <p style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">Add/edit on the <a href="#" onclick="event.preventDefault();switchTab('categories');">Categories page</a>.</p>
           <div id="wizSubCatRouteWrap" style="display:none;margin-top:10px;">
             <label style="display:block;font-size:0.75rem;font-weight:600;margin-bottom:4px;color:var(--text);">WP sub-category</label>
-            <select id="wizSubCategorySelect" onchange="_wizUpdateSubCatRoute()" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+            <select id="wizSubCategorySelect" onchange="_wizUpdateSubCatRoute()" class="input">
               <option value="">— Auto (derive from prompt name) —</option>
               <option value="Clinical Trial Abstracts">Clinical Trial Abstracts</option>
               <option value="Clinical Trial Reviews">Clinical Trial Reviews</option>
@@ -5277,7 +4901,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         </div>
       </div>
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Source handling</label>
+        <label class="field-label">Source handling</label>
         <div style="display:flex;gap:24px;flex-wrap:wrap;">
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizCombine" value="one-per-item" checked> One article per source item</label>
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizCombine" value="combine"> Summarise all into one article</label>
@@ -5354,7 +4978,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <!-- Step 4: Review -->
     <div id="wizPanel4" style="display:none;">
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Does this content require human review before publishing?</label>
+        <label class="field-label">Does this content require human review before publishing?</label>
         <div style="display:flex;gap:24px;flex-wrap:wrap;">
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizReview" value="yes" checked onchange="wizUpdateReviewUI()"> Yes &mdash; hold in Automation Inbox</label>
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizReview" value="no" onchange="wizUpdateReviewUI()"> No &mdash; publish automatically</label>
@@ -5362,7 +4986,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       </div>
       <div id="wizReviewOpts">
         <div style="margin-bottom:14px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:8px;color:var(--text);">Approval threshold</label>
+          <label class="field-label">Approval threshold</label>
           <div style="display:flex;gap:24px;flex-wrap:wrap;">
             <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;">
               <input type="radio" name="wizReviewMode" value="any" checked> Any one reviewer can approve
@@ -5376,7 +5000,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start;">
           <label style="font-size:0.8rem;font-weight:600;color:var(--text);">Auto-approve after <input id="wizTimeoutHours" type="number" value="48" min="1" max="720" style="width:70px;padding:4px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;"> hours if no response</label>
           <div>
-            <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">On timeout:</label>
+            <label class="field-label">On timeout:</label>
             <select id="wizOnTimeout" style="width:220px;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
               <option value="urgent_reminder" selected>Resend as URGENT (hold)</option>
               <option value="approve">Approve automatically</option>
@@ -5396,7 +5020,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <div id="wizTgOpts" style="display:none;padding-left:24px;">
           <div style="margin-bottom:10px;">
             <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:4px;color:var(--text);">Chat ID</label>
-            <input id="wizTgChatId" type="text"style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+            <input id="wizTgChatId" type="text"class="input">
           </div>
           <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;margin-bottom:8px;cursor:pointer;">
             <input type="checkbox" id="wizTgApprove" checked> Allow approval via Telegram inline buttons
@@ -5448,7 +5072,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
 <!-- Automation: View Rules -->
 <div class="tab-view" id="view-automation-rules">
-  <div style="padding:20px 24px; flex:1; display:flex; flex-direction:column; min-height:0;">
+  <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-shrink:0;">
       <h1 style="font-size:1.1rem; font-weight:800; color:var(--vance-dark); margin:0;">Automations</h1>
       <button class="btn btn-orange btn-sm" onclick="openRuleWizard()">+ New Rule</button>
@@ -5465,7 +5089,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <!-- Operations Logs — the merged home for generation notifications, the article
      approval history (was its own "Approval Log" tab) and the automation run log. -->
 <div class="tab-view" id="view-automation-inbox">
-  <div style="padding:20px 24px; flex:1; display:flex; flex-direction:column; min-height:0;">
+  <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; flex-shrink:0;">
       <h1 style="font-size:1.1rem; font-weight:800; color:var(--vance-dark); margin:0;">Operations Logs</h1>
       <span id="inboxBadgeHeader" style="display:none; background:var(--vance-primary); color:#fff; font-size:0.6rem; font-weight:700; padding:2px 8px; margin-left:4px; vertical-align:middle;">0</span>
@@ -5574,34 +5198,37 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
 <!-- ── Bibliography Wizard ── -->
 <div class="tab-view" id="view-bibliography-new">
-  <div style="border:1px solid var(--border);background:var(--card);box-shadow:var(--shadow);overflow:hidden;">
+  <div class="wiz-page">
     <div class="wiz-hero">
       <div>
         <h2 id="bibWizTitle">New Bibliography</h2>
         <p>Build a collection of research papers</p>
       </div>
-      <button class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.3);font-size:0.72rem;" onclick="closeBibWizard()">Cancel</button>
+      <button class="btn subtle" style="color:#fff;" onclick="closeBibWizard()">Cancel</button>
     </div>
     <div class="wiz-steps-bar" id="bibWizardSteps">
       <div class="wiz-step active" id="bibStep1">&#9312; Details</div>
       <div class="wiz-step" id="bibStep2">&#9313; Add Papers</div>
       <div class="wiz-step" id="bibStep3">&#9314; Review</div>
     </div>
-    <div style="padding:24px 28px;">
+    <div class="wiz-body">
+      <div class="callout critical wiz-error" id="bibError" role="alert" hidden>
+        <div class="c-body" id="bibErrorText"></div>
+      </div>
       <!-- Step 1: Details -->
       <div id="bibPanel1">
         <div style="margin-bottom:16px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Bibliography Name *</label>
-          <input id="bibName" type="text" maxlength="80" placeholder="e.g. IBD Treatment Guidelines 2026" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+          <label class="field-label">Bibliography Name *</label>
+          <input id="bibName" type="text" maxlength="80" placeholder="e.g. IBD Treatment Guidelines 2026" class="input">
         </div>
         <div style="margin-bottom:16px;">
-          <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Description</label>
+          <label class="field-label">Description</label>
           <textarea id="bibDesc" rows="3" placeholder="Brief description of this bibliography collection..." style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;resize:vertical;"></textarea>
         </div>
         <div style="display:flex;gap:16px;">
           <div style="flex:1;">
-            <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Indication</label>
-            <select id="bibIndication" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+            <label class="field-label">Indication</label>
+            <select id="bibIndication" class="input">
               <option value="IBD">IBD (General)</option>
               <option value="Crohn's Disease">Crohn's Disease</option>
               <option value="Ulcerative Colitis">Ulcerative Colitis</option>
@@ -5611,8 +5238,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             </select>
           </div>
           <div style="flex:1;">
-            <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--text);">Bibliography Type</label>
-            <select id="bibType" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+            <label class="field-label">Bibliography Type</label>
+            <select id="bibType" class="input">
               <option value="clinical">Clinical</option>
               <option value="guidelines">Guidelines</option>
               <option value="health-economics">Health Economics</option>
@@ -5626,8 +5253,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <div style="margin-bottom:16px;padding:14px;background:var(--bg);border:1px solid var(--border);">
           <label style="display:block;font-size:0.8rem;font-weight:700;margin-bottom:8px;color:var(--text);">Search Literature</label>
           <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:4px;align-items:center;">
-            <label style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;">Search Query</label>
-            <label style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;">Database</label>
+            <label class="field-label">Search Query</label>
+            <label class="field-label">Database</label>
             <span></span>
           </div>
           <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:10px;align-items:center;">
@@ -5639,8 +5266,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             <button class="btn btn-orange" onclick="bibRunSearch()" id="bibSearchBtn" style="white-space:nowrap;">Search</button>
           </div>
           <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:4px;align-items:center;">
-            <label style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;">Narrow by Keywords <span style="font-weight:400;text-transform:none;letter-spacing:0;">(comma-separated, ANDed into search)</span></label>
-            <label style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;">Filter by Country</label>
+            <label class="field-label">Narrow by Keywords <span style="font-weight:400;text-transform:none;letter-spacing:0;">(comma-separated, ANDed into search)</span></label>
+            <label class="field-label">Filter by Country</label>
           </div>
           <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px;align-items:center;">
             <input id="bibSearchKeywords" type="text" placeholder="e.g. remission, mucosal healing, biologic" style="padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.78rem;" onkeydown="if(event.key==='Enter')bibRunSearch()">
@@ -6036,11 +5663,11 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
   </div>
 </div>
 
-  </div><!-- /main-content -->
-</div><!-- /app-layout -->
+    </div><!-- /content-inner -->
+  </div><!-- /content -->
 
-  </div><!-- /scroll-area -->
-</div><!-- /app-main -->
+  </div><!-- /main -->
+</div><!-- /app -->
 
 <!-- PUBLISHING QUEUE PANEL (slide-in from right) -->
 
@@ -11193,16 +10820,80 @@ function switchTab(tab, fromHistory) {
   if (!fromHistory && location.hash.slice(1) !== tab) {
     history.pushState({ tab: tab }, '', '#' + tab);
   }
+
+  // If the destination's nav button lives inside a collapsed group, open it.
+  // Arriving from the URL hash, a Back button or a cross-link would otherwise
+  // highlight a row nobody can see.
+  var navBtn = document.getElementById('tab-' + tab);
+  if (navBtn) openNavGroupFor(navBtn);
+
+  // #content is the only scrolling region under the CS shell. Without this a
+  // new page opens at the scroll offset of the one before it — land halfway
+  // down the Library, switch to Settings, and Settings opens mid-page.
+  var scroller = document.getElementById('content');
+  if (scroller) scroller.scrollTop = 0;
 }
 
 // ── Prompt Library nav shortcuts ──────────────────────────────────────────────
 // The three prompt libraries live inside other pages; these jump straight to
 // the right surface. Active-state highlighting is handled manually because the
 // destinations share tab ids with other nav items.
+/* ── Sidebar card navigation ───────────────────────────────────────────────
+   The sidebar is a stack of cards rather than a flat list, so "the active
+   destination" can be a row in the Operations hub (.rh-row), a row in a
+   content panel (.rh-row), an expandable group's own button (.np-btn) or a
+   child inside one of those groups (.np-item). All four carry .active and all
+   four have to be cleared together — clearing only one kind is what leaves two
+   things looking selected at once. */
+function clearNavActive() {
+  document.querySelectorAll('#sidebar .rh-row.active, #sidebar .np-item.active, #sidebar .np-btn.active')
+    .forEach(function(b) { b.classList.remove('active'); });
+}
+
 function markPromptNavActive(id) {
-  document.querySelectorAll('.sidebar-nav .nav-item').forEach(function(b) { b.classList.remove('active'); });
+  clearNavActive();
   var btn = document.getElementById(id);
+  if (!btn) return;
+  btn.classList.add('active');
+  openNavGroupFor(btn);
+}
+
+/* Expand/collapse one group. Accordion, like the CS console: opening one
+   closes the others, so the sidebar cannot grow past the fold on a laptop. */
+function toggleNavGroup(gid) {
+  var group = document.getElementById(gid);
+  if (!group) return;
+  var opening = !group.classList.contains('open');
+  document.querySelectorAll('#sidebar .np-group.open').forEach(function(g) {
+    g.classList.remove('open');
+    var b = g.querySelector('.np-btn');
+    if (b) b.setAttribute('aria-expanded', 'false');
+  });
+  group.classList.toggle('open', opening);
+  var btn = group.querySelector('.np-btn');
+  if (btn) btn.setAttribute('aria-expanded', String(opening));
+}
+
+/* Reveal a nav button that lives inside a collapsed group. Without this,
+   navigating to Social ▸ Post Queue from anywhere other than the sidebar
+   leaves the highlight hidden inside a shut group. */
+function openNavGroupFor(btn) {
+  var group = btn && btn.closest ? btn.closest('.np-group') : null;
+  if (!group || group.classList.contains('open')) return;
+  toggleNavGroup(group.id);
+}
+
+/* One entry point for the six Social panes the sidebar now lists directly.
+   switchTab('distribution') always lands on Kit Builder, so the pane has to be
+   selected after it rather than instead of it. */
+function gotoSocial(pane) {
+  switchTab('distribution');
+  if (typeof switchSocialTab === 'function') switchSocialTab(pane);
+  clearNavActive();
+  var group = document.getElementById('navGroup-social');
+  var btn = document.getElementById('tab-distribution');
   if (btn) btn.classList.add('active');
+  if (group && !group.classList.contains('open')) toggleNavGroup('navGroup-social');
 }
 function gotoArticlePrompts() {
   switchTab('categories');   // article prompts are managed per category
@@ -12569,6 +12260,9 @@ function wizSaveNow() {
 
 function _wizRenderStep(step) {
   _wizStep = step;
+  // A message about step 1 must not survive onto step 2, and must not still be
+  // showing when the wizard is reopened for a different rule.
+  if (typeof wizShowError === 'function') wizShowError('');
   for (var i = 1; i <= 5; i++) {
     var panel = document.getElementById('wizPanel' + i);
     var stepEl = document.getElementById('wizStep' + i);
@@ -12610,13 +12304,50 @@ function wizNext() {
   }
 }
 
+/* Show or clear the wizard's inline validation message. The element is `hidden`
+   rather than an always-present empty box: a live region that is permanently in
+   the DOM but blank is announced on every write, and it reserves a gap the
+   panel reads better without. */
+function wizShowError(msg) {
+  var box = document.getElementById('wizError');
+  var txt = document.getElementById('wizErrorText');
+  if (!box || !txt) { if (msg) alert(msg); return; }   // fallback, never silent
+  if (!msg) { box.hidden = true; txt.textContent = ''; return; }
+  txt.textContent = msg;
+  box.hidden = false;
+  box.scrollIntoView({ block: 'nearest' });
+}
+
 function _wizValidateStep(step) {
+  wizShowError('');
   if (step === 1) {
-    if (!document.getElementById('wizName').value.trim()) {
-      alert('Please enter a rule name.'); return false;
+    var nameEl = document.getElementById('wizName');
+    if (!nameEl.value.trim()) {
+      wizShowError('Give the rule a name before continuing.');
+      nameEl.focus();
+      return false;
+    }
+    if (!document.getElementById('wizCategory').value) {
+      wizShowError('Choose a category — it decides which prompt and model the rule uses.');
+      return false;
     }
     if (!_wizSources.length) {
-      alert('Please add at least one source.'); return false;
+      wizShowError('Add at least one source. A rule with no sources has nothing to generate from.');
+      return false;
+    }
+    // A source row can be added and left empty, which used to save a rule that
+    // silently produced nothing on every run.
+    var blank = _wizSources.filter(function (s) {
+      if (s.type === 'github') return !s.repo;
+      if (s.type === 'bibliography') return !s.bibId;
+      if (s.type === 'rss' || s.type === 'url') return !s.url;
+      return false;
+    });
+    if (blank.length) {
+      wizShowError(blank.length === 1
+        ? 'One source is still empty. Fill it in or remove it.'
+        : blank.length + ' sources are still empty. Fill them in or remove them.');
+      return false;
     }
   }
   return true;
@@ -13276,6 +13007,7 @@ function closeBibWizard() {
 
 function _bibRenderStep(step) {
   _bibStep = step;
+  if (typeof bibShowError === 'function') bibShowError('');
   for (var i = 1; i <= 3; i++) {
     var panel = document.getElementById('bibPanel' + i);
     var stepEl = document.getElementById('bibStep' + i);
@@ -13295,9 +13027,28 @@ function _bibRenderStep(step) {
   }
 }
 
+/* Twin of wizShowError() for the bibliography wizard. Same reasoning: an inline
+   announced region beats a modal alert that hides the field it is complaining
+   about. */
+function bibShowError(msg) {
+  var box = document.getElementById('bibError');
+  var txt = document.getElementById('bibErrorText');
+  if (!box || !txt) { if (msg) alert(msg); return; }
+  if (!msg) { box.hidden = true; txt.textContent = ''; return; }
+  txt.textContent = msg;
+  box.hidden = false;
+  box.scrollIntoView({ block: 'nearest' });
+}
+
 function bibNext() {
+  bibShowError('');
   if (_bibStep === 1) {
-    if (!document.getElementById('bibName').value.trim()) { alert('Bibliography name is required'); return; }
+    var nameEl = document.getElementById('bibName');
+    if (!nameEl.value.trim()) {
+      bibShowError('Give the bibliography a name before continuing.');
+      nameEl.focus();
+      return;
+    }
     _bibRenderStep(2);
   } else if (_bibStep === 2) {
     _bibRenderStep(3);
@@ -14850,11 +14601,12 @@ async function viewArticleFromPipeline(itemId) {
 
   switchTab('article');
   // Open the article scrolled to the top — otherwise it inherits the scroll
-  // position of whatever tab we came from and lands mid-page. .scroll-area only
-  // scrolls internally when its content fits within one viewport; long articles
-  // exceed that, so the window itself scrolls instead — reset both.
-  var scrollArea = document.querySelector('.scroll-area');
-  if (scrollArea) scrollArea.scrollTop = 0;
+  // position of whatever tab we came from and lands mid-page. Under the CS
+  // shell #content is the only scrolling region (html/body are overflow:hidden),
+  // so that is the element to reset; the window scroll is kept as a no-op
+  // safeguard for the login/boot states where the shell is not mounted.
+  var scroller = document.getElementById('content');
+  if (scroller) scroller.scrollTop = 0;
   window.scrollTo(0, 0);
 }
 
@@ -17107,8 +16859,13 @@ async function submitLogin() {
   }
 }
 
+/* The sidebar's account chip and its pop-up menu were replaced by the header's
+   .whoami block plus the drawer's .drawer-account. Neither element exists any
+   more, but the function is still referenced from older markup paths — so it
+   guards rather than throwing on a null. */
 function toggleUserMenu() {
   const m = document.getElementById('userMenu');
+  if (!m) return;
   m.style.display = m.style.display === 'none' ? 'block' : 'none';
 }
 document.addEventListener('click', (e) => {
@@ -17187,16 +16944,27 @@ function applyRoleGating() {
   };
   Object.entries(navItems).forEach(([id, show]) => {
     const el = document.getElementById(id);
-    if (el) el.style.display = show ? '' : 'none';
+    if (!el) return;
+    // Two of these ids are now the toggle button of an expandable group. Hiding
+    // the button alone would leave its menu of children behind — visible, and
+    // pointing at a destination the role cannot reach. Hide the group instead.
+    const target = el.closest('.np-group') || el;
+    target.style.display = show ? '' : 'none';
   });
-  // Update the user chip in the sidebar
-  const chip = document.getElementById('userChip');
-  if (chip && _currentUser) {
-    const initials = (_currentUser.name || '').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-    chip.innerHTML = '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:#006868;color:#fff;font-size:0.6rem;font-weight:700;">' + initials + '</span>'
-      + '<span style="font-size:0.7rem;color:var(--text);font-weight:600;">' + escapeHtml(_currentUser.name || _currentUser.email) + '</span>'
-      + '<span style="font-size:0.55rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-left:auto;">' + _currentUser.appRole + '</span>';
-  }
+
+  // Identity, in the header on desktop and in the drawer below 860px. Both are
+  // filled from the same place so the two can never disagree.
+  const email = _currentUser ? (_currentUser.name || _currentUser.email || '') : 'not signed in';
+  const role  = _currentUser ? String(_currentUser.appRole || '').replace(/_/g, ' ') : '';
+  [['whoamiEmail', email], ['drawerEmail', email],
+   ['whoamiRole', role],   ['drawerRole', role]].forEach(([id, text]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    // An empty role pill is still a bordered pill. Collapse it rather than
+    // render a 12px blank lozenge next to the address.
+    if (id.endsWith('Role')) el.style.display = text ? '' : 'none';
+  });
 }
 
 window.addEventListener('DOMContentLoaded', () => {

@@ -34,12 +34,47 @@ Any project-specific learning, fix, gotcha, or architectural note discovered whi
 - Handler logic lives in `lib/automation/handlers/` (doesn't count toward function limit).
 
 ## UI Patterns
-- Tab switching: `switchTab('tab-name')` — tab views are `<div id="view-tab-name">`.
+
+**The UI mirrors the Customer Service console** (`cs.vancemedicalfoods.co.uk`, source
+at `Ai-projects-VANCE/CustomerService/app/public/`). Three stylesheets, in this order:
+
+1. `vance-ui.css` — shared estate tokens + mobile shell. **Vendored, byte-identical
+   across V-Net, CS, the Alerts dashboard and here.** Never fork it locally; change it
+   upstream, bump the version header, copy it to every repo.
+2. the inline `<style>` in `index.html` — this app's own feature CSS only (generator,
+   pipeline board, calendar, social console, category editor, wizards).
+3. `vance-cs.css` — the CS design layer: tokens, shell, sidebar cards, primitives, plus
+   a bridge section mapping this app's legacy class names onto them.
+
+Loading (3) last is deliberate — it lets a legacy class be restyled without hunting
+down its original rule. Anything added to the inline block will be *overridden* by
+`vance-cs.css`, so put new shared styling there instead.
+
+- Shell: `.app` (grid) → `.header` + `.main` → `.sidebar.v-drawer#sidebar` + `.content#content`.
+  `html`/`body` are `overflow:hidden`; **`#content` is the only scrolling region** — reset
+  `#content.scrollTop`, never `window.scrollTo`.
+- Sidebar is a stack of cards, not a list: `.review-hub` (Operations) then `.nav-panel`s.
+  Flat rows are `.rh-row`, expandable groups are `.np-group` > `.np-btn` + `.np-menu` > `.np-item`.
+  Adding a destination means a row **and** an entry in `allTabs`.
+- `switchTab('tab-name')` — tab views are `<div id="view-tab-name">`; nav buttons are `#tab-<name>`.
 - All tabs registered in `allTabs` array inside `switchTab()` — add new tabs there.
 - Wizard: 5-step rule wizard uses shared element IDs (`wizName`, `wizPanel1`–`5` etc.) — only one instance in DOM at a time.
 - `openRuleWizard(editId?)` navigates to `view-automation-new`; `closeRuleWizard()` returns to `automation-rules`.
-- CSS variable `--radius: 0px` globally — all corners square by design.
+- Wizard validation is inline: `wizShowError(msg)` / `bibShowError(msg)` write to a
+  `.callout.critical` region. **Do not reintroduce `alert()`** — it hides the field it
+  is complaining about.
+- `--radius: 10px` / `--radius-sm: 7px`, from `vance-cs.css`. *(Reversed 2026-08-06.
+  This file previously said "0px, all corners square by design"; square edges were
+  unique to this one app in the estate and did not survive the CS mirror.)*
+- Do not add page padding or a `max-width` to a view container — `.content` owns the
+  gutter and `.content-inner` owns the measure. `vance-cs.css` §5 neutralises the ones
+  that predate this.
 - Category SVG icons: `getCatSvgIcon(catId)` — used on both dashboard and categories page. Add new categories here.
+
+### Looking at the UI without deploying
+`python scripts/build-render-harness.py` writes a gitignored `_harness.html` that renders
+the shell and all 18 views from the working copy. Visual checks only — there is no API
+behind it, so every view renders empty.
 
 ## API Patterns
 - All handlers export a named function + default Vercel handler.

@@ -1,0 +1,938 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   VANCE CONTENT GENERATOR — CS console design layer
+   vance-cs.css  v1.0.0
+
+   This file makes the Content Generator look and navigate like the Customer
+   Service console at cs.vancemedicalfoods.co.uk. It is a port of that app's
+   `app/public/ui/styles.css` design layer, plus a bridge section that maps
+   this app's own legacy class names onto the same primitives.
+
+   ── Load order matters ────────────────────────────────────────────────────
+
+   1. vance-ui.css      shared estate tokens + mobile shell (v1.1.0, byte
+                        identical in both repos — do not fork it here)
+   2. the inline <style> in index.html   this app's remaining feature CSS
+   3. THIS FILE
+
+   Third on purpose. index.html carries ~2,000 lines of inline CSS that predate
+   the estate design system, and a stylesheet loaded before it would lose every
+   equal-specificity contest. Loading last means the bridge in section 5 can
+   restyle a legacy class without that class's original rule having to be found
+   and deleted first. Rules that are genuinely dead have still been deleted from
+   the inline block; the bridge covers what remains.
+
+   ── One trap, worth stating ───────────────────────────────────────────────
+
+   vance-ui.css sets its light palette on `:root[data-theme="light"]`, and this
+   document pins `data-theme="light"` on <html>. That selector scores (0,2,0);
+   a bare `:root` scores (0,1,0) and would silently lose. Every token override
+   below is therefore written against BOTH selectors. Removing the attribute
+   selector from that list re-points the whole app back at the estate defaults
+   without any rule appearing to change.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. TOKENS
+   Ported from CustomerService/app/public/ui/styles.css :root.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root,
+:root[data-theme="light"] {
+  /* ---- Vance brand palette ----
+     #008080 teal · #78BFBF · #AEDBDB · #DEF4F4 · #F4FFFF
+     #8E7DBE lavender · #708090 slate · #DDE2E6 grey */
+  --brand-teal:   #008080;
+  --brand-teal-2: #78bfbf;
+  --brand-teal-3: #aedbdb;
+  --brand-mist:   #def4f4;
+  --brand-tint:   #f4ffff;
+  --brand-purple: #8e7dbe;
+  --brand-navy:   #004D4D;   /* darkest teal; carries headings. Not a navy. */
+  --brand-slate:  #708090;
+  --brand-grey:   #dde2e6;
+
+  --primary:       #004D4D;
+  --primary-dark:  #003838;
+  --secondary:     #708090;
+  --cta:           #008080;
+  --cta-dark:      #006a6a;
+
+  --bg:            #f4ffff;
+  --surface:       #ffffff;
+  --surface-2:     #eef7f7;
+  --text:          #213547;
+  --text-muted:    #44586b;
+  --text-faint:    #708090;
+  --border:        #dde2e6;
+  --border-strong: #c3ccd4;
+
+  /* status */
+  --draft:    #b45309;  --draft-bg:    #fffbeb;  --draft-bd:    #fde68a;
+  --review:   #0f6f8c;  --review-bg:   #e6f6fa;  --review-bd:   #b6e3ee;
+  --approved: #15803d;  --approved-bg: #f0fdf4;  --approved-bd: #bbf7d0;
+
+  /* severity / callouts */
+  --critical:   #b91c1c;  --critical-bg:   #fef2f2;  --critical-bd:   #fecaca;
+  --warning:    #b45309;  --warning-bg:    #fffbeb;  --warning-bd:    #fde68a;
+  --info:       #0c6b73;  --info-bg:       #def4f4;  --info-bd:       #aedbdb;
+  --tip:        #0f766e;  --tip-bg:        #f0fdfa;  --tip-bd:        #99f6e4;
+  --compliance: #6d5aa6;  --compliance-bg: #f3f1fb;  --compliance-bd: #d9d2ef;
+
+  /* Shape. CLAUDE.md recorded "--radius: 0px, all corners square by design";
+     that decision was reversed on 2026-08-06 in favour of matching the CS
+     console. Square corners were unique to this one app in the estate. */
+  --radius:    10px;
+  --radius-sm: 7px;
+
+  --shadow:    0 1px 2px rgba(15,23,42,.06), 0 4px 12px rgba(15,23,42,.05);
+  --shadow-lg: 0 10px 30px rgba(15,23,42,.14);
+
+  --sidebar-w: 320px;
+  --header-h:  70px;
+
+  --font-head: var(--sans);
+  --font-body: var(--sans);
+
+  /* ── Legacy token re-point ────────────────────────────────────────────────
+     These nine names are this app's own, and between them they are referenced
+     well over 400 times in the inline <style> — `--vance-dark` alone accounts
+     for 242. Re-pointing the names is what converts those call sites to the CS
+     palette in one move, rather than editing each rule and missing some. */
+  --vance-primary:  var(--cta);
+  --vance-accent:   var(--brand-teal-2);
+  --vance-dark:     var(--brand-navy);
+  --vance-dark-mid: #005E5E;
+  --vance-dark-lt:  #007373;
+  --sidebar-bg:     var(--surface);   /* the CS sidebar is white, not tinted */
+  --header-green:   var(--brand-navy);
+  --card:           var(--surface);
+  --success:        var(--approved);
+  --error:          var(--critical);
+  --topbar-h:       var(--header-h);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. BASE + APP SHELL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* The window never scrolls; .content does. This is what lets the header and
+   the sidebar stay put without either being position:fixed. */
+html, body { margin: 0; height: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--bg);
+  font-size: 15px;
+  line-height: 1.6;
+  /* The old shell laid the body out as a flex row with the sidebar as a
+     sibling. .app is a grid now, so the row must go or the shell sits inside a
+     flex item and stops filling the viewport. */
+  display: block;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-head); color: var(--text); line-height: 1.3; }
+a { color: var(--cta); }
+button { font-family: var(--font-body); cursor: pointer; }
+:focus-visible { outline: 3px solid var(--cta); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Two heights, deliberately. 100vh on a phone is the viewport with the browser
+   chrome HIDDEN, so a 100vh shell is permanently taller than what can be seen
+   and its last row hides behind the address bar. 100dvh is the live value; the
+   vh line stays first as the fallback. */
+.app {
+  display: grid;
+  grid-template-rows: var(--header-h) minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 var(--border), 0 2px 10px rgba(0,128,128,.06);
+  z-index: 30;
+}
+.header .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.header .brand-home { border: none; background: none; padding: 0; cursor: pointer; border-radius: var(--radius-sm); }
+.header .brand-home:hover .brand-text b { color: var(--cta); }
+.header .brand-logo { height: 52px; width: auto; display: block; }
+.header .brand-sep { width: 1px; height: 26px; background: var(--border); }
+.header .brand-text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.header .brand-text b {
+  font-family: var(--font-head); font-weight: 700; font-size: 15px;
+  color: var(--brand-navy); white-space: nowrap;
+}
+.header .brand-text span {
+  color: var(--text-faint); font-size: 11.5px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 360px;
+}
+.header .spacer { flex: 1; }
+
+/* Save/run state. This app drives it through setStatus(state, text), which
+   rewrites #statusBadge's className — so the state classes have to hang off
+   .status-badge, not off .savestate. See the bridge in section 5. */
+.header .savestate {
+  font-size: 12.5px; color: var(--text-faint);
+  display: flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--approved); display: inline-block; flex: none; }
+.dot.saving { background: var(--draft); }
+.dot.error  { background: var(--critical); }
+
+/* ── Main split ─────────────────────────────────────────────────────────── */
+.main {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  min-height: 0;
+  height: 100%;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+  padding: 12px;
+}
+
+/* The old sidebar was a sticky flex child with a fixed height, a fixed width
+   and a width transition. Those have to be unset — but ONLY above the
+   breakpoint. Below it the very same element is `.v-drawer`, and `.v-drawer`
+   in vance-ui.css scores exactly as much as a bare `.sidebar` does; this file
+   loads later, so an unscoped reset here silently wins and takes
+   `position: fixed` off the drawer. The drawer then lays out as a grid item —
+   translated off-screen but still reserving a column's worth of the page.
+   Scoping the reset to the desktop range is what keeps the drawer a drawer. */
+@media (min-width: 860px) {
+  .sidebar {
+    position: static;
+    width: auto;
+    height: auto;
+    display: block;
+    flex-shrink: initial;
+    transition: none;
+  }
+}
+.sidebar::-webkit-scrollbar { width: 8px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--brand-grey); border-radius: 8px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar { scrollbar-width: thin; scrollbar-color: var(--brand-grey) transparent; }
+
+/* ── Content ────────────────────────────────────────────────────────────────
+   Left-justified with a deliberate gutter, exactly as the CS console does it:
+   a centred column drifts right of the visual middle once a fixed left sidebar
+   is in play, and reads as a mistake rather than as a choice.
+
+   The measure is wider than CS's 860px, and that is the one considered
+   divergence in this file. CS is a reading console — handbook sections, SOPs,
+   prose that wants a 70-character line. This app is a tool: it has a kanban
+   board, a month calendar grid, a six-pane social console and a two-column
+   generator. At 860px those do not fit and would each need their own escape
+   hatch, which is a worse outcome than one honest wider default. Prose views
+   opt back in with .content-inner.reading.
+   ──────────────────────────────────────────────────────────────────────── */
+.content {
+  overflow-y: auto;
+  min-height: 0;
+  padding: 26px 30px 80px 150px;
+}
+.content-inner { max-width: 1100px; margin: 0; }
+.content-inner.reading { max-width: 860px; }
+
+/* Below 1400px the 150px gutter is costing the boards more than it buys. */
+@media (max-width: 1400px) {
+  .content { padding-left: 40px; }
+}
+
+/* ── Back bar ───────────────────────────────────────────────────────────── */
+.back-bar { max-width: 1100px; margin: 0 0 10px; display: flex; }
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border-strong); background: var(--surface);
+  color: var(--text-muted); font-size: 13px; font-weight: 600;
+  padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.back-btn:hover:not(:disabled) { background: var(--brand-mist); color: var(--cta); border-color: var(--brand-teal-3); }
+.back-btn:disabled { opacity: .4; cursor: not-allowed; }
+.back-btn .back-ico { display: inline-flex; }
+.back-btn .back-ico svg { width: 16px; height: 16px; }
+
+/* ── Page heads ─────────────────────────────────────────────────────────── */
+.doc-head { margin-bottom: 6px; }
+.doc-head h2 { margin: 0; font-size: 24px; }
+.doc-head .sub { color: var(--text-muted); margin: 4px 0 0; font-size: 14px; }
+.doc-head-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.doc-head-row { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+
+.section-h { font-size: 19px; margin: 30px 0 6px; padding-top: 14px; border-top: 1px solid var(--border); }
+.section-h:first-of-type { border-top: none; }
+
+.sec-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.sec-head h2 {
+  font-family: var(--font-head); font-size: 12px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--text-faint); margin: 0;
+}
+.sec-desc { font-size: 12.5px; color: var(--text-faint); }
+.sec-link { margin-left: auto; font-size: 12.5px; font-weight: 600; color: var(--cta); text-decoration: none; white-space: nowrap; background: none; border: none; padding: 0; }
+.sec-link:hover { text-decoration: underline; }
+/* A bare text link in a section header has no padding to give it height — it
+   measures ~20px on a phone, under half a thumb. vance-ui.css's 44px floor
+   covers buttons only, because giving every inline link 44px would wreck
+   running prose; a link that is really a control has to say so itself. */
+@media (pointer: coarse) {
+  .sec-link { display: inline-flex; align-items: center; min-height: 44px; padding-left: 10px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. SIDEBAR CARDS
+   The CS console's navigation is not a list, it is a stack of cards: a filled
+   teal Operations hub for the things that change minute to minute, then white
+   panels of expandable groups for everything else.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Operations hub — the filled card at the top ────────────────────────── */
+.review-hub {
+  background: linear-gradient(180deg, var(--brand-mist), #fff);
+  border: 1px solid var(--brand-teal-3);
+  border-radius: var(--radius);
+  padding: 8px; margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.review-hub .rh-title { color: var(--brand-teal); padding: 4px 8px 6px; }
+.rh-title {
+  font-family: var(--font-head); font-weight: 700; font-size: 11px;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--brand-navy); padding: 2px 4px 8px;
+}
+.rh-row {
+  display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
+  border: none; background: none; color: var(--brand-navy);
+  padding: 8px 9px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500; transition: background .12s;
+}
+.rh-row:hover { background: #fff; }
+.rh-row.active { background: var(--brand-teal); color: #fff; box-shadow: var(--shadow); }
+.rh-row.active .rh-count { background: rgba(255,255,255,.25); color: #fff; border-color: transparent; }
+.rh-icon { display: inline-flex; flex: none; }
+.rh-icon svg { width: 17px; height: 17px; }
+.rh-label { flex: 1; }
+.rh-count {
+  min-width: 22px; text-align: center; font-variant-numeric: tabular-nums;
+  font-weight: 700; font-size: 12.5px; padding: 1px 7px; border-radius: 999px;
+  background: #fff; color: var(--brand-teal); border: 1px solid var(--brand-teal-3);
+}
+.rh-count.zero { color: var(--text-faint); background: var(--surface-2); border-color: var(--border); }
+.rh-count.overdue { background: var(--critical); color: #fff; border-color: var(--critical); }
+/* An empty badge element is what this app renders when a count is unknown
+   rather than zero. Collapse it, or every row grows a stray white pill. */
+.rh-count:empty { display: none; }
+
+/* ── Nav panel — the white cards below ──────────────────────────────────── */
+.nav-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 8px; margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.np-group { margin-bottom: 4px; }
+.np-btn {
+  display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
+  border: 1px solid var(--border); background: var(--surface); color: var(--brand-navy);
+  padding: 9px 10px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.np-btn:hover { background: var(--surface-2); border-color: var(--brand-teal-3); }
+.np-btn.active { border-color: var(--cta); }
+.np-group.open > .np-btn {
+  background: var(--brand-mist); border-color: var(--brand-teal-3); color: var(--cta);
+  border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+}
+.np-icon { display: inline-flex; color: var(--cta); flex: none; }
+.np-icon svg { width: 17px; height: 17px; }
+.np-label { flex: 1; }
+.np-caret { display: inline-flex; color: var(--text-faint); transition: transform .15s; }
+.np-caret svg { width: 13px; height: 13px; }
+.np-group.open .np-caret { transform: rotate(90deg); }
+.np-menu {
+  border: 1px solid var(--brand-teal-3); border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: var(--brand-tint); padding: 6px;
+}
+.np-group:not(.open) .np-menu { display: none; }
+.np-item {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  border: none; background: none; color: var(--text); font-size: 13.5px;
+  padding: 6px 9px; border-radius: var(--radius-sm); cursor: pointer;
+  transition: background .12s;
+}
+.np-item:hover { background: #fff; }
+.np-item.active { background: #fff; color: var(--cta); font-weight: 600; box-shadow: inset 2px 0 0 var(--cta); }
+.np-item .np-num { color: var(--text-faint); font-variant-numeric: tabular-nums; font-size: 11.5px; min-width: 18px; flex-shrink: 0; }
+.np-item .badge { margin-left: auto; }
+.np-subgroup {
+  font-family: var(--font-head); font-weight: 700; font-size: 10.5px;
+  letter-spacing: .03em; text-transform: uppercase; color: var(--text-faint);
+  padding: 7px 8px 2px;
+}
+
+/* ── Find: search + filter chips ────────────────────────────────────────── */
+.search {
+  width: 100%; padding: 9px 11px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  font-size: 14px; background: var(--surface); color: var(--text);
+}
+.filter-wrap { margin: 10px 0 6px; }
+.filter-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.filter-head-label {
+  font-family: var(--font-head); font-weight: 700; font-size: 11px;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint);
+}
+.filter-head-hint { font-size: 11px; color: var(--text-faint); font-style: italic; }
+.filter-clear {
+  border: 1px solid var(--border-strong); background: var(--surface); color: var(--cta);
+  font-size: 11.5px; font-weight: 600; padding: 2px 9px; border-radius: 999px; cursor: pointer;
+}
+.filter-clear:hover { background: var(--brand-mist); border-color: var(--brand-teal-3); }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+.chip-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; padding: 4px 9px; border-radius: 999px;
+  border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-muted);
+  transition: background .15s, color .15s, border-color .15s;
+}
+.chip-toggle[aria-pressed="true"] { background: var(--primary); color: #fff; border-color: var(--primary); }
+.chip-count {
+  font-variant-numeric: tabular-nums; font-weight: 700; font-size: 11px;
+  padding: 0 5px; border-radius: 999px; background: var(--surface-2); color: var(--text-muted);
+}
+.chip-toggle[aria-pressed="true"] .chip-count { background: rgba(255,255,255,.25); color: #fff; }
+
+/* ── Identity ───────────────────────────────────────────────────────────── */
+.whoami { display: flex; align-items: center; gap: 7px; margin-right: 10px; min-width: 0; }
+.whoami-email {
+  font-size: 12.5px; color: var(--text-muted); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 190px;
+}
+.role-pill {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--cta); background: var(--brand-mist); border: 1px solid var(--brand-teal-3);
+  border-radius: 999px; padding: 2px 8px; white-space: nowrap;
+}
+/* Icon-only, 44px, transparent until hovered — matched to V-Net's header
+   control. A different name from .icon-btn (a 28px inline chip) on purpose:
+   same concept, different size contract, and reusing the name would silently
+   resize one of the two. */
+.signout-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; flex: none;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: transparent; color: var(--text-muted); cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.signout-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-strong); }
+.signout-btn svg { width: 18px; height: 18px; }
+
+/* Who you are and how to leave, moved out of the header on small screens.
+   Hidden on desktop, where the header has room for both. */
+.drawer-account { display: none; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. PRIMITIVES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border-strong); background: var(--surface); color: var(--text);
+  padding: 7px 13px; border-radius: var(--radius-sm);
+  font-size: 13.5px; font-weight: 600; font-family: var(--font-body);
+  cursor: pointer; text-decoration: none;
+  transition: background .12s, border-color .12s;
+}
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--cta); color: #fff; border-color: var(--cta); }
+.btn.primary:hover { background: var(--cta-dark); }
+.btn.subtle { border-color: transparent; background: transparent; color: var(--cta); }
+.btn.small { padding: 4px 9px; font-size: 12.5px; }
+.btn.danger { color: var(--critical); border-color: var(--critical-bd); }
+.btn.danger:hover { background: var(--critical-bg); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-muted);
+  border-radius: var(--radius-sm); height: 28px; min-width: 28px; padding: 0 7px;
+  font-size: 12px; cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--text); }
+.icon-btn.active { background: var(--review-bg); color: var(--review); border-color: var(--review-bd); }
+.icon-btn svg { width: 15px; height: 15px; }
+
+.badge {
+  font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px;
+  border: 1px solid transparent; white-space: nowrap;
+}
+.badge.flag  { background: var(--warning-bg); color: var(--warning); border-color: var(--warning-bd); }
+.badge.cmt   { background: var(--info-bg);    color: var(--info);    border-color: var(--info-bd); }
+.badge.count { background: var(--surface-2);  color: var(--text-muted); border-color: var(--border); }
+
+.status-pill {
+  font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid; text-transform: uppercase; letter-spacing: .03em;
+}
+.status-draft    { color: var(--draft);    background: var(--draft-bg);    border-color: var(--draft-bd); }
+.status-review   { color: var(--review);   background: var(--review-bg);   border-color: var(--review-bd); }
+.status-approved { color: var(--approved); background: var(--approved-bg); border-color: var(--approved-bd); }
+
+/* ── Callouts — the estate's one alert idiom ────────────────────────────── */
+.callout { border-radius: var(--radius); padding: 12px 14px; border: 1px solid; }
+.callout .c-title {
+  font-family: var(--font-head); font-weight: 700; font-size: 13.5px;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.callout .c-body { white-space: pre-wrap; font-size: 14px; }
+.callout.info       { background: var(--info-bg);       border-color: var(--info-bd); }
+.callout.info .c-title       { color: var(--info); }
+.callout.warning    { background: var(--warning-bg);    border-color: var(--warning-bd); }
+.callout.warning .c-title    { color: var(--warning); }
+.callout.critical   { background: var(--critical-bg);   border-color: var(--critical-bd); }
+.callout.critical .c-title   { color: var(--critical); }
+.callout.tip        { background: var(--tip-bg);        border-color: var(--tip-bd); }
+.callout.tip .c-title        { color: var(--tip); }
+.callout.compliance { background: var(--compliance-bg); border-color: var(--compliance-bd); }
+.callout.compliance .c-title { color: var(--compliance); }
+.callout.success    { background: var(--approved-bg);   border-color: var(--approved-bd); }
+.callout.success .c-title    { color: var(--approved); }
+
+/* ── Forms ──────────────────────────────────────────────────────────────── */
+.input, input[type="text"], input[type="email"], input[type="password"],
+input[type="url"], input[type="number"], input[type="search"],
+input[type="date"], input[type="time"], input[type="datetime-local"],
+select, textarea {
+  padding: 9px 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: var(--surface);
+  color: var(--text);
+}
+textarea { line-height: 1.55; resize: vertical; }
+.input:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid var(--cta); outline-offset: 1px;
+}
+.field-label {
+  display: block;
+  font-family: var(--font-head); font-weight: 700; font-size: 12px;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--text-faint);
+  margin: 12px 0 2px;
+}
+/* Every control this app gives .input to was previously an inline
+   `width:100%` field, so the class has to carry that or seventeen fields
+   collapse to their content width. .input.inline opts back out. */
+.input { width: 100%; box-sizing: border-box; }
+.input.inline { width: auto; }
+
+/* ── Tables ─────────────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table.data { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+table.data th, table.data td { border: 1px solid var(--border); padding: 7px 9px; text-align: left; vertical-align: top; }
+table.data th { background: var(--surface-2); font-family: var(--font-head); font-weight: 600; }
+table.kv th { width: 32%; }
+
+/* ── Tabs within a page ─────────────────────────────────────────────────── */
+.view-tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--border); margin-bottom: 16px; flex-wrap: wrap; }
+.view-tab {
+  border: none; background: none; padding: 0 0 10px; margin: 0;
+  font-family: var(--font-head); font-weight: 600; font-size: 13.5px;
+  color: var(--text-muted); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: inline-flex; align-items: center; gap: 7px;
+  transition: color .12s, border-color .12s;
+}
+.view-tab:hover { color: var(--text); }
+.view-tab.active { color: var(--cta); border-bottom-color: var(--cta); }
+.view-tab-count {
+  font-variant-numeric: tabular-nums; font-weight: 700; font-size: 11px;
+  padding: 1px 7px; border-radius: 999px; background: var(--surface-2); color: var(--text-muted);
+}
+.view-tab.active .view-tab-count { background: var(--brand-mist); color: var(--cta); }
+
+/* ── Overlays ───────────────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(15,23,42,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50; padding: 20px;
+}
+.modal {
+  background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 620px; max-height: 86vh; overflow-y: auto; padding: 22px 24px;
+}
+.modal h3 { margin: 0 0 4px; }
+.modal .muted { color: var(--text-muted); font-size: 14px; }
+.modal-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.modal-row:last-child { border-bottom: none; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+
+.toast {
+  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: #fff; padding: 10px 16px;
+  border-radius: var(--radius); font-size: 13.5px; box-shadow: var(--shadow-lg); z-index: 60;
+}
+.toast.error { background: var(--critical); }
+
+.empty { color: var(--text-faint); text-align: center; padding: 40px; }
+
+/* ── Dashboard tiles ────────────────────────────────────────────────────── */
+.dash { max-width: 1100px; display: flex; flex-direction: column; gap: 26px; padding-top: 8px; }
+.dash-greet { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.dash-greet h1 { font-size: 23px; font-weight: 700; letter-spacing: -.01em; color: var(--brand-navy); }
+.dash-greet p { margin: 4px 0 0; color: var(--text-muted); font-size: 14px; }
+.dash-date { font-size: 12.5px; color: var(--text-faint); text-align: right; white-space: nowrap; }
+
+.dash-kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.dash-kpi {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; box-shadow: var(--shadow);
+}
+.dash-kpi-num {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 25px; font-weight: 700; color: var(--brand-navy); line-height: 1;
+}
+.dash-kpi.crit .dash-kpi-num { color: var(--critical); }
+.dash-kpi-label { margin-top: 6px; font-size: 12px; color: var(--text-muted); font-weight: 600; }
+.dash-kpi-sub { margin-top: 2px; font-size: 11px; color: var(--text-faint); }
+@media (max-width: 900px) { .dash-kpi-row { grid-template-columns: repeat(2, 1fr); } }
+
+.ref-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+.ref-title {
+  font-family: var(--font-head); font-size: 12px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--text-faint); margin-bottom: 10px;
+}
+.ref-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.ref-tile {
+  display: flex; align-items: center; gap: 9px; padding: 9px 10px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); cursor: pointer; text-align: left;
+  transition: background .12s, border-color .12s;
+}
+.ref-tile:hover { background: var(--surface-2); border-color: var(--brand-teal-3); }
+.ref-ico {
+  width: 26px; height: 26px; border-radius: 7px; background: var(--brand-mist); color: var(--cta);
+  display: flex; align-items: center; justify-content: center; flex: none;
+}
+.ref-ico svg { width: 15px; height: 15px; }
+.ref-tt { display: block; font-weight: 700; font-size: 12.5px; color: var(--brand-navy); line-height: 1.25; }
+.ref-meta { display: block; font-size: 11px; color: var(--text-faint); }
+
+.qempty {
+  text-align: center; padding: 22px; color: var(--text-faint); font-size: 13.5px;
+  border: 1px dashed var(--border); border-radius: var(--radius);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5. BRIDGE — this app's legacy classes, restyled onto the primitives above
+   Nothing here exists in the CS console. It is what lets eighteen views that
+   were written against the old design system render in the new one without
+   each one's markup having to be rewritten first.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Views ──────────────────────────────────────────────────────────────── */
+.tab-view { display: none; }
+.tab-view.active { display: block; }
+
+/* The old shell's wrappers. They still exist in the markup around the views;
+   they must not add layout of their own now that .content owns the padding. */
+.app-container, .app-layout, .main-content, .scroll-area, .app-main {
+  display: block; padding: 0; margin: 0; max-width: none; width: auto;
+  height: auto; overflow: visible; background: none; border: none;
+}
+
+/* ── Per-view page containers ──────────────────────────────────────────────
+   Each view used to pad and centre itself, because .main-content did neither.
+   .content now owns the gutter and .content-inner owns the measure, so leaving
+   these as they were gives every page a second gutter inside the first (64px
+   of left margin instead of 40) and five different maximum widths — 1440px on
+   the calendar, the categories page, the LLM page and the social console,
+   1100px on the dashboard, 900px on Trash. One column, decided in one place.
+   ──────────────────────────────────────────────────────────────────────── */
+.dash-page, .cats-page, .llm-page, .settings-container, .trash-page,
+.social-view, .calendar-view, .archive-container, .pipeline-container,
+.prompts-view, .wiz-page {
+  padding: 0;
+  margin: 0;
+  max-width: none;
+  width: auto;
+}
+
+/* ── Page header → doc head ─────────────────────────────────────────────── */
+.page-header {
+  display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap;
+  margin: 0 0 18px; padding: 0; border: none; background: none;
+}
+.page-header-left { min-width: 0; }
+.page-header-title {
+  font-family: var(--font-head); font-size: 24px; font-weight: 700;
+  color: var(--text); margin: 0; line-height: 1.3; letter-spacing: -.01em;
+}
+.page-header-subtitle { color: var(--text-muted); margin: 4px 0 0; font-size: 14px; font-weight: 400; }
+.page-header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+
+/* Section headings across settings / LLM / dashboard / categories — five
+   different class names in the markup for one idea. */
+.settings-section-header, .llm-section-header, .dash-section-title,
+.ced-section-title, .pane-head, .cats-hero-title {
+  font-family: var(--font-head); font-weight: 700; font-size: 12px;
+  letter-spacing: .07em; text-transform: uppercase; color: var(--text-faint);
+}
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
+.card, .settings-section, .llm-section, .dash-section, .auto-rule-card,
+.archive-card, .trash-card, .kcard, .social-card, .al-card, .cl-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.card-header {
+  padding: 13px 16px; border-bottom: 1px solid var(--border);
+  background: none; color: var(--text);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.card-header h2, .card-header h3 {
+  font-family: var(--font-head); font-weight: 700; font-size: 13px;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--brand-navy); margin: 0;
+}
+.card-body { padding: 14px 16px; }
+
+/* ── Buttons ────────────────────────────────────────────────────────────────
+   The inline block defines .btn plus twelve modifiers. They collapse onto the
+   five CS variants: default, primary, subtle, small, danger. */
+.btn-lg    { padding: 10px 18px; font-size: 14.5px; }
+.btn-sm, .btn-trash-sm, .btn-sub-tab { padding: 4px 9px; font-size: 12.5px; }
+.btn-xs    { padding: 3px 8px; font-size: 11.5px; }
+.btn-outline { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+.btn-outline:hover { background: var(--surface-2); }
+.btn-navy, .btn-approve, .btn-kit-approve {
+  background: var(--cta); color: #fff; border-color: var(--cta);
+}
+.btn-navy:hover, .btn-approve:hover, .btn-kit-approve:hover { background: var(--cta-dark); }
+.btn-orange { background: var(--draft); color: #fff; border-color: var(--draft); }
+.btn-orange:hover { filter: brightness(.94); }
+.btn-danger-outline { color: var(--critical); border-color: var(--critical-bd); background: var(--surface); }
+.btn-danger-outline:hover { background: var(--critical-bg); }
+.btn-tb { padding: 5px 10px; font-size: 12.5px; }
+
+/* ── Alerts → callouts ──────────────────────────────────────────────────── */
+.alert {
+  border-radius: var(--radius); padding: 12px 14px; border: 1px solid;
+  font-size: 14px; line-height: 1.55;
+}
+.alert-error   { background: var(--critical-bg); border-color: var(--critical-bd); color: var(--critical); }
+.alert-warning { background: var(--warning-bg);  border-color: var(--warning-bd);  color: var(--warning); }
+.alert-info    { background: var(--info-bg);     border-color: var(--info-bd);     color: var(--info); }
+.alert-success { background: var(--approved-bg); border-color: var(--approved-bd); color: var(--approved); }
+
+/* ── Status badge in the header ─────────────────────────────────────────────
+   setStatus(state, text) rewrites #statusBadge.className to
+   'status-badge ' + state, so the state has to be readable from .status-badge
+   itself rather than from a .dot modifier class. */
+.status-badge {
+  font-size: 12.5px; color: var(--text-faint);
+  display: flex; align-items: center; gap: 6px; white-space: nowrap;
+  background: none; border: none; padding: 0; border-radius: 0;
+}
+.status-badge .status-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex: none;
+  background: var(--text-faint);
+}
+.status-badge.idle    .status-dot { background: var(--approved); }
+.status-badge.ready   .status-dot { background: var(--approved); }
+.status-badge.success .status-dot { background: var(--approved); }
+.status-badge.working .status-dot,
+.status-badge.syncing .status-dot { background: var(--draft); }
+.status-badge.error   .status-dot { background: var(--critical); }
+
+/* Nav count badges rendered into the old sidebar markup. */
+.nav-badge {
+  font-variant-numeric: tabular-nums; font-weight: 700; font-size: 11px;
+  padding: 1px 7px; border-radius: 999px;
+  background: var(--brand-mist); color: var(--cta); border: 1px solid var(--brand-teal-3);
+  margin-left: auto;
+}
+.nav-badge:empty { display: none; }
+
+/* ── Progress ───────────────────────────────────────────────────────────── */
+.progress-bar, .progress-track {
+  background: var(--surface-2); border-radius: 999px; overflow: hidden;
+}
+.progress-fill { background: var(--cta); border-radius: 999px; }
+
+/* ── Upload / drop zone ─────────────────────────────────────────────────── */
+.upload-zone {
+  border: 1px dashed var(--border-strong); border-radius: var(--radius);
+  background: var(--surface); color: var(--text-muted);
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--brand-teal-3); background: var(--brand-tint); color: var(--cta);
+}
+
+/* ── Chips used across library / pipeline / social filters ──────────────── */
+.keyword-chip, .meta-tag, .archive-meta-tag, .queued-badge, .approved-badge,
+.model-used-badge, .kbadge, .cat-count {
+  font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px;
+  background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border);
+}
+
+/* ── Prose ──────────────────────────────────────────────────────────────── */
+.article-output { color: var(--text); }
+.article-output h1, .article-output h2, .article-output h3 { color: var(--brand-navy); }
+.article-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.article-toolbar { border-bottom: 1px solid var(--border); background: var(--surface-2); }
+
+/* ── Wizards ────────────────────────────────────────────────────────────────
+   Shared by the 5-step automation rule wizard and the 3-step bibliography
+   wizard. Both already use .wiz-step / .active / .done, so the stepper is a
+   restyle rather than a rewrite. */
+.wiz-page { max-width: 900px; }
+.wiz-hero {
+  background: linear-gradient(155deg, var(--brand-navy), var(--cta-dark) 130%);
+  color: #fff; border-radius: var(--radius); padding: 18px 20px; margin-bottom: 18px;
+  box-shadow: var(--shadow);
+  /* The bibliography wizard puts a Cancel button in here alongside the title. */
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+}
+.wiz-hero h1, .wiz-hero h2 { color: #fff; margin: 0; font-size: 19px; }
+.wiz-hero p { color: rgba(255,255,255,.78); font-size: 13px; margin: 4px 0 0; }
+.wiz-hero-name { color: var(--brand-teal-3); font-weight: 700; }
+
+.wiz-steps-bar {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
+}
+.wiz-step {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-head); font-size: 12.5px; font-weight: 600;
+  color: var(--text-faint); padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface); white-space: nowrap;
+}
+.wiz-step.active { color: #fff; background: var(--cta); border-color: var(--cta); }
+.wiz-step.done   { color: var(--cta); background: var(--brand-mist); border-color: var(--brand-teal-3); }
+
+.wiz-body {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px;
+}
+.wiz-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 720px) { .wiz-row-2 { grid-template-columns: 1fr; } }
+
+.wiz-footer {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+.wiz-footer .wiz-footer-save { margin-left: auto; }
+
+/* The wizard's inline validation message. Replaces the native alert() the
+   step machinery used to raise — an alert cannot say WHICH field is wrong and
+   it blocks the page while it is up. */
+.wiz-error { margin-bottom: 14px; }
+.wiz-error[hidden] { display: none; }
+
+/* ── Category editor tabs ───────────────────────────────────────────────── */
+.ced-tab, .source-tab-btn, .social-tab-btn, .sub-tab {
+  border: none; background: none; padding: 0 0 10px; margin: 0;
+  font-family: var(--font-head); font-weight: 600; font-size: 13.5px;
+  color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent;
+  display: inline-flex; align-items: center; gap: 7px;
+  transition: color .12s, border-color .12s;
+}
+.ced-tab:hover, .source-tab-btn:hover, .social-tab-btn:hover, .sub-tab:hover { color: var(--text); }
+.ced-tab.active, .source-tab-btn.active, .social-tab-btn.active, .sub-tab.active {
+  color: var(--cta); border-bottom-color: var(--cta);
+}
+.ced-tabs, .source-tabs, .social-tabs-bar {
+  display: flex; gap: 22px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border); margin-bottom: 16px;
+  background: none; padding: 0;
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────────────
+   showToast() builds #llmToast with inline styles and no class, so it is
+   targeted by id. */
+#llmToast {
+  border-radius: var(--radius) !important;
+  font-family: var(--font-body) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   6. MOBILE
+   The shell itself — drawer, scrim, bottom bar, 44px touch floors — lives in
+   vance-ui.css so every console shares one implementation. What is here is
+   only this app's side of the contract. Breakpoint 860px; keep it in step.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 859.98px) {
+  /* One column. The sidebar still holds all the navigation — .v-drawer takes
+     it off-canvas rather than hiding it, so there is no second copy of the nav
+     to maintain. */
+  .main { grid-template-columns: minmax(0, 1fr); }
+  .sidebar.v-drawer { width: min(86vw, 320px); }
+
+  .header { gap: 10px; padding: 0 12px; padding-left: max(12px, var(--safe-l)); padding-right: max(12px, var(--safe-r)); }
+  .header .brand-logo { height: 36px; }
+  .header .brand-sep,
+  .header .whoami,
+  .header .savestate span:not(.dot):not(.status-dot),
+  .header .status-badge span:not(.status-dot),
+  .header #hardRefreshText { display: none; }
+  .header > .signout-btn { display: none; }   /* Sign out — in the drawer */
+  .header .brand-text b { font-size: 13.5px; white-space: normal; line-height: 1.2; }
+  .savestate, .status-badge { margin-left: auto; }
+
+  /* It is .content that scrolls here, not the body, so the bottom-bar padding
+     has to go here — putting it on <body> would do nothing at all. */
+  .content {
+    padding: 18px 16px;
+    padding-bottom: calc(var(--nav-h) + var(--safe-b) + 24px);
+  }
+  .content-inner, .content-inner.reading, .back-bar { max-width: 100%; }
+  .back-bar { margin-bottom: 8px; }
+
+  .doc-head h2, .page-header-title { font-size: 20px; }
+  .section-h { font-size: 17px; margin-top: 22px; }
+
+  /* Long unbroken tokens — a DOI, a source URL pasted into a prompt — have
+     nowhere to wrap in a 340px column and would push the card sideways. */
+  .callout .c-body, .article-output, .wiz-body { overflow-wrap: anywhere; }
+
+  .drawer-account {
+    display: block; margin-top: 14px; padding: 12px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface-2);
+  }
+  .drawer-account .da-email { font-size: 13px; color: var(--text-muted); word-break: break-all; }
+  .drawer-account .da-role { display: inline-block; margin: 6px 0 10px; }
+  .drawer-account .signout-btn { display: flex; margin-top: 4px; }
+
+  .v-bottomnav { background: color-mix(in srgb, var(--surface) 94%, transparent); }
+  .v-bottomnav a, .v-bottomnav button { color: var(--text-faint); }
+  .v-bottomnav [aria-current="page"] { color: var(--cta); }
+  .v-bottomnav [aria-current="page"]::before { background: var(--cta); }
+}

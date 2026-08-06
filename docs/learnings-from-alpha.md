@@ -498,3 +498,40 @@ The "Implication for Beta" field is the key one — it forces the entry to be us
   4. **Degrading on a transient failure makes a permanent mistake.** The cover-only fallback exists for "Composio cannot build a carousel at all". Applied to a load blip it would have put fifteen permanent single-image posts on the feed for decks that posted in full a minute later. Transient errors now fail loudly and leave the deck retryable; only genuine capability failures degrade. **"Ship something" is the wrong default when the something is unretractable.**
 - **Implication for Beta**: the gate key is `social:gate:instagram` — a single global window. On Beta that is wrong twice over: tenants posting to *different* IG accounts and different image hosts would queue behind each other for no reason, while a single tenant's burst still stampedes its own host. Beta should key the gate per destination (tenant + platform + media host), which also makes the gap tunable per tenant — an agency client on shared WordPress hosting needs a much wider gap than one on a CDN. Worth surfacing "posted N minutes after publish, spaced behind M other decks" in the tenant's social view, or the delay reads as the system being broken. The transient-vs-fatal split in `isTransientMediaError` is the piece to inherit verbatim: it is what stops a shared-hosting tenant's slow origin from silently downgrading every carousel they publish.
 - **Tag**: #social #deploy #kv
+
+## 2026-08-06 — The Content Generator now mirrors the CS console; three traps found doing it
+
+- **Context**: restructured `index.html` onto the Customer Service console's UI
+  (`cs.vancemedicalfoods.co.uk`) — its shell, its card-based sidebar, its primitives —
+  across all 18 views and both wizards. New file `vance-cs.css` carries the design layer
+  and a bridge section mapping alpha's ~760 legacy class names onto CS primitives;
+  ~434 lines of superseded inline CSS were deleted.
+- **Finding**: three things bit, and all three are structural rather than cosmetic.
+  1. **`vance-ui.css` sets its light palette on `:root[data-theme="light"]`** (0,2,0), and
+     this document pins that attribute on `<html>`. A token override written against a bare
+     `:root` (0,1,0) loses silently — the file looks applied, every value is the old one.
+     Override both selectors.
+  2. **An unscoped `.sidebar` reset silently disables the shared drawer.** `.v-drawer` in
+     `vance-ui.css` scores exactly what a bare `.sidebar` does, and an app stylesheet that
+     loads later wins — including inside `@media (max-width: 859.98px)`. Taking
+     `position: fixed` off the drawer leaves it laying out as a grid item, translated
+     off-screen but still reserving a column. Scope app-side sidebar resets to
+     `@media (min-width: 860px)`.
+  3. **`index.html` contains a literal `</body>` inside a JS string** (the slide-export
+     template, ~line 9521). Any tooling that does a first-match replace on `</body>` lands
+     inside the app script and truncates a string literal. The symptom is
+     "Uncaught SyntaxError: Invalid or unexpected token" plus *every* global undefined —
+     which reads like a catastrophic break rather than a one-character corruption. Use
+     `rindex`.
+- **Also fixed in passing**: the dead `#ruleWizardModal` shell re-declared 34 wizard element
+  ids that the live wizard also uses; the app worked only because the live copy came first
+  in document order, so any reordering would have broken the wizard invisibly. Deleted.
+  The committed `index.html` was also already unbalanced by one `}` — an orphaned rule body
+  whose selector had been removed at some point.
+- **Implication for Beta**: Beta is a clone-and-extend of this file, so it inherits all four.
+  Ship `vance-cs.css` forward with the markup — the bridge section is what makes the legacy
+  classes render correctly, and shipping the shell rewrite without it produces an unstyled
+  app rather than a slightly-off one. Beta's agency layer adds its own nav destinations:
+  they go in the sidebar cards **and** in `allTabs`, and per-tenant theming should re-point
+  the `:root, :root[data-theme="light"]` token block rather than overriding component rules.
+- **Tag**: #ui #wizard #brand-identity #ship-pipeline
