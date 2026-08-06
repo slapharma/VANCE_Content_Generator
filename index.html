@@ -7,9 +7,21 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- viewport-fit=cover lets the page paint into the notch and home-indicator
+     areas; vance-ui.css then pads the fixed furniture back off them with
+     env(safe-area-inset-*). Without the cover keyword iOS letterboxes the page
+     and every inset reports 0, so that padding silently does nothing. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Vance Content Generator</title>
+<!-- This app is pinned to the light theme (see the comment above <html>), so
+     the chrome colour is the light surface rather than a media-switched pair. -->
+<meta name="theme-color" content="#ffffff"/>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<!-- Home screen. iOS ignores the manifest's icons and reads only this link,
+     and will not accept an SVG — hence a real PNG. Generated from the estate
+     mark by V-Net/scripts/make-icons.mjs. -->
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="manifest" href="/site.webmanifest"/>
 <!-- Montserrat now comes from /fonts, self-hosted, via vance-ui.css. The Google
      Fonts CDN it replaces is itself a monitored dependency in this estate
      (dep-google-fonts in the Alerts inventory), so linking it meant an internal
@@ -17,6 +29,12 @@
      system serif and never needed downloading at all. -->
 <link rel="preload" href="/fonts/montserrat-600.woff2" as="font" type="font/woff2" crossorigin/>
 <link rel="stylesheet" href="/vance-ui.css"/>
+<!-- The mobile shell's behaviour half: drawer state, focus trap, Escape, and
+     closing the drawer when the viewport grows past the breakpoint. Vendored
+     from V-Net alongside vance-ui.css and checked for drift by
+     V-Net/scripts/check-vendored.mjs. Binds by delegation on `document`, so
+     load order relative to this app's own script does not matter. -->
+<script src="/vance-mobile.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -1155,51 +1173,51 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 }
 
 /* ══════════════════════════════════════════════════
-   RESPONSIVE — Mobile (≤480px) — sidebar becomes drawer
-══════════════════════════════════════════════════ */
-@media (max-width: 480px) {
-  /* Sidebar hides off-screen left, slides in on open */
-  .sidebar {
-    position: fixed;
-    top: 0; left: calc(-1 * var(--sidebar-w));
-    height: 100vh; width: var(--sidebar-w);
-    flex-direction: column;
-    border-right: 1px solid rgba(27,63,48,0.2);
-    border-top: none;
-    transition: left 0.25s ease, box-shadow 0.25s ease;
-    z-index: 500;
-    box-shadow: none;
-  }
-  body.mobile-nav-open .sidebar {
-    left: 0;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.28);
-  }
+   RESPONSIVE — Mobile (≤860px) — sidebar becomes drawer
+══════════════════════════════════════════════════
 
-  /* Don't collapse to 52px strip on mobile — keep full width */
-  body.sidebar-collapsed .sidebar { width: var(--sidebar-w); }
+   This block used to carry its own drawer: position/left/transition/z-index on
+   .sidebar, a .nav-overlay backdrop, and a body.mobile-nav-open class, all
+   firing below 480px. All of that now comes from .v-drawer in vance-ui.css,
+   which the other consoles use too — so there is one drawer implementation in
+   the estate instead of three, and one place to fix when it is wrong.
 
-  /* Overlay backdrop */
-  .nav-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.45);
-    z-index: 499;
-    cursor: pointer;
-  }
-  body.mobile-nav-open .nav-overlay { display: block; }
+   Two things changed besides the ownership:
+
+   1. The breakpoint moved 480px → 860px. At 481-900px the sidebar used to
+      shrink to a 52px icon-only strip with every label hidden, which is a
+      worse answer than a drawer on every phone held in landscape and on every
+      small tablet.
+   2. What remains here is only what the drawer cannot know: how THIS app's
+      sidebar contents should lay out once they are inside it — undoing the
+      icon-only strip rules from the ≤900px block above.
+   ══════════════════════════════════════════════════ */
+@media (max-width: 859.98px) {
+  /* Never the 52px strip while off-canvas — inside a drawer there is room for
+     the labels, and an icon-only drawer is a menu of unlabelled glyphs.
+     BOTH selectors are needed. `.v-drawer` in vance-ui.css sets this width at
+     the same specificity as the `.sidebar { width: 52px }` rule in the ≤900px
+     block above, and this file's <style> loads after vance-ui.css — so the
+     strip width won, and the drawer opened 52px wide. Restating it here, later
+     in the same stylesheet, is what actually settles it. */
+  .sidebar,
+  body.sidebar-collapsed .sidebar { width: min(86vw, 320px); }
 
   /* Restore full sidebar layout inside the drawer */
-  .sidebar-logo { display: flex; }
+  .sidebar-logo { display: flex; padding: 12px 16px; justify-content: flex-start; }
+  .sidebar-logo-text { display: block; }
   .sidebar-nav { flex-direction: column; padding: 10px 0; overflow-y: auto; }
   .nav-section-label { display: block; }
   .nav-item {
-    flex-direction: row; gap: 9px; padding: 9px 16px;
+    flex-direction: row; gap: 9px; padding: 12px 16px;
     border-left: 3px solid transparent; border-top: none;
     justify-content: flex-start; align-items: center;
   }
-  .nav-item span { display: block; font-size: 0.72rem; }
+  .nav-item span { display: block; font-size: 0.78rem; }
   .nav-item.active { border-left-color: var(--vance-dark); border-top-color: transparent; }
-  .sidebar-footer { display: flex; }
+  .sidebar-footer { display: flex; padding: 10px 16px; align-items: stretch; }
+  .sidebar-guide-btn { width: 100%; justify-content: flex-start; padding: 10px 12px; }
+  .sidebar-guide-btn span { display: inline; }
 }
 
 /* ══════════════════════════════════════════════════
@@ -2361,6 +2379,86 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 .btn-trash-sm { background: none; border: none; cursor: pointer; color: rgba(231,76,60,0.45); padding: 3px 6px; font-size: 0.65rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; border-radius: 0; transition: color 0.15s; font-family: 'Montserrat', sans-serif; }
 .btn-trash-sm:hover { color: #e74c3c; }
 .kcard-trash-row { display: flex; justify-content: flex-end; margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--border); }
+
+/* ══════════════════════════════════════════════════
+   MOBILE — the parts this app has to answer for itself
+══════════════════════════════════════════════════
+
+   The shell (drawer, scrim, bottom bar, 44px targets, 16px inputs) is in
+   vance-ui.css and shared with the other consoles. What is left here is the
+   handful of layouts in this app that are wider than a phone by construction
+   and cannot be fixed generically: a Kanban board with fixed-width columns, a
+   seven-column month grid, and a full-height slide-over panel.
+
+   Breakpoint is 860px, matching vance-ui.css. Keep them in step.
+   ══════════════════════════════════════════════════ */
+
+/* Full-height furniture measured against the visible viewport rather than the
+   address-bar-hidden one. 100vh is always the taller of the two on a phone, so
+   anything sized with it loses its last rows behind the browser chrome. */
+.sidebar { height: 100dvh; }
+
+@media (max-width: 859.98px) {
+  /* Clear the bottom bar. The window is what scrolls in this app — body is the
+     flex container and .main-content merely grows — so the padding belongs
+     here and would do nothing on an inner element.
+     --nav-h is the bar's CONTENT height; its 1px top border and a little
+     breathing room are why this is not just var(--nav-h). */
+  body { padding-bottom: calc(var(--nav-h) + var(--safe-b) + 16px); }
+
+  /* Views that scroll inside themselves get their own clearance, because the
+     padding on <body> is below them, not inside them. */
+  .settings-container,
+  .pipeline-board.layout-stacked,
+  .pipeline-board.layout-list { padding-bottom: calc(var(--nav-h) + var(--safe-b) + 16px); }
+
+  /* ── Kanban ──────────────────────────────────────────────────────────────
+     Columns were a flat 404px and cards in the stacked layout a flat 384px,
+     both wider than the 375px phone they were being read on — so the default
+     board scrolled sideways before it showed a single whole column. One column
+     per screen, swiped horizontally, is the honest phone version of a Kanban
+     board; scroll-snap makes it land on a column instead of between two. */
+  .pipeline-board { scroll-snap-type: x mandatory; }
+  .pipeline-col {
+    flex: 0 0 calc(100vw - 2.5rem);
+    min-width: 0;
+    max-width: 420px;
+    scroll-snap-align: start;
+  }
+  .pipeline-board.layout-stacked .kcard { width: 100%; }
+
+  /* ── Calendar ────────────────────────────────────────────────────────────
+     Seven columns is not negotiable — a month grid with fewer is not a month
+     grid — and 375/7 = 53px per day, too narrow to read a title in. So the
+     grid keeps a usable column width and the whole month scrolls sideways
+     inside its own card, which is the one place horizontal scrolling is
+     expected. .calendar-grid was already `overflow: hidden`, which silently
+     clipped rather than scrolled. */
+  .calendar-grid { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+  .calendar-dow-row, .calendar-days { min-width: 640px; }
+  .calendar-day { min-height: 76px; }
+  /* Event chips are the tap target for opening an item. 9.6px with 2px of
+     padding was neither readable nor hittable. */
+  .cal-event { font-size: 0.72rem; padding: 5px 6px; margin-bottom: 3px; }
+
+  /* ── Article reading copy ────────────────────────────────────────────────
+     This dropped from 0.9rem to 0.85rem below 640px — text got SMALLER on the
+     smallest screen, which is backwards. Phones need the larger measure, not
+     the smaller one. */
+  .article-output p { font-size: 0.95rem; line-height: 1.7; }
+
+  /* The slide-over queue panel, same dvh reasoning as .sidebar above. */
+  .queue-panel { height: 100dvh; padding-bottom: var(--safe-b); }
+
+  /* ── Bottom bar, in this app's palette ───────────────────────────────────
+     This console is pinned to the light theme and uses its own token names,
+     so the shared bar is re-pointed at them rather than inheriting the
+     estate's dark-mode defaults. */
+  .v-bottomnav { background: color-mix(in srgb, var(--card) 94%, transparent); border-top-color: var(--border); }
+  .v-bottomnav button { color: var(--text-muted); }
+  .v-bottomnav [aria-current="page"] { color: var(--vance-primary); }
+  .v-bottomnav [aria-current="page"]::before { background: var(--vance-primary); }
+}
 </style>
 <script>
 /* ── Per-domain branding override ──────────────────────────────────────────
@@ -2430,7 +2528,10 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 </div>
 
 <!-- ══════════════════════════════ SIDEBAR NAV ══════════════════════════════ -->
-<aside class="sidebar">
+<!-- v-drawer is inert above 860px: the element keeps this app's own sticky
+     sidebar layout exactly as before. Below it, vance-ui.css turns THIS element
+     into the off-canvas drawer, so there is only ever one copy of the nav. -->
+<aside class="sidebar v-drawer" id="sidebar">
   <a class="sidebar-logo" href="#">
     <img class="sidebar-logo-img" id="brandLogoImg" src="logo-vance-content.png" alt="Vance Content Generator"/>
   </a>
@@ -2528,7 +2629,9 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 </aside>
 
 <!-- Mobile nav overlay backdrop -->
-<div class="nav-overlay" id="navOverlay" onclick="closeMobileNav()"></div>
+<!-- The backdrop that used to live here is now .v-scrim, created on demand by
+     vance-mobile.js so no app has to carry the markup. -->
+
 
 <!-- Social detail modal — shared by "View deck" and "View on Instagram" on the
      Posted pane. One shell, two renderers (see openDeckModal / openPostModal). -->
@@ -2561,7 +2664,13 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
   <!-- TOP BAR -->
   <div class="topbar">
-    <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">
+    <!-- One button, two jobs, split by viewport. Below 860px vance-mobile.js
+         picks up data-v-drawer-toggle and opens the drawer, keeping
+         aria-expanded honest; above it that handler no-ops and toggleSidebar()
+         collapses the sidebar to the icon strip as before. -->
+    <button class="sidebar-toggle-btn" onclick="toggleSidebar()"
+            data-v-drawer-toggle aria-expanded="false" aria-controls="sidebar"
+            aria-label="Toggle navigation" title="Toggle sidebar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <div class="topbar-title" id="topbarTitle">Dashboard</div>
@@ -7274,19 +7383,20 @@ const TAB_TITLES = {
   trash:              'Archive & Trash',
 };
 
+/* The drawer belongs to vance-mobile.js now. Kept as a thin forwarder because
+   it is called from several places in this file, and one indirection is
+   cheaper than hunting every caller. */
 function closeMobileNav() {
-  document.body.classList.remove('mobile-nav-open');
+  if (window.vanceMobile) window.vanceMobile.close(false);
 }
 
+/* Desktop only. Below 860px the same button carries data-v-drawer-toggle and
+   the shared handler opens the drawer instead — so this must not ALSO toggle
+   the collapsed strip, or one tap would do two contradictory things. */
 function toggleSidebar() {
-  if (window.innerWidth <= 480) {
-    // Tiny mobile: toggle slide-out drawer
-    document.body.classList.toggle('mobile-nav-open');
-  } else {
-    // Desktop/tablet/mobile: toggle icon-only collapsed strip
-    const collapsed = document.body.classList.toggle('sidebar-collapsed');
-    localStorage.setItem('vance_sidebar_collapsed', collapsed ? '1' : '0');
-  }
+  if (window.matchMedia('(max-width: 859.98px)').matches) return;
+  const collapsed = document.body.classList.toggle('sidebar-collapsed');
+  localStorage.setItem('vance_sidebar_collapsed', collapsed ? '1' : '0');
 }
 
 // ── Hard refresh ────────────────────────────────────────────────────────────
@@ -10882,6 +10992,13 @@ function switchTab(tab, fromHistory) {
     if (retired.then) setTimeout(retired.then, 80);
     return;
   }
+  // On a phone the drawer covers the tab it just opened, so leaving it up
+  // would hide the result of the tap. Harmless on desktop, where close() sees
+  // no open drawer and returns immediately.
+  if (window.vanceMobile) {
+    window.vanceMobile.close(false);
+    window.vanceMobile.setActive(tab);
+  }
   // Reset the live-sync target — content tabs re-assign their own renderer in
   // their loader below; tabs that don't use the content list leave it null so
   // the poll skips them.
@@ -12449,7 +12566,7 @@ function _wizRenderSources() {
         +   '<option value="on_new"' + (s.mode === 'on_new' ? ' selected' : '') + '>On new additions</option>'
         + '</select>';
     } else {
-      var ph = s.type === 'rss' ? 'https://feeds.bmj.com/bmj/recent' : 'https://www.nice.org.uk/news';
+      var ph = s.type === 'rss' ? 'http://feeds.bmj.com/bmj/recent' : 'https://www.nice.org.uk/news';
       inputHtml = '<input type="url" placeholder="' + ph + '" oninput="(function(el){var src=_wizSources.find(function(x){return x.id===\'' + s.id + '\'});if(src)src.url=el.value;})(this)" value="' + escHtml(s.url||'') + '" style="flex:1;padding:6px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.82rem;">';
     }
     var connectWarning = '';
@@ -22408,6 +22525,44 @@ function updateTrashBadge(count) {
     </div>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════
+     BOTTOM NAVIGATION — phones only (see vance-ui.css)
+     ══════════════════════════════════════════════════
+
+     The sidebar carries seventeen destinations across five groups. Four of
+     them are what anyone actually opens this app for on a phone; the rest are
+     configuration and are one tap away behind Menu, which opens the same
+     sidebar the desktop shows permanently.
+
+     Deliberately not here: Settings, LLM Settings, Categories, Bibliography
+     and Trash. Nobody edits a model temperature on a train, and a fifth and
+     sixth tab would push every target under 44px on a 320px screen.
+     ══════════════════════════════════════════════════ -->
+<nav class="v-bottomnav" aria-label="Primary">
+  <div class="v-bottomnav-inner">
+    <button data-v-nav="dashboard" onclick="switchTab('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+      <span class="v-bn-label">Dashboard</span>
+    </button>
+    <button data-v-nav="generator" onclick="switchTab('generator')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      <span class="v-bn-label">Create</span>
+    </button>
+    <button data-v-nav="pipeline" onclick="switchTab('pipeline')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="11" rx="1"/><rect x="17" y="4" width="4" height="7" rx="1"/></svg>
+      <span class="v-bn-label">Pipeline</span>
+    </button>
+    <button data-v-nav="calendar" onclick="switchTab('calendar')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+      <span class="v-bn-label">Calendar</span>
+    </button>
+    <button data-v-drawer-toggle aria-expanded="false" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <span class="v-bn-label">Menu</span>
+    </button>
+  </div>
+</nav>
 
 </body>
 </html>

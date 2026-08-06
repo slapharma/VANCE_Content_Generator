@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    VANCE UI — shared design tokens and primitives
-   vance-ui.css  v1.0.0
+   vance-ui.css  v1.1.0
 
    ONE source of truth for the look of every internal Vance system: V-Net,
    the Content Generator, the Customer Service console and the Alerts
@@ -113,6 +113,17 @@
      prefers-reduced-motion below can neutralise all of them in one place. */
   --dur:  180ms;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Mobile shell. --safe-* are read once here and referenced by name
+     everywhere else, so a fixed element can never quietly forget the notch:
+     the padding is spelled `var(--safe-b)` rather than re-typing env(), and a
+     browser without the env() support falls back to 0px rather than to
+     `invalid`. */
+  --nav-h:  56px;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
 
   color-scheme: dark;
 }
@@ -454,6 +465,276 @@ a.v-card:hover {
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE SHELL
+   ═══════════════════════════════════════════════════════════════════════════
+
+   These systems are used on a phone far more than their desktop-first
+   stylesheets assumed. This section is the shared answer, so that the three
+   consoles get the SAME shell rather than three hand-rolled ones that drift.
+
+   ── The breakpoint is 860px, and it is written out ────────────────────────
+
+   Custom properties do not work in media queries, so the number is repeated
+   literally in each block below. It is 860px everywhere in this file; if you
+   change one, change them all. 860 is where a 320px sidebar plus a readable
+   ~540px content column stops fitting.
+
+   ── Touch floors key off POINTER, not width ───────────────────────────────
+
+   The 44px target floor and the 16px input floor live under
+   `@media (pointer: coarse)` rather than under a width breakpoint. Two
+   reasons, both learned from these particular apps:
+
+     1. These are dense tools. Their 12-13px labels are a deliberate choice
+        for a monitoring grid read at a desk, and a width query would either
+        destroy that density or leave the iPad — which is 1024px wide and
+        entirely finger-driven — still zooming on every input focus.
+     2. iOS Safari's auto-zoom-on-focus triggers on the input's font-size at
+        ANY viewport width. Width is simply the wrong axis for the question
+        being asked, which is "is a finger doing this?"
+
+   Desktop rendering is therefore untouched by everything in this section.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Touch floors ─────────────────────────────────────────────────────────
+   `!important` on the input rule is deliberate and is the narrower fix, not
+   the lazier one. It has to beat every per-component font-size across three
+   apps (`.input`, `.search input`, `.ced-input`, `.role-select`, … roughly
+   thirty declarations), and any rule added tomorrow by someone who has never
+   read this file. The alternative — editing all thirty and hoping — fails
+   silently the next time a component is added. Scoped to coarse pointers, so
+   it cannot touch the desktop layouts it would otherwise be rude to.
+   ──────────────────────────────────────────────────────────────────────── */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Checkbox and radio are excluded above because font-size does nothing for
+     them; they need actual size instead. */
+  input[type="checkbox"], input[type="radio"] {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Not !important: an app with a genuine reason for a shorter control should
+     be able to say so, and say why. */
+  button, summary, [role="button"], .v-btn, a.v-card {
+    min-height: 44px;
+  }
+
+  /* Kill the grey flash on tap. Every interactive surface in this estate
+     already has its own :active/:hover treatment. */
+  a, button, summary, [role="button"], input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Icon-only buttons need width as well as height, and cannot get it from
+   their (absent) text. Opt-in, because it is wrong for a button in a row of
+   four. */
+@media (pointer: coarse) {
+  .v-icon-btn { min-width: 44px; min-height: 44px; }
+}
+
+/* ── Full-height helper ───────────────────────────────────────────────────
+   100vh on a phone is the height of the viewport WITH the address bar hidden,
+   so a 100vh app shell is permanently taller than the space it can see and
+   its last row sits under the browser chrome. dvh is the live value. The vh
+   line is the fallback for browsers without dvh and is deliberately first.
+   ──────────────────────────────────────────────────────────────────────── */
+.v-fill { height: 100vh; height: 100dvh; }
+.v-fill-min { min-height: 100vh; min-height: 100dvh; }
+
+/* ── Off-canvas drawer ────────────────────────────────────────────────────
+   Applied to an app's EXISTING sidebar rather than to a duplicate mobile
+   copy. Above 860px `.v-drawer` is inert and the element lays out exactly as
+   the app's own rules say; below it, the same element becomes the drawer.
+   One element, one set of nav markup, no second copy to forget to update.
+
+   `visibility` rather than `display` so the panel can be transitioned, and so
+   that when closed it leaves the tab order — an off-screen but focusable
+   drawer is a keyboard trap that nobody sees.
+   ──────────────────────────────────────────────────────────────────────── */
+@media (max-width: 859.98px) {
+  .v-drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: var(--z-overlay);
+    width: min(86vw, 320px);
+    max-width: 100%;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    box-shadow: 8px 0 32px -12px rgba(0, 0, 0, 0.55);
+    overflow-y: auto;
+    /* Stops a flick at the end of the drawer's scroll from scrolling, or
+       pull-to-refreshing, the page behind it. */
+    overscroll-behavior: contain;
+    padding-top: var(--safe-t);
+    padding-bottom: var(--safe-b);
+    padding-left: var(--safe-l);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform var(--dur) var(--ease),
+                visibility 0s linear var(--dur);
+  }
+
+  body.v-drawer-open .v-drawer {
+    transform: none;
+    visibility: visible;
+    transition: transform var(--dur) var(--ease),
+                visibility 0s linear 0s;
+  }
+
+  .v-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-overlay) - 1);
+    background: rgba(2, 6, 16, 0.55);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--dur) var(--ease),
+                visibility 0s linear var(--dur);
+  }
+
+  body.v-drawer-open .v-scrim {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity var(--dur) var(--ease),
+                visibility 0s linear 0s;
+  }
+
+  /* The page must not scroll behind an open drawer. Apps whose shell already
+     sets `overflow: hidden` on body are unaffected by this. */
+  body.v-drawer-open { overflow: hidden; }
+}
+
+/* The scrim and the burger are mobile-only furniture; above the breakpoint
+   they must not exist at all, or the scrim will sit invisibly over the whole
+   desktop page and swallow every click. */
+@media (min-width: 860px) {
+  .v-scrim, .v-burger { display: none !important; }
+}
+
+/* ── Hamburger ───────────────────────────────────────────────────────────── */
+.v-burger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.v-burger svg { width: 20px; height: 20px; display: block; }
+.v-burger:hover { background: var(--border); border-color: var(--brand-lt); }
+
+/* ── Bottom navigation ───────────────────────────────────────────────────
+   Thumb-reachable primary navigation. Phone-only: on a desktop the same
+   destinations are already one click away in the sidebar, and a fixed bar
+   would just eat 56px of a 1400px screen.
+
+   Five items maximum. Past five the labels truncate to the point of being
+   decoration, and the targets fall under 44px on a 320px screen.
+   ──────────────────────────────────────────────────────────────────────── */
+.v-bottomnav { display: none; }
+
+@media (max-width: 859.98px) {
+  .v-bottomnav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-header);
+    display: block;
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    /* The home indicator on a modern iPhone sits ON the bottom edge. Without
+       this the last row of labels is under it and the whole bar reads as
+       mis-aligned. */
+    padding-bottom: var(--safe-b);
+    padding-left: var(--safe-l);
+    padding-right: var(--safe-r);
+  }
+
+  .v-bottomnav-inner {
+    display: flex;
+    align-items: stretch;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .v-bottomnav a,
+  .v-bottomnav button {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: var(--nav-h);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 7px 2px;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: 0.005em;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: color var(--dur) var(--ease);
+  }
+
+  .v-bottomnav svg { width: 21px; height: 21px; flex-shrink: 0; }
+
+  .v-bottomnav .v-bn-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Active state carries TWO signals, not one. The colour shift alone would
+     make this the one control on the page whose state is pure hue — the exact
+     thing rule 2 at the top of this file exists to prevent — and it is also
+     the first thing to vanish under a colour vision deficiency. The bar above
+     the item is the redundant signal; aria-current is the third, for anyone
+     not looking at the screen at all. */
+  .v-bottomnav [aria-current="page"] { color: var(--brand-lt); }
+
+  .v-bottomnav [aria-current="page"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 22%;
+    right: 22%;
+    height: 2px;
+    border-radius: 0 0 2px 2px;
+    background: var(--brand-lt);
+  }
+
+  /* Content must clear the bar. Apps set this on whatever element actually
+     scrolls — which for a grid app-shell is not <body>. */
+  .v-bottomnav-pad { padding-bottom: calc(var(--nav-h) + var(--safe-b) + 12px); }
 }
 
 /* ── Utilities ───────────────────────────────────────────────────────────── */
