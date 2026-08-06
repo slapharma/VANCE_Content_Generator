@@ -29,3 +29,7 @@ tasks/
 
 # Reformat script output (before/after dumps, backups)
 scripts/reformat-out/
+# Vercel env dumps (vercel env pull > sec-*.txt) — real keys in plaintext.
+# Not matched by the .env rules above, which is how three of these once sat
+# untracked in the estate one 'git add -A' from being published.
+sec-*.txt
