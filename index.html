@@ -2450,6 +2450,13 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
   /* The slide-over queue panel, same dvh reasoning as .sidebar above. */
   .queue-panel { height: 100dvh; padding-bottom: var(--safe-b); }
 
+  /* The Google sign-in control is an <a> wearing a button's clothes, and the
+     44px floor in vance-ui.css covers `button`, `.v-btn` and `a.v-card` — not
+     a bare anchor, because giving every link 44px would wreck running prose.
+     It measured 42px: trivially short, but it is the first thing anyone taps
+     in this app and the only control on that screen. */
+  #googleLoginBtn { min-height: 44px; }
+
   /* ── Bottom bar, in this app's palette ───────────────────────────────────
      This console is pinned to the light theme and uses its own token names,
      so the shared bar is re-pointed at them rather than inheriting the
