@@ -2381,6 +2381,101 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 .kcard-trash-row { display: flex; justify-content: flex-end; margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--border); }
 
 /* ══════════════════════════════════════════════════
+   SIGN-IN SCREEN
+══════════════════════════════════════════════════
+
+   The same structure as HQ, the CS console and the Alerts dashboard, so the
+   four internal systems read as one estate at the only screen every one of
+   them shows to everybody: an opaque ground, one centred card, the Vance mark,
+   the name of the system, one line saying what it is, then a SINGLE action.
+
+   Google first, and the email/password pair folded into a disclosure below it.
+   That ordering is the point of the redesign, not a cosmetic choice — this
+   screen used to lead with a password box and hide Google behind an "OR"
+   divider, which is backwards for an app whose accounts are Workspace accounts
+   and whose approvals need to name a real person.
+
+   Built on the shared primitives (.v-card, .v-btn, .v-input) rather than this
+   app's own .btn, which at 0.72rem type and 7px padding is sized for dense
+   toolbars and would read as a minor control on a screen where the button IS
+   the screen.
+   ══════════════════════════════════════════════════ */
+.login-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  /* Opaque, never a scrim. Nothing behind this holds data when signed out, and
+     a half-visible shell invites someone to read an empty board as the current
+     state of their pipeline. */
+  background: var(--bg);
+  /* Respects the notch and the home indicator — the page is viewport-fit=cover. */
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px))
+           max(24px, env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px));
+  overflow: auto;
+}
+.login-screen[hidden] { display: none; }
+
+.login-card { width: 100%; max-width: 400px; text-align: center; padding: 32px 28px 26px; }
+.login-logo { height: 34px; width: auto; margin: 0 auto 18px; display: block; }
+.login-card h1 { margin: 0 0 6px; font-size: 21px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+.login-sub { margin: 0 auto 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted); max-width: 34ch; }
+
+/* Announced, not merely shown: role="alert" means the people who cannot see
+   the card change are told it changed. */
+.login-error {
+  margin: 0 0 16px; padding: 10px 12px; text-align: left;
+  font-size: 12.5px; line-height: 1.55; color: var(--down);
+  background: color-mix(in srgb, var(--down) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--down) 40%, transparent);
+  border-radius: var(--radius-sm);
+}
+.login-error[hidden] { display: none; }
+#googleLoginBlock[hidden] { display: none; }
+
+/* White ground and Google's own four-colour mark, per their branding rules —
+   it must not be recoloured or boxed in. Identical treatment in the CS console
+   and the Alerts dashboard. */
+.login-google { width: 100%; background: #fff; color: #1e2d40; border-color: #dde3ea; font-size: 14px; font-weight: 600; }
+.login-google:hover { background: #f3f6fa; color: #1e2d40; border-color: #c8d2de; }
+.login-google svg { width: 18px; height: 18px; flex: none; }
+.login-domain { margin: 12px 0 0; font-size: 12px; color: var(--text-muted); }
+
+/* The password pair, demoted to a disclosure. Still the only route in when
+   Google is unreachable or unconfigured on a deployment, but leading with a
+   password is exactly what having Google sign-in is meant to stop. */
+.pwfall { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border); text-align: left; }
+/* No min-height here on purpose. vance-ui.css gives every `summary` a 44px
+   floor under (pointer: coarse), and a fixed height on this selector is
+   specific enough to beat it — which would shrink the one control that is the
+   only way in when Google is unavailable, on the device most likely to meet
+   that state. Padding sets the desktop height; the shared floor sets the
+   phone's. */
+.pwfall > summary {
+  cursor: pointer; list-style: none; text-align: center;
+  font-size: 12.5px; color: var(--text-muted);
+  padding: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.pwfall > summary::-webkit-details-marker { display: none; }
+.pwfall > summary::before { content: '▸'; color: var(--text-muted); }
+.pwfall[open] > summary::before { content: '▾'; }
+.pwfall > summary:hover { color: var(--text); }
+.login-label { display: block; margin: 10px 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.3px; color: var(--text-muted); }
+.login-submit { width: 100%; margin-top: 16px; }
+.login-fineprint { margin: 12px 0 0; font-size: 11.5px; line-height: 1.55; color: var(--text-muted); }
+
+/* The forced change-password step, which is the second half of a first
+   sign-in and therefore wears the same card. A scrim rather than an opaque
+   ground here, because by this point there IS a signed-in app behind it. */
+.pwd-modal { position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 24px; }
+.pwd-modal .login-card { max-width: 400px; text-align: left; }
+.pwd-modal h2 { margin: 0 0 6px; font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+.pwd-modal .login-sub { margin: 0 0 14px; max-width: none; }
+.pwd-actions { display: flex; gap: 8px; margin-top: 18px; }
+.pwd-actions .v-btn { flex: 1; }
+.pwd-actions .v-btn-primary { flex: 2; }
+
+/* ══════════════════════════════════════════════════
    MOBILE — the parts this app has to answer for itself
 ══════════════════════════════════════════════════
 
@@ -2450,13 +2545,6 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
   /* The slide-over queue panel, same dvh reasoning as .sidebar above. */
   .queue-panel { height: 100dvh; padding-bottom: var(--safe-b); }
 
-  /* The Google sign-in control is an <a> wearing a button's clothes, and the
-     44px floor in vance-ui.css covers `button`, `.v-btn` and `a.v-card` — not
-     a bare anchor, because giving every link 44px would wreck running prose.
-     It measured 42px: trivially short, but it is the first thing anyone taps
-     in this app and the only control on that screen. */
-  #googleLoginBtn { min-height: 44px; }
-
   /* ── Bottom bar, in this app's palette ───────────────────────────────────
      This console is pinned to the light theme and uses its own token names,
      so the shared bar is re-pointed at them rather than inheriting the
@@ -2476,60 +2564,78 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <body>
 
 <!-- ══════════════════════════════ AUTH OVERLAYS ════════════════════════════ -->
-<div id="authBootCover" style="position:fixed;inset:0;background:#fff;z-index:9998;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;color:var(--text-muted,#888);font-size:0.78rem;">Loading…</div>
+<div id="authBootCover" style="position:fixed;inset:0;background:var(--bg);z-index:9998;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;color:var(--text-muted);font-size:0.78rem;">Loading…</div>
 
-<div id="loginOverlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1e2d40 0%,#0f1722 100%);z-index:9999;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;">
-  <form id="loginForm" onsubmit="event.preventDefault();submitLogin();" style="background:#fff;border-radius:10px;padding:32px 36px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.4);">
-    <div style="text-align:center;margin-bottom:24px;">
-      <img src="logo-vance-content.png" alt="Vance" style="height:32px;"/>
+<!-- ── Sign-in screen ────────────────────────────────────────────────────────
+     Structurally the same card as HQ, the CS console and the Alerts dashboard.
+     `hidden` in the markup so it never flashes over an already-signed-in reader
+     on load; bootAuth decides. A dialog rather than a panel because it is modal
+     in fact — nothing behind it is usable, and a screen reader should be told
+     that rather than left to wander into an app that will not answer. -->
+<div id="loginOverlay" class="login-screen" role="dialog" aria-modal="true"
+     aria-labelledby="login-title" hidden>
+  <div class="v-card login-card">
+    <img class="login-logo" src="vance-logo.png" alt="Vance"/>
+    <h1 id="login-title">Content Generator</h1>
+    <p class="login-sub">Draft, review and publish articles and social posts across the Vance brands.</p>
+
+    <p id="loginError" class="login-error" role="alert" hidden></p>
+
+    <!-- Sign-in happens at HQ, not here. HQ owns the estate's only Google OAuth
+         client and mints the Vance Passport, which this app then verifies
+         offline. This used to point at /api/auth/google — this app's own client
+         — whose redirect_uri still names vance-content.vercel.app, so starting
+         a sign-in from the custom domain set the state cookie on one origin and
+         came back on another: "that sign-in attempt expired", every time.
+
+         The href is complete without JavaScript; the script below only adds
+         ?next= so a deep link survives the round trip. -->
+    <div id="googleLoginBlock" hidden>
+      <a class="v-btn login-google" href="https://hq.vancemedicalfoods.co.uk/signin.html" id="googleLoginBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.581C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 2.58 9 2.58z"/>
+        </svg>
+        Sign in with Google
+      </a>
+      <p class="login-domain" id="loginDomain"></p>
     </div>
-    <h2 style="font-size:1.05rem;margin:0 0 18px;color:#1e2d40;text-align:center;">Sign in</h2>
-    <label style="display:block;font-size:0.7rem;font-weight:700;color:#1e2d40;margin-bottom:4px;letter-spacing:0.4px;">Email</label>
-    <input id="loginEmail" type="email" autocomplete="username" required style="width:100%;padding:10px 12px;border:1px solid #dde3ea;font-size:0.85rem;margin-bottom:12px;font-family:inherit;"/>
-    <label style="display:block;font-size:0.7rem;font-weight:700;color:#1e2d40;margin-bottom:4px;letter-spacing:0.4px;">Password</label>
-    <input id="loginPassword" type="password" autocomplete="current-password" required style="width:100%;padding:10px 12px;border:1px solid #dde3ea;font-size:0.85rem;margin-bottom:6px;font-family:inherit;"/>
-    <div id="loginError" style="font-size:0.7rem;color:#c0392b;min-height:16px;margin-bottom:10px;"></div>
-    <button type="submit" id="loginSubmitBtn" style="width:100%;padding:11px;background:#f47920;color:#fff;border:none;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit;letter-spacing:0.4px;">Sign in</button>
-    <!-- Hidden until the server confirms GOOGLE_OAUTH_CLIENT_ID is set — see
-         googleLoginAvailability() below. /api/auth/google deliberately refuses
-         when it is not configured, so without this gate the button is visible,
-         inviting, and drops whoever presses it on a raw JSON error. A control
-         that cannot work should not be on screen. -->
-    <div id="googleLoginBlock" style="display:none;">
-    <div style="display:flex;align-items:center;gap:10px;margin:16px 0;">
-      <div style="flex:1;height:1px;background:#dde3ea;"></div>
-      <span style="font-size:0.65rem;color:#8b97a6;letter-spacing:0.4px;">OR</span>
-      <div style="flex:1;height:1px;background:#dde3ea;"></div>
-    </div>
-    <a href="/api/auth/google" id="googleLoginBtn" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:10px;background:#fff;color:#1e2d40;border:1px solid #dde3ea;font-weight:600;font-size:0.82rem;cursor:pointer;font-family:inherit;text-decoration:none;box-sizing:border-box;">
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-        <path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/>
-        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.581C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 2.58 9 2.58z"/>
-      </svg>
-      Sign in with Google
-    </a>
-    </div>
-  </form>
+
+    <details class="pwfall" id="pwFallback">
+      <summary>Use an email and password instead</summary>
+      <form id="loginForm" onsubmit="event.preventDefault();submitLogin();">
+        <label class="login-label" for="loginEmail">Email</label>
+        <input class="v-input" id="loginEmail" type="email" autocomplete="username" required/>
+        <label class="login-label" for="loginPassword">Password</label>
+        <input class="v-input" id="loginPassword" type="password" autocomplete="current-password" required/>
+        <button class="v-btn v-btn-primary login-submit" type="submit" id="loginSubmitBtn">Sign in</button>
+      </form>
+      <p class="login-fineprint">
+        The password on your Vance Content Generator account. Kept for when Google is
+        unreachable — but it is your Google account that records who approved an article.
+      </p>
+    </details>
+  </div>
 </div>
 
-<div id="changePwdModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,34,0.55);z-index:10000;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;">
-  <form onsubmit="event.preventDefault();submitChangePassword();" style="background:#fff;border-radius:10px;padding:28px 32px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
-    <h2 style="font-size:1rem;margin:0 0 6px;color:#1e2d40;">Change password</h2>
-    <p id="changePwdHint" style="font-size:0.72rem;color:#6b7a8d;margin:0 0 16px;line-height:1.5;">Set a new password to continue.</p>
+<div id="changePwdModal" class="pwd-modal" style="display:none;">
+  <form class="v-card login-card" onsubmit="event.preventDefault();submitChangePassword();">
+    <h2>Change password</h2>
+    <p id="changePwdHint" class="login-sub">Set a new password to continue.</p>
     <div id="oldPwdRow">
-      <label style="display:block;font-size:0.7rem;font-weight:700;color:#1e2d40;margin-bottom:4px;">Current password</label>
-      <input id="oldPwd" type="password" autocomplete="current-password" style="width:100%;padding:10px 12px;border:1px solid #dde3ea;font-size:0.85rem;margin-bottom:12px;font-family:inherit;"/>
+      <label class="login-label" for="oldPwd">Current password</label>
+      <input class="v-input" id="oldPwd" type="password" autocomplete="current-password"/>
     </div>
-    <label style="display:block;font-size:0.7rem;font-weight:700;color:#1e2d40;margin-bottom:4px;">New password</label>
-    <input id="newPwd" type="password" autocomplete="new-password" required minlength="4" style="width:100%;padding:10px 12px;border:1px solid #dde3ea;font-size:0.85rem;margin-bottom:12px;font-family:inherit;"/>
-    <label style="display:block;font-size:0.7rem;font-weight:700;color:#1e2d40;margin-bottom:4px;">Confirm new password</label>
-    <input id="newPwd2" type="password" autocomplete="new-password" required minlength="4" style="width:100%;padding:10px 12px;border:1px solid #dde3ea;font-size:0.85rem;margin-bottom:6px;font-family:inherit;"/>
-    <div id="changePwdError" style="font-size:0.7rem;color:#c0392b;min-height:16px;margin-bottom:10px;"></div>
-    <div style="display:flex;gap:8px;">
-      <button type="button" id="changePwdCancelBtn" onclick="closeChangePwd()" style="flex:1;padding:10px;background:#f0f2f5;color:#1e2d40;border:1px solid #dde3ea;font-weight:600;font-size:0.8rem;cursor:pointer;font-family:inherit;">Cancel</button>
-      <button type="submit" style="flex:2;padding:10px;background:#006868;color:#fff;border:none;font-weight:700;font-size:0.8rem;cursor:pointer;font-family:inherit;">Update password</button>
+    <label class="login-label" for="newPwd">New password</label>
+    <input class="v-input" id="newPwd" type="password" autocomplete="new-password" required minlength="4"/>
+    <label class="login-label" for="newPwd2">Confirm new password</label>
+    <input class="v-input" id="newPwd2" type="password" autocomplete="new-password" required minlength="4"/>
+    <p id="changePwdError" class="login-error" role="alert" hidden></p>
+    <div class="pwd-actions">
+      <button class="v-btn" type="button" id="changePwdCancelBtn" onclick="closeChangePwd()">Cancel</button>
+      <button class="v-btn v-btn-primary" type="submit">Update password</button>
     </div>
   </form>
 </div>
@@ -16855,19 +16961,59 @@ function clearLoginErrorParam() {
   history.replaceState(null, '', location.pathname + (qs ? `?${qs}` : ''));
 }
 
-/* Show the Google button only if the server says it can work.
+/* Show a message on a card, or clear it.
+   `hidden` rather than an empty string with a reserved height: an alert region
+   that is permanently present but empty is announced as a change every time it
+   is written to, and reserves a gap on a card that reads better without one. */
+function setCardError(id, message) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = message || '';
+  el.hidden = !message;
+}
+
+/* Show the Google button only if the server says it can work, and decide where
+   focus lands from the same answer.
+
    Fails closed on purpose: a network error, a 404 from an older deployment, or
-   anything unexpected leaves the button hidden and email/password — which
-   always works — as the only route in. Better a missing option than one that
-   greets you with an error. */
+   anything unexpected leaves the button hidden and the email/password pair —
+   which always works — as the only route in. Better a missing option than one
+   that greets you with an error.
+
+   When Google IS unavailable the disclosure is opened rather than left folded,
+   because it is then the only way in and .focus() on an element inside a closed
+   <details> silently does nothing — which reads as focus being broken. Same
+   reasoning, same behaviour, as the CS console and the Alerts dashboard. */
 async function revealGoogleLoginIfConfigured() {
   const block = document.getElementById('googleLoginBlock');
   if (!block) return;
+
+  /* Always shown now. The button goes to HQ, which owns the estate's only
+     OAuth client, so whether it works no longer depends on THIS app's Google
+     configuration — and gating it on a local probe would hide the only way in
+     the moment this app's own (now unused) credentials were removed. */
+  block.hidden = false;
+
+  const btn = document.getElementById('googleLoginBtn');
+  if (btn) {
+    /* Come back to exactly this page. HQ's safeNext() only honours a target on
+       the Vance domain, so an off-estate value here is dropped rather than
+       followed. */
+    btn.href = 'https://hq.vancemedicalfoods.co.uk/signin.html?next=' +
+      encodeURIComponent(location.href);
+    btn.focus();
+  }
+
+  /* The domain hint is still worth showing and still comes from the server, so
+     it cannot drift from what will actually be accepted. Best-effort: if the
+     probe fails the button is unaffected. */
   try {
     const r = await fetch('/api/auth/google?probe=1', { credentials: 'same-origin' });
-    if (!r.ok) return;
-    const { configured } = await r.json();
-    if (configured) block.style.display = 'block';
+    if (r.ok) {
+      const { domain } = await readJsonResponse(r);
+      const hint = document.getElementById('loginDomain');
+      if (hint) hint.textContent = domain ? `${domain} accounts only` : '';
+    }
   } catch {}
 }
 
@@ -16890,7 +17036,7 @@ async function bootAuth() {
     const r = await fetch('/api/auth/me', { credentials: 'same-origin' });
     if (r.ok) {
       _currentUser = await r.json();
-      document.getElementById('loginOverlay').style.display = 'none';
+      document.getElementById('loginOverlay').hidden = true;
       document.getElementById('authBootCover').style.display = 'none';
       // A Google sign-in can fail while an ordinary session is still valid —
       // the callback leaves an existing session alone, by design. Without this
@@ -16909,25 +17055,23 @@ async function bootAuth() {
       return true;
     }
   } catch {}
-  // Not authed → show login
+  // Not authed → show login. Focus is set by revealGoogleLoginIfConfigured(),
+  // which is the only thing that knows which control is the way in.
   document.getElementById('authBootCover').style.display = 'none';
-  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('loginOverlay').hidden = false;
   revealGoogleLoginIfConfigured();
   if (loginError) {
-    const errEl = document.getElementById('loginError');
-    if (errEl) errEl.textContent = LOGIN_ERROR_MESSAGES[loginError] || 'Sign-in failed. Please try again.';
+    setCardError('loginError', LOGIN_ERROR_MESSAGES[loginError] || 'Sign-in failed. Please try again.');
     clearLoginErrorParam();
   }
-  setTimeout(() => document.getElementById('loginEmail')?.focus(), 50);
   return false;
 }
 
 async function submitLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
-  const errEl = document.getElementById('loginError');
   const btn = document.getElementById('loginSubmitBtn');
-  errEl.textContent = ''; btn.disabled = true; btn.textContent = 'Signing in…';
+  setCardError('loginError', ''); btn.disabled = true; btn.textContent = 'Signing in…';
   try {
     const r = await fetch('/api/auth/login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -16937,13 +17081,13 @@ async function submitLogin() {
     const data = await readJsonResponse(r);
     if (!r.ok) throw new Error(data.error || 'Login failed');
     _currentUser = data.user;
-    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('loginOverlay').hidden = true;
     document.getElementById('loginPassword').value = '';
     if (typeof loadReviewers === 'function') loadReviewers().catch(() => {});
     applyRoleGating();
     if (_currentUser.mustChangePassword) openChangePwd(true);
   } catch (e) {
-    errEl.textContent = e.message;
+    setCardError('loginError', e.message);
   } finally {
     btn.disabled = false; btn.textContent = 'Sign in';
   }
@@ -16968,7 +17112,7 @@ async function logout() {
 
 function openChangePwd(forced = false) {
   const m = document.getElementById('changePwdModal');
-  document.getElementById('changePwdError').textContent = '';
+  setCardError('changePwdError', '');
   document.getElementById('oldPwd').value = '';
   document.getElementById('newPwd').value = '';
   document.getElementById('newPwd2').value = '';
@@ -16988,10 +17132,9 @@ async function submitChangePassword() {
   const oldPassword = document.getElementById('oldPwd').value;
   const newPassword = document.getElementById('newPwd').value;
   const newPassword2 = document.getElementById('newPwd2').value;
-  const errEl = document.getElementById('changePwdError');
-  errEl.textContent = '';
-  if (newPassword !== newPassword2) { errEl.textContent = 'New passwords do not match.'; return; }
-  if (newPassword.length < 4) { errEl.textContent = 'Password must be at least 4 characters.'; return; }
+  setCardError('changePwdError', '');
+  if (newPassword !== newPassword2) { setCardError('changePwdError', 'New passwords do not match.'); return; }
+  if (newPassword.length < 4) { setCardError('changePwdError', 'Password must be at least 4 characters.'); return; }
   try {
     const r = await fetch('/api/auth/change-password', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
@@ -17003,7 +17146,7 @@ async function submitChangePassword() {
     document.getElementById('changePwdModal').style.display = 'none';
     if (typeof showToast === 'function') showToast('Password updated');
   } catch (e) {
-    errEl.textContent = e.message;
+    setCardError('changePwdError', e.message);
   }
 }
 

@@ -1,7 +1,7 @@
 import { withErrorBoundary } from '../../../lib/api.js';
 import {
   loginRedirectUri, buildGoogleLoginUrl, generateState, stateCookieString,
-  googleClientId, googleClientSecret,
+  googleClientId, googleClientSecret, loginDomain,
 } from '../../../lib/auth/google-login.js';
 
 async function handler(req, res) {
@@ -9,12 +9,18 @@ async function handler(req, res) {
   const clientId = googleClientId();
 
   // Availability probe for the login screen, so the button is only rendered
-  // when pressing it can actually work. Deliberately reports a boolean and
-  // nothing else — never the client id, and never a hint about which half of
-  // the pair is missing.
+  // when pressing it can actually work. Deliberately reports a boolean and the
+  // expected domain, and nothing else — never the client id, and never a hint
+  // about which half of the pair is missing.
+  //
+  // The domain is named so the hint under the button is sourced from the server
+  // that will actually enforce it, rather than typed into the page where it can
+  // quietly drift; HQ and the Alerts dashboard publish it on the same grounds.
+  // It is not a secret — it is the domain on everyone's business card.
   if (req.query?.probe === '1') {
     return res.status(200).json({
       configured: Boolean(clientId && googleClientSecret()),
+      domain: loginDomain(),
     });
   }
 
