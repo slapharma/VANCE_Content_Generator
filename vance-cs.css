@@ -173,9 +173,15 @@ button { font-family: var(--font-body); cursor: pointer; }
 .header .brand-logo { height: 23px; width: auto; display: block; }
 .header .brand-sep { width: 1px; height: 26px; background: var(--border); }
 .header .brand-text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+/* Matches the Alerts dashboard's Technical-mode header title exactly — pulled
+   from its live CSS (:root[data-mode="technical"] .brand-text h1): 13px,
+   .1em letter-spacing, uppercase, and its --hud teal (#067B78 in light
+   theme, the only theme this console has). Not this console's usual navy
+   headings — the one place the header intentionally reads like the sibling
+   system, not like the rest of this app. */
 .header .brand-text b {
-  font-family: var(--font-head); font-weight: 700; font-size: 15px;
-  color: var(--brand-navy); white-space: nowrap;
+  font-family: var(--font-head); font-weight: 700; font-size: 13px;
+  color: #067B78; text-transform: uppercase; letter-spacing: .1em; white-space: nowrap;
 }
 .header .brand-text span {
   color: var(--text-faint); font-size: 11.5px; white-space: nowrap;
