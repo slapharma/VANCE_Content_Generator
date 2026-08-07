@@ -444,10 +444,6 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .cats-page { width:100%; max-width:1440px; margin:0 auto; padding:1.5rem; }
 
 /* Hero header */
-.cats-hero { display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; margin-bottom:1.5rem; padding:18px 20px; background:var(--card); border:1px solid var(--border); border-radius:0; box-shadow:var(--shadow); }
-.cats-hero-text { flex:1; min-width:180px; }
-.cats-hero-text h1 { font-size:1.05rem; font-weight:800; color:var(--vance-dark); margin:0 0 3px; }
-.cats-hero-text p { font-size:0.72rem; color:var(--text-muted); margin:0; }
 .cats-hero-stats { display:flex; gap:20px; flex-shrink:0; }
 .cats-hero-stat { text-align:center; }
 .cats-hero-stat span { display:block; font-size:1.35rem; font-weight:800; color:var(--vance-dark); line-height:1; }
@@ -479,10 +475,10 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 
 /* Editor panel */
 .cats-editor { min-width:0; background:var(--card); border:1px solid var(--border); border-radius:0; box-shadow:var(--shadow); overflow:hidden; position:sticky; top:0; max-height:calc(100vh - 20px); display:flex; flex-direction:column; }
-.cats-editor-header { display:flex; align-items:center; gap:0; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--vance-dark); }
-.cats-editor-title { flex:1; font-size:0.75rem; font-weight:800; color:#fff; padding:10px 14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.cats-editor-close { background:none; border:none; cursor:pointer; color:rgba(255,255,255,0.7); padding:10px 12px; font-size:0.9rem; transition:color 0.12s; flex-shrink:0; }
-.cats-editor-close:hover { color:#fff; }
+.cats-editor-header { display:flex; align-items:center; gap:0; border-bottom:1px solid var(--border); flex-shrink:0; background:none; }
+.cats-editor-title { flex:1; font-family:var(--font-head); font-size:13px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--brand-navy); padding:13px 14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cats-editor-close { background:none; border:none; cursor:pointer; color:var(--text-muted); padding:10px 12px; font-size:0.9rem; transition:color 0.12s; flex-shrink:0; }
+.cats-editor-close:hover { color:var(--text); }
 
 /* Tab bar */
 .ced-tab-bar { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--bg); }
@@ -883,10 +879,7 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
    PIPELINE / KANBAN
 ══════════════════════════════════════════════════════════ */
 .pipeline-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-.pipeline-header-row { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.5rem 0.75rem; }
-.pipeline-title { font-size: 1.15rem; font-weight: 800; color: var(--vance-dark); }
 .pipeline-title span { color: var(--vance-primary); }
-.pipeline-subtitle { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
 .pipeline-board {
   display: flex; gap: 10px; padding: 0 1.25rem 1.25rem;
   overflow-x: auto; flex: 1; align-items: flex-start;
@@ -1023,9 +1016,9 @@ textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
 .settings-container { display: grid; grid-template-columns: repeat(2, 1fr); align-items: start; flex: 1; overflow-y: auto; padding: 1.5rem; gap: 1.25rem; }
 @media (max-width: 860px) { .settings-container { grid-template-columns: 1fr; } }
 .settings-section { background: var(--card); border: 1px solid var(--border); border-radius: 0; overflow: hidden; }
-.settings-section-header { background: var(--vance-dark); padding: 10px 16px; }
-.settings-section-header h3 { color: #fff; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; margin: 0; }
-.settings-section-header p { color: rgba(255,255,255,0.55); font-size: 0.62rem; margin: 2px 0 0; }
+.settings-section-header { background: none; border-bottom: 1px solid var(--border); padding: 13px 16px; }
+.settings-section-header h3 { font-family: var(--font-head); color: var(--brand-navy); font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin: 0; }
+.settings-section-header p { color: var(--text-muted); font-size: 0.68rem; margin: 3px 0 0; }
 .settings-section-body { padding: 14px 16px; }
 .reviewer-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .reviewer-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bg); border-radius: 0; border: 1px solid var(--border); }
@@ -1287,8 +1280,6 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
    CALENDAR TAB
 ══════════════════════════════════════════════════ */
 .calendar-view { padding: 1.5rem; max-width: 1440px; margin: 0 auto; width: 100%; }
-.calendar-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-.calendar-title { font-size: 1.3rem; font-weight: 800; color: var(--vance-dark); }
 .calendar-nav { display: flex; align-items: center; gap: 8px; }
 .calendar-nav button { background: var(--card); border: 1px solid var(--border); border-radius: 6px; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 1rem; transition: all 0.15s; }
 .calendar-nav button:hover { background: var(--vance-dark); color: #fff; border-color: var(--vance-dark); }
@@ -1545,8 +1536,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
    subtitle starts its content 36px higher than a three-line one, and switching
    tabs jumps the whole page. Keep pane subtitles to two lines at desktop width. */
 .pane-head { display:grid; grid-template-columns:1fr auto; align-items:end; gap:12px 28px; min-height:74px; padding-bottom:12px; border-bottom:1px solid var(--border); }
-.pane-head-text h2 { font-size:0.95rem; font-weight:800; letter-spacing:-0.01em; color:var(--vance-dark); margin:0 0 3px; }
-.pane-head-text p { font-size:0.72rem; line-height:1.55; color:var(--text-muted); margin:0; max-width:78ch; }
+.pane-head-text h2 { font-size:0.95rem; font-weight:800; letter-spacing:-0.01em; color:var(--vance-dark); margin:0 0 3px; text-transform:none; }
+.pane-head-text p { font-size:0.72rem; line-height:1.55; color:var(--text-muted); margin:0; max-width:78ch; text-transform:none; }
 .pane-stats { display:flex; gap:22px; }
 .pane-stat { text-align:right; }
 .pane-stat span { display:block; font-size:1.15rem; line-height:1.1; font-weight:800; color:var(--vance-dark); font-variant-numeric:tabular-nums; }
@@ -1811,9 +1802,9 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 .llm-page { width: 100%; max-width: 1440px; margin: 0 auto; padding: 1.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; align-items: start; }
 @media (max-width: 860px) { .llm-page { grid-template-columns: 1fr; } }
 .llm-section { background: var(--card); border: 1px solid var(--border); }
-.llm-section-header { padding: 14px 18px 12px; background: var(--header-green); color: #fff; display: flex; align-items: center; gap: 10px; }
-.llm-section-title { font-weight: 800; font-size: 0.9rem; color: #fff; flex: 1; }
-.llm-section-desc { font-size: 0.7rem; color: rgba(255,255,255,0.7); }
+.llm-section-header { padding: 13px 16px; background: none; border-bottom: 1px solid var(--border); color: var(--text); display: flex; align-items: center; gap: 10px; }
+.llm-section-title { font-family: var(--font-head); font-weight: 700; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--brand-navy); flex: 1; }
+.llm-section-desc { font-size: 0.7rem; color: var(--text-muted); }
 .llm-section-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
 .llm-provider-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .llm-provider-row:last-child { border-bottom: none; }
@@ -1863,24 +1854,34 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 .inbox-detail-wrap h2 { font-size: 1.1rem; margin: 0 0 8px; color: var(--text); }
 .inbox-action-row { display: flex; gap: 12px; margin-top: 20px; }
 
-/* ── Rule Wizard step indicators ── */
-.wiz-step { flex:1; text-align:center; padding:10px 6px; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; background:var(--card); border:1px solid var(--border); color:var(--text-muted); position:relative; transition:all 0.18s ease; }
-.wiz-step.active { background:var(--vance-primary); color:#fff; border-color:var(--vance-primary); box-shadow:0 4px 14px rgba(230,108,17,0.28); transform:translateY(-1px); }
-.wiz-step.done   { background:var(--vance-dark); color:#fff; border-color:var(--vance-dark); }
+/* ── Rule Wizard ──
+   .wiz-hero / .wiz-step / .wiz-steps-bar / .wiz-body's box styling are now
+   fully owned by vance-cs.css's BRIDGE "Wizards" section (a considered
+   CS-mirrored redesign: gradient card hero, pill-shaped steps) — only the
+   flex-layout behavior that section doesn't set (panels need to stretch to
+   fill available height so the footer sits at a consistent position) and
+   the footer buttons (no .wiz-footer wrapper exists in the markup for
+   vance-cs.css's .wiz-footer .wiz-footer-save rule to reach) stay here. */
 .wiz-page { padding:0; max-width:880px; margin:0 auto; }
-.wiz-hero { background:linear-gradient(135deg,var(--vance-dark) 0%,#1a2e4a 100%); color:#fff; padding:24px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:0; }
-.wiz-hero h2 { margin:0; font-family:'Montserrat',sans-serif; font-size:1.15rem; font-weight:800; letter-spacing:-0.01em; }
-.wiz-hero p { margin:4px 0 0; font-size:0.72rem; color:rgba(255,255,255,0.65); font-weight:500; }
-.wiz-hero .wiz-hero-name { margin:6px 0 0; font-size:0.85rem; color:#fff; font-weight:700; opacity:0.92; }
-.wiz-body { background:var(--card); border:1px solid var(--border); border-top:none; padding:24px 28px; min-height:520px; box-sizing:border-box; display:flex; flex-direction:column; }
+/* .btn.subtle's default color:var(--cta) (teal) is illegible against the
+   .wiz-hero gradient card, which runs from --brand-navy to --cta-dark —
+   both dark teals themselves. The Bibliography wizard's Cancel button lives
+   inside the hero, so it needs a light color there specifically. */
+.wiz-hero .btn.subtle { color: #fff; }
+.wiz-hero .btn.subtle:hover { color: var(--brand-mist); }
+.wiz-body { display:flex; flex-direction:column; min-height:520px; box-sizing:border-box; }
 .wiz-body > div[id^="wizPanel"] { flex:1 0 auto; }
 .wiz-footer-btn { padding:8px 20px; border:1px solid var(--border); background:var(--bg); color:var(--text-muted); font-size:0.875rem; cursor:pointer; }
 .wiz-footer-save { padding:8px 20px; border:1px solid var(--vance-accent); background:transparent; color:var(--vance-accent); font-size:0.875rem; font-weight:700; cursor:pointer; }
 .wiz-footer-save:hover { background:rgba(77,189,189,0.1); }
+.wiz-footer-next { padding:8px 20px; border:none; background:var(--vance-primary); color:#fff; font-size:0.875rem; font-weight:600; cursor:pointer; }
+.wiz-footer-next:hover { background:var(--cta-dark); }
+.wiz-toggle-btn { padding:6px 14px; border:1px solid var(--border); background:transparent; color:var(--text-muted); font-size:0.82rem; cursor:pointer; }
+.wiz-toggle-btn.active { border-color:var(--vance-dark); background:var(--vance-dark); color:#fff; }
+.wiz-toggle-btn-sm { padding:5px 10px; border:1px solid var(--border); background:transparent; color:var(--text-muted); font-size:0.8rem; cursor:pointer; }
+.wiz-toggle-btn-sm.active { border-color:var(--vance-dark); background:var(--vance-dark); color:#fff; }
 .wiz-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 @media(max-width:700px) { .wiz-row-2 { grid-template-columns:1fr; } }
-.wiz-steps-bar { display:flex; gap:0; padding:14px 28px; background:var(--bg); border-bottom:1px solid var(--border); border-left:1px solid var(--border); border-right:1px solid var(--border); }
-.wiz-steps-bar .wiz-step + .wiz-step { border-left:none; }
 
 /* ── Social Kit Builder ── */
 /* Spacing between the kit's steps comes from .pane-body's gap, not per-block margins. */
@@ -2687,7 +2688,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <div class="card prompt-editor-card" style="display:none;">
       <div class="card-header">
         <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Prompt Editor</h2>
-        <button class="btn btn-outline btn-xs" id="promptToggle" onclick="togglePromptEditor()" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:#fff;">Collapse</button>
+        <button class="btn btn-outline btn-xs" id="promptToggle" onclick="togglePromptEditor()">Collapse</button>
       </div>
       <div class="prompt-editor-body" id="promptBody">
         <div class="prompt-meta-row">
@@ -3777,13 +3778,18 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <!-- ══════════════════════════════ TAB: CALENDAR ══════════════════════════════ -->
 <div class="tab-view" id="view-calendar">
   <div class="calendar-view">
-    <div class="calendar-header-row">
-      <h1 class="calendar-title" id="calMonthTitle">March 2026</h1>
-      <div class="calendar-nav">
-        <button onclick="calNav(-1)" title="Previous month">&#8249;</button>
-        <span class="calendar-month-label" id="calNavLabel"></span>
-        <button onclick="calNav(1)" title="Next month">&#8250;</button>
-        <button class="btn btn-orange btn-sm" onclick="calGoToday()" style="margin-left:8px;padding:5px 12px;font-size:0.7rem;">Today</button>
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-header-title" id="calMonthTitle">March 2026</h1>
+        <p class="page-header-subtitle">Scheduled and published content by date.</p>
+      </div>
+      <div class="page-header-actions">
+        <div class="calendar-nav">
+          <button onclick="calNav(-1)" title="Previous month">&#8249;</button>
+          <span class="calendar-month-label" id="calNavLabel"></span>
+          <button onclick="calNav(1)" title="Next month">&#8250;</button>
+          <button class="btn btn-orange btn-sm" onclick="calGoToday()" style="margin-left:8px;padding:5px 12px;font-size:0.7rem;">Today</button>
+        </div>
       </div>
     </div>
     <div class="calendar-grid">
@@ -3816,8 +3822,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 20px 10px;font-family:'Montserrat',sans-serif;">
     <span style="font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Status</span>
     <div id="catArticlesStatusChips" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
-    <button type="button" onclick="catArticlesToggleAll(true)"  style="font-size:0.6rem;color:var(--vance-dark);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0 4px;">all</button>
-    <button type="button" onclick="catArticlesToggleAll(false)" style="font-size:0.6rem;color:var(--text-muted);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0 4px;">none</button>
+    <button type="button" class="btn btn-outline btn-xs" onclick="catArticlesToggleAll(true)">all</button>
+    <button type="button" class="btn btn-outline btn-xs" onclick="catArticlesToggleAll(false)">none</button>
     <span style="width:1px;height:18px;background:var(--border);margin:0 4px;"></span>
     <span style="font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);">Date</span>
     <select id="catArticlesSort" onchange="renderCategoryArticles()" style="padding:4px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.7rem;font-family:inherit;">
@@ -3847,7 +3853,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <span style="width:1px;height:20px;background:var(--border);"></span>
 
     <div style="position:relative;">
-      <button type="button" id="libCategoryBtn" onclick="libToggleCategoryPopover()" style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.7rem;font-weight:600;font-family:inherit;cursor:pointer;">
+      <button type="button" id="libCategoryBtn" class="btn btn-outline btn-sm" onclick="libToggleCategoryPopover()" style="display:inline-flex;align-items:center;gap:6px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <span id="libCategoryBtnLabel">All categories</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;opacity:0.6;"><polyline points="6 9 12 15 18 9"/></svg>
@@ -3862,7 +3868,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <option value="oldest">Oldest first</option>
     </select>
 
-    <button type="button" onclick="loadLibrary()" title="Refresh" aria-label="Refresh" style="padding:5px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+    <button type="button" class="btn btn-outline btn-xs" onclick="loadLibrary()" title="Refresh" aria-label="Refresh">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
     </button>
 
@@ -3922,12 +3928,12 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <!-- ═══════════════ PIPELINE TAB ═══════════════ -->
 <div class="tab-view" id="view-pipeline">
   <div class="pipeline-container">
-    <div class="pipeline-header-row">
-      <div>
-        <h1 class="pipeline-title">Content <span>Pipeline</span></h1>
-        <div class="pipeline-subtitle" id="pipelineSubtitle">Loading…</div>
+    <div class="page-header" style="padding:1.5rem 1.5rem 0.75rem;margin-bottom:0;">
+      <div class="page-header-left">
+        <h1 class="page-header-title pipeline-title">Content <span>Pipeline</span></h1>
+        <p class="page-header-subtitle" id="pipelineSubtitle">Loading…</p>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div class="page-header-actions">
         <!-- Layout toggle buttons -->
         <select id="pipelineCatFilter" onchange="setPipelineCatFilter(this.value)" title="View by category" style="padding:5px 8px;border:1px solid var(--border);background:var(--card);color:var(--vance-dark);font-size:0.68rem;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;min-width:0;flex-shrink:1;">
           <option value="all">All categories</option>
@@ -4555,7 +4561,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     <div class="settings-section" style="grid-column: 1 / -1;" data-require-role="admin">
       <div class="settings-section-header">
         <h3>Reset Databases</h3>
-        <p>Selectively clear generated data and counters. Prompts, users, and automation rules are always preserved. <strong style="color:#b91c1c;">This permanently deletes the selected data and cannot be undone.</strong></p>
+        <p>Selectively clear generated data and counters. Prompts, users, and automation rules are always preserved. <strong style="color:var(--critical);">This permanently deletes the selected data and cannot be undone.</strong></p>
       </div>
       <div class="settings-section-body">
         <div id="adminResetTargets" style="display:grid;grid-template-columns:1fr 1fr;gap:9px 18px;margin-bottom:14px;">
@@ -4563,13 +4569,13 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
           <button class="btn btn-outline btn-sm" onclick="adminReset(true)">Preview (dry run)</button>
-          <button class="btn btn-sm" style="background:#b91c1c;border-color:#b91c1c;color:#fff;" onclick="adminResetConfirm()">Wipe selected…</button>
+          <button class="btn btn-sm danger" onclick="adminResetConfirm()">Wipe selected…</button>
         </div>
-        <div id="adminResetConfirmRow" style="display:none;margin-top:12px;padding:12px;border:1.5px solid #b91c1c;background:rgba(185,28,28,0.05);">
-          <p style="font-size:0.7rem;color:#b91c1c;font-weight:700;margin:0 0 8px;">Type <code style="background:rgba(185,28,28,0.12);padding:1px 5px;">WIPE</code> to permanently delete the selected datasets from production.</p>
+        <div id="adminResetConfirmRow" class="callout critical" style="display:none;margin-top:12px;">
+          <p class="c-title" style="margin-bottom:8px;">Type <code style="background:var(--critical-bg);padding:1px 5px;">WIPE</code> to permanently delete the selected datasets from production.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <input type="text" id="adminResetConfirmInput" placeholder="WIPE" autocomplete="off" style="flex:1;min-width:120px;padding:6px 9px;border:1px solid var(--border);font-size:0.72rem;" onkeydown="if(event.key==='Enter')adminReset(false)" />
-            <button class="btn btn-sm" style="background:#b91c1c;border-color:#b91c1c;color:#fff;" onclick="adminReset(false)">Confirm wipe</button>
+            <button class="btn btn-sm danger" onclick="adminReset(false)">Confirm wipe</button>
             <button class="btn btn-outline btn-sm" onclick="document.getElementById('adminResetConfirmRow').style.display='none'">Cancel</button>
           </div>
         </div>
@@ -4738,83 +4744,101 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
     </div>
     <!-- Step 1: Sources -->
     <div id="wizPanel1">
-      <div style="margin-bottom:16px;">
-        <label class="field-label">Rule Name *</label>
-        <input id="wizName" type="text" maxlength="60" oninput="wizUpdateHeroName()" class="input">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><h2>Rule Details</h2></div>
+        <div class="card-body">
+          <div style="margin-bottom:16px;">
+            <label class="field-label">Rule Name *</label>
+            <input id="wizName" type="text" maxlength="60" oninput="wizUpdateHeroName()" class="input">
+          </div>
+          <div>
+            <label class="field-label">Category *</label>
+            <select id="wizCategory" class="input"></select>
+          </div>
+        </div>
       </div>
-      <div style="margin-bottom:16px;">
-        <label class="field-label">Category *</label>
-        <select id="wizCategory" class="input"></select>
-      </div>
-      <div style="margin-bottom:12px;">
-        <label class="field-label">Sources *</label>
-        <div id="wizSourcesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button onclick="wizAddSource('rss')" class="btn small" style="border-style:dashed;">+ RSS Feed</button>
-          <button onclick="wizAddSource('url')" class="btn small" style="border-style:dashed;">+ URL</button>
-          <button onclick="wizAddSource('github')" class="btn small" style="border-style:dashed;">+ GitHub</button>
-          <button onclick="wizAddSource('upload')" class="btn small" style="border-style:dashed;">+ Upload</button>
-          <button onclick="wizAddSource('google_drive')" class="btn small" style="border-style:dashed;">+ Google Drive</button>
-          <button onclick="wizAddSource('dropbox')" class="btn small" style="border-style:dashed;">+ Dropbox</button>
-          <button onclick="wizAddSource('gmail')" class="btn small" style="border-style:dashed;">+ Gmail</button>
-          <button onclick="wizAddSource('google_sheets')" class="btn small" style="border-style:dashed;">+ Google Sheets</button>
-          <button onclick="wizAddSource('bibliography')" class="btn small" style="border-style:dashed;">+ Bibliography</button>
+      <div class="card">
+        <div class="card-header"><h2>Sources</h2></div>
+        <div class="card-body">
+          <div id="wizSourcesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="wizAddSource('rss')" class="btn small" style="border-style:dashed;">+ RSS Feed</button>
+            <button onclick="wizAddSource('url')" class="btn small" style="border-style:dashed;">+ URL</button>
+            <button onclick="wizAddSource('github')" class="btn small" style="border-style:dashed;">+ GitHub</button>
+            <button onclick="wizAddSource('upload')" class="btn small" style="border-style:dashed;">+ Upload</button>
+            <button onclick="wizAddSource('google_drive')" class="btn small" style="border-style:dashed;">+ Google Drive</button>
+            <button onclick="wizAddSource('dropbox')" class="btn small" style="border-style:dashed;">+ Dropbox</button>
+            <button onclick="wizAddSource('gmail')" class="btn small" style="border-style:dashed;">+ Gmail</button>
+            <button onclick="wizAddSource('google_sheets')" class="btn small" style="border-style:dashed;">+ Google Sheets</button>
+            <button onclick="wizAddSource('bibliography')" class="btn small" style="border-style:dashed;">+ Bibliography</button>
+          </div>
         </div>
       </div>
     </div>
     <!-- Step 2: Trigger -->
     <div id="wizPanel2" style="display:none;">
-      <div style="margin-bottom:16px;">
-        <label class="field-label">When should this rule run?</label>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="schedule" checked onchange="wizUpdateTriggerUI()"> Schedule</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="event" onchange="wizUpdateTriggerUI()"> Event-driven (when new source items appear)</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="volume" onchange="wizUpdateTriggerUI()"> Volume-based (when N items accumulate)</label>
-        </div>
-      </div>
-      <div id="wizTrigSchedule">
-        <div style="margin-bottom:14px;">
-          <label class="field-label">Frequency</label>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button type="button" data-wiz-freq="daily" onclick="wizSetFreq('daily')" style="padding:6px 14px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">Daily</button>
-            <button type="button" data-wiz-freq="weekly" onclick="wizSetFreq('weekly')" style="padding:6px 14px;border:1px solid var(--vance-dark);background:var(--vance-dark);color:#fff;font-size:0.82rem;cursor:pointer;">Weekly</button>
-            <button type="button" data-wiz-freq="biweekly" onclick="wizSetFreq('biweekly')" style="padding:6px 14px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">Bi-weekly</button>
-            <button type="button" data-wiz-freq="monthly" onclick="wizSetFreq('monthly')" style="padding:6px 14px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">Monthly</button>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><h2>Trigger Type</h2></div>
+        <div class="card-body">
+          <label class="field-label">When should this rule run?</label>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="schedule" checked onchange="wizUpdateTriggerUI()"> Schedule</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="event" onchange="wizUpdateTriggerUI()"> Event-driven (when new source items appear)</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;"><input type="radio" name="wizTrigger" value="volume" onchange="wizUpdateTriggerUI()"> Volume-based (when N items accumulate)</label>
           </div>
         </div>
-        <div style="margin-bottom:14px;" id="wizDayRow">
-          <label class="field-label">Day</label>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;">
-            <button type="button" data-wiz-dow="1" onclick="wizSetDay(1)" style="padding:5px 10px;border:1px solid var(--vance-dark);background:var(--vance-dark);color:#fff;font-size:0.8rem;cursor:pointer;">Mon</button>
-            <button type="button" data-wiz-dow="2" onclick="wizSetDay(2)" class="btn small">Tue</button>
-            <button type="button" data-wiz-dow="3" onclick="wizSetDay(3)" class="btn small">Wed</button>
-            <button type="button" data-wiz-dow="4" onclick="wizSetDay(4)" class="btn small">Thu</button>
-            <button type="button" data-wiz-dow="5" onclick="wizSetDay(5)" class="btn small">Fri</button>
-            <button type="button" data-wiz-dow="6" onclick="wizSetDay(6)" class="btn small">Sat</button>
-            <button type="button" data-wiz-dow="0" onclick="wizSetDay(0)" class="btn small">Sun</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>Schedule</h2></div>
+        <div class="card-body">
+          <div id="wizTrigSchedule">
+            <div style="margin-bottom:14px;">
+              <label class="field-label">Frequency</label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button type="button" class="wiz-toggle-btn" data-wiz-freq="daily" onclick="wizSetFreq('daily')">Daily</button>
+                <button type="button" class="wiz-toggle-btn active" data-wiz-freq="weekly" onclick="wizSetFreq('weekly')">Weekly</button>
+                <button type="button" class="wiz-toggle-btn" data-wiz-freq="biweekly" onclick="wizSetFreq('biweekly')">Bi-weekly</button>
+                <button type="button" class="wiz-toggle-btn" data-wiz-freq="monthly" onclick="wizSetFreq('monthly')">Monthly</button>
+              </div>
+            </div>
+            <div style="margin-bottom:14px;" id="wizDayRow">
+              <label class="field-label">Day</label>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                <button type="button" class="wiz-toggle-btn-sm active" data-wiz-dow="1" onclick="wizSetDay(1)">Mon</button>
+                <button type="button" class="wiz-toggle-btn-sm" data-wiz-dow="2" onclick="wizSetDay(2)">Tue</button>
+                <button type="button" class="wiz-toggle-btn-sm" data-wiz-dow="3" onclick="wizSetDay(3)">Wed</button>
+                <button type="button" class="wiz-toggle-btn-sm" data-wiz-dow="4" onclick="wizSetDay(4)">Thu</button>
+                <button type="button" class="wiz-toggle-btn-sm" data-wiz-dow="5" onclick="wizSetDay(5)">Fri</button>
+                <button type="button" class="wiz-toggle-btn-sm" data-wiz-dow="6" onclick="wizSetDay(6)">Sat</button>
+                <button type="button" class="wiz-toggle-btn-sm" data-wiz-dow="0" onclick="wizSetDay(0)">Sun</button>
+              </div>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label class="field-label">Time (GMT)</label>
+              <select id="wizHour" onchange="wizUpdateCronPreview()" style="padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+                <option value="0">00:00 GMT</option><option value="1">01:00 GMT</option><option value="2">02:00 GMT</option><option value="3">03:00 GMT</option><option value="4">04:00 GMT</option><option value="5">05:00 GMT</option><option value="6">06:00 GMT</option><option value="7" selected>07:00 GMT</option><option value="8">08:00 GMT</option><option value="9">09:00 GMT</option><option value="10">10:00 GMT</option><option value="11">11:00 GMT</option><option value="12">12:00 GMT</option><option value="13">13:00 GMT</option><option value="14">14:00 GMT</option><option value="15">15:00 GMT</option><option value="16">16:00 GMT</option><option value="17">17:00 GMT</option><option value="18">18:00 GMT</option><option value="19">19:00 GMT</option><option value="20">20:00 GMT</option><option value="21">21:00 GMT</option><option value="22">22:00 GMT</option><option value="23">23:00 GMT</option>
+              </select>
+            </div>
+            <div id="wizSchedPreview" style="font-size:0.75rem;color:var(--text-muted);padding:8px 10px;border:1px solid var(--border);background:var(--bg);margin-bottom:4px;">Every Monday at 07:00 GMT</div>
+          </div>
+          <div id="wizTrigEvent" style="display:none;">
+            <div style="margin-bottom:12px;">
+              <label class="field-label">Minimum gap between runs (hours)</label>
+              <input id="wizMinGap" type="number" value="4" min="1" max="168" style="width:120px;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Max articles per run</label>
+            <input id="wizMaxArticles" type="number" value="3" min="1" max="10" style="width:120px;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
           </div>
         </div>
-        <div style="margin-bottom:14px;">
-          <label class="field-label">Time (GMT)</label>
-          <select id="wizHour" onchange="wizUpdateCronPreview()" style="padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
-            <option value="0">00:00 GMT</option><option value="1">01:00 GMT</option><option value="2">02:00 GMT</option><option value="3">03:00 GMT</option><option value="4">04:00 GMT</option><option value="5">05:00 GMT</option><option value="6">06:00 GMT</option><option value="7" selected>07:00 GMT</option><option value="8">08:00 GMT</option><option value="9">09:00 GMT</option><option value="10">10:00 GMT</option><option value="11">11:00 GMT</option><option value="12">12:00 GMT</option><option value="13">13:00 GMT</option><option value="14">14:00 GMT</option><option value="15">15:00 GMT</option><option value="16">16:00 GMT</option><option value="17">17:00 GMT</option><option value="18">18:00 GMT</option><option value="19">19:00 GMT</option><option value="20">20:00 GMT</option><option value="21">21:00 GMT</option><option value="22">22:00 GMT</option><option value="23">23:00 GMT</option>
-          </select>
-        </div>
-        <div id="wizSchedPreview" style="font-size:0.75rem;color:var(--text-muted);padding:8px 10px;border:1px solid var(--border);background:var(--bg);margin-bottom:4px;">Every Monday at 07:00 GMT</div>
-      </div>
-      <div id="wizTrigEvent" style="display:none;">
-        <div style="margin-bottom:12px;">
-          <label class="field-label">Minimum gap between runs (hours)</label>
-          <input id="wizMinGap" type="number" value="4" min="1" max="168" style="width:120px;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
-        </div>
-      </div>
-      <div style="margin-bottom:12px;">
-        <label class="field-label">Max articles per run</label>
-        <input id="wizMaxArticles" type="number" value="3" min="1" max="10" style="width:120px;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
       </div>
     </div>
     <!-- Step 3: Generation -->
     <div id="wizPanel3" style="display:none;">
+      <div class="card" style="margin-bottom:16px;">
+      <div class="card-header"><h2>Content Generation</h2></div>
+      <div class="card-body">
       <div style="margin-bottom:16px;">
         <label class="field-label">Template</label>
         <select id="wizTemplate" disabled title="Template is locked to the selected Category — they always match." style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;opacity:0.7;cursor:not-allowed;"></select>
@@ -4870,6 +4894,11 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           </details>
         </div>
       </div>
+      </div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+      <div class="card-header"><h2>Source &amp; Hero Image</h2></div>
+      <div class="card-body">
       <div style="margin-bottom:16px;">
         <label class="field-label">Source handling</label>
         <div style="display:flex;gap:24px;flex-wrap:wrap;">
@@ -4889,7 +4918,12 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <p style="font-size:0.72rem;color:var(--text-muted);margin:0 0 6px;">If the AI hero image is disabled or fails to generate, articles created by this rule will use this image instead. Should match the category's hero image.</p>
         <input type="url" id="wizHeroImageFallback" class="ced-input" placeholder="https://example.com/category-hero.jpg" style="width:100%;" />
       </div>
-      <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+      </div>
+      </div>
+      <div class="card">
+      <div class="card-header"><h2>Instagram Carousel</h2></div>
+      <div class="card-body">
+      <div>
         <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;cursor:pointer;">
           <input type="checkbox" id="wizArticleCarousel" onchange="wizUpdateCarouselUI()">
           <span style="font-weight:600;">Auto-create Instagram Article Carousel</span>
@@ -4944,9 +4978,14 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           <p id="wizCarouselAutoWarn" style="display:none;font-size:0.68rem;color:#9a6205;background:rgba(243,156,18,0.10);border-left:3px solid var(--warning);padding:7px 9px;margin:10px 0 0;">This rule will publish to Instagram automatically, with no human check on the slides. The queue is drained hourly.</p>
         </div>
       </div>
+      </div>
+      </div>
     </div>
     <!-- Step 4: Review -->
     <div id="wizPanel4" style="display:none;">
+      <div class="card">
+      <div class="card-header"><h2>Review</h2></div>
+      <div class="card-body">
       <div style="margin-bottom:16px;">
         <label class="field-label">Does this content require human review before publishing?</label>
         <div style="display:flex;gap:24px;flex-wrap:wrap;">
@@ -4980,10 +5019,14 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           </div>
         </div>
       </div>
+      </div>
+      </div>
     </div>
     <!-- Step 5: Notify -->
     <div id="wizPanel5" style="display:none;">
-      <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;">
+      <div class="card" style="margin-bottom:16px;">
+      <div class="card-header"><h2>Telegram Notifications</h2></div>
+      <div class="card-body">
         <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;font-weight:600;cursor:pointer;margin-bottom:10px;">
           <input type="checkbox" id="wizTgEnabled" onchange="wizUpdateNotifUI()"> Enable Telegram notifications
         </label>
@@ -4998,7 +5041,10 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           <button onclick="wizTestTelegram()" style="padding:5px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text-muted);font-size:0.78rem;cursor:pointer;">Send test message</button>
         </div>
       </div>
-      <div style="margin-bottom:16px;">
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+      <div class="card-header"><h2>Email Notifications</h2></div>
+      <div class="card-body">
         <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;font-weight:600;cursor:pointer;margin-bottom:10px;">
           <input type="checkbox" id="wizEmailEnabled" onchange="wizUpdateNotifUI()"> Enable email notifications
         </label>
@@ -5023,6 +5069,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           </label>
         </div>
       </div>
+      </div>
       <!-- Summary -->
       <div id="wizSummary" style="display:none;background:var(--bg);border:1px solid var(--border);padding:16px;font-size:0.85rem;line-height:1.8;"></div>
     </div>
@@ -5032,7 +5079,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div style="display:flex;gap:10px;margin-left:auto;">
         <button onclick="closeRuleWizard()" class="wiz-footer-btn">Cancel</button>
         <button id="wizBtnSave" onclick="wizSaveNow()" class="wiz-footer-save">Save</button>
-        <button id="wizBtnNext" onclick="wizNext()" style="padding:8px 20px;border:none;background:var(--vance-primary);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Next &#8594;</button>
+        <button id="wizBtnNext" onclick="wizNext()" class="wiz-footer-next">Next &#8594;</button>
       </div>
     </div>
     </div><!-- /wiz-body -->
@@ -5043,9 +5090,14 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <!-- Automation: View Rules -->
 <div class="tab-view" id="view-automation-rules">
   <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-shrink:0;">
-      <h1 style="font-size:1.1rem; font-weight:800; color:var(--vance-dark); margin:0;">Automations</h1>
-      <button class="btn btn-orange btn-sm" onclick="openRuleWizard()">+ New Rule</button>
+    <div class="page-header" style="flex-shrink:0;">
+      <div class="page-header-left">
+        <h1 class="page-header-title">Automations</h1>
+        <p class="page-header-subtitle">Scheduled and event-driven content generation rules.</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-orange btn-sm" onclick="openRuleWizard()">+ New Rule</button>
+      </div>
     </div>
     <!-- Rules sub-view -->
     <div id="autoSubRules" style="flex:1; min-height:0; overflow-y:auto;">
@@ -5060,16 +5112,20 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
      approval history (was its own "Approval Log" tab) and the automation run log. -->
 <div class="tab-view" id="view-automation-inbox">
   <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; flex-shrink:0;">
-      <h1 style="font-size:1.1rem; font-weight:800; color:var(--vance-dark); margin:0;">Operations Logs</h1>
-      <span id="inboxBadgeHeader" style="display:none; background:var(--vance-primary); color:#fff; font-size:0.6rem; font-weight:700; padding:2px 8px; margin-left:4px; vertical-align:middle;">0</span>
+    <div class="page-header" style="flex-shrink:0;">
+      <div class="page-header-left">
+        <div style="display:flex; align-items:center; gap:4px;">
+          <h1 class="page-header-title">Operations Logs</h1>
+          <span id="inboxBadgeHeader" style="display:none; background:var(--vance-primary); color:#fff; font-size:0.6rem; font-weight:700; padding:2px 8px; margin-left:4px; vertical-align:middle;">0</span>
+        </div>
+        <p class="page-header-subtitle">Everything the system did and everything waiting on you: generations pending review, the approval history for every article, and the automation run log.</p>
+      </div>
     </div>
-    <p style="font-size:0.72rem;color:var(--text-muted);margin:0 0 14px;flex-shrink:0;">Everything the system did and everything waiting on you: generations pending review, the approval history for every article, and the automation run log.</p>
     <!-- Sub-tab bar -->
-    <div style="display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:16px; flex-shrink:0;">
-      <button id="inboxSubtab-pending" onclick="switchInboxTab('pending')" style="padding:6px 16px; font-size:0.72rem; font-weight:700; font-family:'Montserrat',sans-serif; border:none; background:none; cursor:pointer; color:var(--vance-dark); border-bottom:2px solid var(--vance-primary); margin-bottom:-2px;">Generations</button>
-      <button id="inboxSubtab-approvals" onclick="switchInboxTab('approvals')" style="padding:6px 16px; font-size:0.72rem; font-weight:700; font-family:'Montserrat',sans-serif; border:none; background:none; cursor:pointer; color:var(--text-muted); border-bottom:2px solid transparent; margin-bottom:-2px;">Approvals</button>
-      <button id="inboxSubtab-log" onclick="switchInboxTab('log')" style="padding:6px 16px; font-size:0.72rem; font-weight:700; font-family:'Montserrat',sans-serif; border:none; background:none; cursor:pointer; color:var(--text-muted); border-bottom:2px solid transparent; margin-bottom:-2px;">Run Log</button>
+    <div style="display:flex; gap:22px; border-bottom:1px solid var(--border); margin-bottom:16px; flex-shrink:0;">
+      <button id="inboxSubtab-pending" class="sub-tab active" onclick="switchInboxTab('pending')">Generations</button>
+      <button id="inboxSubtab-approvals" class="sub-tab" onclick="switchInboxTab('approvals')">Approvals</button>
+      <button id="inboxSubtab-log" class="sub-tab" onclick="switchInboxTab('log')">Run Log</button>
     </div>
     <!-- Pending sub-view -->
     <div id="autoSubInbox" style="flex:1; min-height:0;">
@@ -5111,15 +5167,15 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div id="approvalLogList" style="display:flex;flex-direction:column;gap:10px;"></div>
     </div>
     <!-- Log sub-view -->
-    <div id="autoSubLog" style="flex:1; min-height:0; overflow-y:auto; display:none; border:1px solid var(--border); background:var(--card);">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);">
-        <span style="font-size:0.7rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;">Automation Run Log</span>
+    <div id="autoSubLog" class="card" style="flex:1; min-height:0; overflow-y:auto; display:none;">
+      <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <h2>Automation Run Log</h2>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-outline btn-xs" onclick="loadAutoLog()">Refresh</button>
           <button class="btn btn-outline btn-xs" onclick="clearAutoLog()" style="color:#ef4444;border-color:#ef4444;">Clear</button>
         </div>
       </div>
-      <div id="autoLogList">
+      <div class="card-body" id="autoLogList">
         <p style="color:var(--text-muted); padding:16px;">No log entries yet.</p>
       </div>
     </div>
@@ -5153,12 +5209,12 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
   <!-- Publications modal -->
   <div id="bibPubsModal" onclick="if(event.target===this)closeBibPubsModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:900;align-items:center;justify-content:center;">
     <div style="background:var(--card);width:90%;max-width:860px;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);border:1px solid var(--border);">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--vance-dark);color:#fff;flex-shrink:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
         <span id="bibPubsTitle" style="font-size:0.82rem;font-weight:800;">Publications</span>
         <div style="display:flex;gap:8px;align-items:center;">
-          <button onclick="bibDownloadCSV()" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.3);font-size:0.68rem;padding:4px 12px;">CSV</button>
-          <button onclick="bibDownloadPDF()" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.3);font-size:0.68rem;padding:4px 12px;">PDF</button>
-          <button onclick="closeBibPubsModal()" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:1.1rem;cursor:pointer;padding:0 4px;">&times;</button>
+          <button onclick="bibDownloadCSV()" class="btn btn-outline" style="font-size:0.68rem;padding:4px 12px;">CSV</button>
+          <button onclick="bibDownloadPDF()" class="btn btn-outline" style="font-size:0.68rem;padding:4px 12px;">PDF</button>
+          <button onclick="closeBibPubsModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;padding:0 4px;">&times;</button>
         </div>
       </div>
       <div id="bibPubsBody" style="flex:1;overflow-y:auto;padding:16px 20px;"></div>
@@ -5174,7 +5230,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <h2 id="bibWizTitle">New Bibliography</h2>
         <p>Build a collection of research papers</p>
       </div>
-      <button class="btn subtle" style="color:#fff;" onclick="closeBibWizard()">Cancel</button>
+      <button class="btn subtle" onclick="closeBibWizard()">Cancel</button>
     </div>
     <div class="wiz-steps-bar" id="bibWizardSteps">
       <div class="wiz-step active" id="bibStep1">&#9312; Details</div>
@@ -5187,6 +5243,9 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       </div>
       <!-- Step 1: Details -->
       <div id="bibPanel1">
+        <div class="card">
+        <div class="card-header"><h2>Bibliography Details</h2></div>
+        <div class="card-body">
         <div style="margin-bottom:16px;">
           <label class="field-label">Bibliography Name *</label>
           <input id="bibName" type="text" maxlength="80" placeholder="e.g. IBD Treatment Guidelines 2026" class="input">
@@ -5217,11 +5276,14 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             </select>
           </div>
         </div>
+        </div>
+        </div>
       </div>
       <!-- Step 2: Add Papers -->
       <div id="bibPanel2" style="display:none;">
-        <div style="margin-bottom:16px;padding:14px;background:var(--bg);border:1px solid var(--border);">
-          <label style="display:block;font-size:0.8rem;font-weight:700;margin-bottom:8px;color:var(--text);">Search Literature</label>
+        <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><h2>Search Literature</h2></div>
+        <div class="card-body">
           <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:4px;align-items:center;">
             <label class="field-label">Search Query</label>
             <label class="field-label">Database</label>
@@ -5266,8 +5328,10 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           <div style="font-size:0.68rem;color:var(--text-muted);">PubMed: biomedical focus (36M+ articles) &middot; Semantic Scholar: broader academic coverage (214M+ papers) &middot; Country filters by author affiliation</div>
           <div id="bibSearchResults" style="margin-top:10px;max-height:320px;overflow-y:auto;"></div>
         </div>
-        <div style="margin-bottom:16px;padding:14px;background:var(--bg);border:1px solid var(--border);">
-          <label style="display:block;font-size:0.8rem;font-weight:700;margin-bottom:8px;color:var(--text);">Add Manually</label>
+        </div>
+        <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><h2>Add Manually</h2></div>
+        <div class="card-body">
           <div style="display:flex;flex-direction:column;gap:6px;">
             <input id="bibManTitle" placeholder="Paper title *" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.82rem;">
             <div style="display:flex;gap:6px;">
@@ -5283,8 +5347,10 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             <button class="btn btn-outline" onclick="bibAddManual()" style="align-self:flex-start;">+ Add Paper</button>
           </div>
         </div>
-        <div style="margin-bottom:16px;padding:14px;background:var(--bg);border:1px solid var(--border);">
-          <label style="display:block;font-size:0.8rem;font-weight:700;margin-bottom:8px;color:var(--text);">Import from Spreadsheet</label>
+        </div>
+        <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><h2>Import from Spreadsheet</h2></div>
+        <div class="card-body">
           <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:8px;">Upload an .xlsx / .xls / .csv file. Each sheet becomes a tab; rows are mapped to papers. Run a sanity check to validate titles against PubMed + CrossRef before importing.</div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <input id="bibXlsxFile" type="file" accept=".xlsx,.xls,.csv,.ods" style="font-size:0.78rem;" onchange="bibXlsxOnFile(event)">
@@ -5292,8 +5358,13 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             <span id="bibXlsxStatus" style="font-size:0.72rem;color:var(--text-muted);"></span>
           </div>
         </div>
-        <div style="margin-bottom:8px;font-size:0.8rem;font-weight:700;color:var(--text);">Papers Added (<span id="bibPaperCount">0</span>)</div>
+        </div>
+        <div class="card">
+        <div class="card-header"><h2>Papers Added (<span id="bibPaperCount">0</span>)</h2></div>
+        <div class="card-body">
         <div id="bibPapersList" style="max-height:200px;overflow-y:auto;"></div>
+        </div>
+        </div>
       </div>
       <!-- Step 3: Review -->
       <div id="bibPanel3" style="display:none;">
@@ -5350,21 +5421,23 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <div class="tab-view" id="view-categories">
   <div class="cats-page">
 
-    <!-- Hero header with stats -->
-    <div class="cats-hero">
-      <div class="cats-hero-text">
-        <h1>Content Categories</h1>
-        <p>Configure content types, prompts, and WordPress sync. Click any category to edit — including prompt library management.</p>
+    <!-- Page header with stats -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-header-title">Content Categories</h1>
+        <p class="page-header-subtitle">Configure content types, prompts, and WordPress sync. Click any category to edit — including prompt library management.</p>
       </div>
-      <div class="cats-hero-stats">
-        <div class="cats-hero-stat"><span id="catsStatTotal">—</span><label>Categories</label></div>
-        <div class="cats-hero-stat"><span id="catsStatPrompts">—</span><label>Prompts</label></div>
-        <div class="cats-hero-stat"><span id="catsStatArticles">—</span><label>Articles</label></div>
+      <div class="page-header-actions">
+        <div class="cats-hero-stats">
+          <div class="cats-hero-stat"><span id="catsStatTotal">—</span><label>Categories</label></div>
+          <div class="cats-hero-stat"><span id="catsStatPrompts">—</span><label>Prompts</label></div>
+          <div class="cats-hero-stat"><span id="catsStatArticles">—</span><label>Articles</label></div>
+        </div>
+        <button class="btn btn-orange" onclick="openCategoryEditor(null)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Category
+        </button>
       </div>
-      <button class="btn btn-orange" onclick="openCategoryEditor(null)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        New Category
-      </button>
     </div>
 
     <div class="cats-layout">
@@ -12504,10 +12577,7 @@ function wizUpdateCronUI() {}
 function wizSetFreq(freq) {
   _wizScheduleFreq = freq;
   document.querySelectorAll('[data-wiz-freq]').forEach(function(btn) {
-    var active = btn.getAttribute('data-wiz-freq') === freq;
-    btn.style.background   = active ? 'var(--vance-dark)' : 'transparent';
-    btn.style.color        = active ? '#fff' : 'var(--text-muted)';
-    btn.style.borderColor  = active ? 'var(--vance-dark)' : 'var(--border)';
+    btn.classList.toggle('active', btn.getAttribute('data-wiz-freq') === freq);
   });
   var dayRow = document.getElementById('wizDayRow');
   if (dayRow) dayRow.style.display = freq === 'weekly' ? '' : 'none';
@@ -12517,10 +12587,7 @@ function wizSetFreq(freq) {
 function wizSetDay(dow) {
   _wizScheduleDow = dow;
   document.querySelectorAll('[data-wiz-dow]').forEach(function(btn) {
-    var active = parseInt(btn.getAttribute('data-wiz-dow')) === dow;
-    btn.style.background   = active ? 'var(--vance-dark)' : 'transparent';
-    btn.style.color        = active ? '#fff' : 'var(--text-muted)';
-    btn.style.borderColor  = active ? 'var(--vance-dark)' : 'var(--border)';
+    btn.classList.toggle('active', parseInt(btn.getAttribute('data-wiz-dow')) === dow);
   });
   wizUpdateCronPreview();
 }
@@ -13874,10 +13941,7 @@ function switchInboxTab(tab) {
     var btn = document.getElementById('inboxSubtab-' + t);
     var view = document.getElementById(viewMap[t]);
     var isActive = t === tab;
-    if (btn) {
-      btn.style.color = isActive ? 'var(--vance-dark)' : 'var(--text-muted)';
-      btn.style.borderBottomColor = isActive ? 'var(--vance-primary)' : 'transparent';
-    }
+    if (btn) btn.classList.toggle('active', isActive);
     if (view) view.style.display = isActive ? 'block' : 'none';
   });
   if (tab === 'history')   loadAutoHistory();
@@ -18380,7 +18444,7 @@ function renderLibrary() {
   if (countEl) countEl.textContent = items.length + ' article' + (items.length === 1 ? '' : 's');
 
   if (!items.length) {
-    listEl.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:14px;background:var(--card-bg,#fff);border:1px solid var(--border);">No articles match the current filters.</div>';
+    listEl.innerHTML = '<div class="card" style="font-size:0.72rem;color:var(--text-muted);padding:14px;">No articles match the current filters.</div>';
     return;
   }
 
@@ -18393,7 +18457,7 @@ function renderLibrary() {
         const words = (it.wordCount != null) ? it.wordCount : (it.body ? countBodyProse(it.body) : 0);
         const catLabel = (typeof CATEGORY_LABELS !== 'undefined' && CATEGORY_LABELS[it.category]) || it.category || '';
         return ''
-          + '<div style="display:flex;align-items:center;gap:12px;background:var(--card-bg,#fff);border:1px solid var(--border);padding:10px 14px;">'
+          + '<div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 14px;">'
           +   '<div style="flex:1;min-width:0;">'
           +     '<div style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(it.title || 'Untitled') + '</div>'
           +     '<div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px;">'
@@ -18402,7 +18466,7 @@ function renderLibrary() {
           +       (words ? ' &middot; ' + words + ' words' : '')
           +     '</div>'
           +   '</div>'
-          +   '<span style="display:inline-block;font-size:0.55rem;font-weight:800;letter-spacing:0.6px;text-transform:uppercase;padding:3px 8px;background:' + stColor.bg + ';color:' + stColor.fg + ';">' + escapeHtml(stLabel) + '</span>'
+          +   '<span class="status-pill" style="background:' + stColor.bg + ';color:' + stColor.fg + ';">' + escapeHtml(stLabel) + '</span>'
           +   '<button class="btn btn-outline btn-sm" onclick="viewArticleFromPipeline(\'' + it.id + '\')">View</button>'
           + '</div>';
       }).join('')
@@ -18507,7 +18571,7 @@ function renderCategoryArticles() {
   if (countEl) countEl.textContent = items.length + ' article' + (items.length === 1 ? '' : 's');
 
   if (!items.length) {
-    listEl.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);padding:14px;background:var(--card-bg,#fff);border:1px solid var(--border);">No articles match the current filters.</div>';
+    listEl.innerHTML = '<div class="card" style="font-size:0.72rem;color:var(--text-muted);padding:14px;">No articles match the current filters.</div>';
     return;
   }
 
@@ -18519,7 +18583,7 @@ function renderCategoryArticles() {
         const date = it.createdAt ? new Date(it.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
         const words = (it.wordCount != null) ? it.wordCount : (it.body ? countBodyProse(it.body) : 0);
         return ''
-          + '<div style="display:flex;align-items:center;gap:12px;background:var(--card-bg,#fff);border:1px solid var(--border);padding:10px 14px;">'
+          + '<div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 14px;">'
           +   '<div style="flex:1;min-width:0;">'
           +     '<div style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(it.title || 'Untitled') + '</div>'
           +     '<div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px;">'
@@ -18527,7 +18591,7 @@ function renderCategoryArticles() {
           +       (words ? ' &middot; ' + words + ' words' : '')
           +     '</div>'
           +   '</div>'
-          +   '<span style="display:inline-block;font-size:0.55rem;font-weight:800;letter-spacing:0.6px;text-transform:uppercase;padding:3px 8px;background:' + stColor.bg + ';color:' + stColor.fg + ';">' + escapeHtml(stLabel) + '</span>'
+          +   '<span class="status-pill" style="background:' + stColor.bg + ';color:' + stColor.fg + ';">' + escapeHtml(stLabel) + '</span>'
           +   '<button class="btn btn-outline btn-sm" onclick="viewArticleFromPipeline(\'' + it.id + '\')">View</button>'
           + '</div>';
       }).join('')

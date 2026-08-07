@@ -708,7 +708,7 @@ table.kv th { width: 32%; }
 /* Section headings across settings / LLM / dashboard / categories — five
    different class names in the markup for one idea. */
 .settings-section-header, .llm-section-header, .dash-section-title,
-.ced-section-title, .pane-head, .cats-hero-title {
+.ced-section-title, .pane-head {
   font-family: var(--font-head); font-weight: 700; font-size: 12px;
   letter-spacing: .07em; text-transform: uppercase; color: var(--text-faint);
 }
