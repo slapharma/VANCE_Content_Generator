@@ -18,5 +18,14 @@
     { "path": "/api/automation/run",   "schedule": "0 7 * * *" },
     { "path": "/api/social/cron",      "schedule": "0 * * * *" },
     { "path": "/api/social/connections/check", "schedule": "0 6 * * *" }
+  ],
+
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+      ]
+    }
   ]
 }
