@@ -162,7 +162,15 @@ button { font-family: var(--font-body); cursor: pointer; }
 .header .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .header .brand-home { border: none; background: none; padding: 0; cursor: pointer; border-radius: var(--radius-sm); }
 .header .brand-home:hover .brand-text b { color: var(--cta); }
-.header .brand-logo { height: 52px; width: auto; display: block; }
+/* 23px, not 52px, and that is not a shrink — it is the same rendered mark.
+   vance-logo.png used to be this repo's own copy: the wordmark on a 1024x576
+   canvas whose ink filled only 44.1% of the height, so a 52px box drew a 23px
+   logo and 29px of nothing. It is now the estate's shared 466x120 crop, which
+   every other console vendors, and the box is the mark. Measured before and
+   after: 22.9x91.3 -> 23x89.3. Change this number only if you actually want a
+   BIGGER header logo than the console has had — it is available now in a way
+   it was not before. */
+.header .brand-logo { height: 23px; width: auto; display: block; }
 .header .brand-sep { width: 1px; height: 26px; background: var(--border); }
 .header .brand-text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
 .header .brand-text b {
@@ -896,12 +904,13 @@ table.kv th { width: 32%; }
   .sidebar.v-drawer { width: min(86vw, 320px); }
 
   .header { gap: 10px; padding: 0 12px; padding-left: max(12px, var(--safe-l)); padding-right: max(12px, var(--safe-r)); }
-  .header .brand-logo { height: 36px; }
+  .header .brand-logo { height: 16px; }
   .header .brand-sep,
   .header .whoami,
   .header .savestate span:not(.dot):not(.status-dot),
   .header .status-badge span:not(.status-dot),
-  .header #hardRefreshText { display: none; }
+  .header #hardRefreshText,
+  .header #hqBtnText { display: none; }
   .header > .signout-btn { display: none; }   /* Sign out — in the drawer */
   .header .brand-text b { font-size: 13.5px; white-space: normal; line-height: 1.2; }
   .savestate, .status-badge { margin-left: auto; }
