@@ -27,6 +27,7 @@
 
 import { getCurrentUser, requireRole } from '../lib/auth.js';
 import { loadUsers, APP_ROLES } from '../lib/users.js';
+import { loginDomain, legacyDomain } from '../lib/auth/google-login.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -58,6 +59,14 @@ export default async function handler(req, res) {
     asset: 'content',
     model: 'list',
     roles: APP_ROLES,
+    // The matching rules, reported alongside the list rather than left for the
+    // reader to assume. Records still on the domain the company left are matched
+    // by local part against the current one (see matchGoogleUser), so an address
+    // here may legitimately differ from the address somebody signs in with.
+    // Anything comparing this list to a Google identity has to know that, and
+    // the only way for it not to drift is for the rule to travel with the data.
+    domain: loginDomain(),
+    legacyDomain: legacyDomain(),
     users: users.map((u) => ({
       email: String(u.email ?? '').toLowerCase(),
       role: u.appRole ?? 'user',
