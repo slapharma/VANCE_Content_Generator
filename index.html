@@ -54,13 +54,12 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; }
 
-/* App-only header additions — not part of the CS mirror, so they live here
-   rather than in vance-cs.css, which stays a clean diff of the CS console. */
+/* App-only header addition — not part of the CS mirror, so it lives here
+   rather than in vance-cs.css, which stays a clean diff of the CS console.
+   The brand title itself intentionally carries NO override below this point
+   — it uses the plain .header .brand-text b class from vance-cs.css, byte
+   -identical to CS's own rule, rather than an app-specific color/spacing. */
 .brand-version { font-size: 10px; color: var(--text-faint); margin-left: 2px; }
-/* #0F172A matches the Alerts dashboard's header title exactly (its --text
-   token in light mode) — this app has no --text token that dark, so it's
-   hardcoded rather than borrowed from a token that would drift from Alerts. */
-#brandTitleText { color: #0F172A; letter-spacing: -0.01em; }
 
 /* ── User guide modal ── */
 .userguide-modal {
@@ -2289,7 +2288,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             aria-label="Dashboard" title="Dashboard">
       <img class="brand-logo" id="brandLogoImg" src="/vance-logo.png" alt="Vance Medical Foods"/>
       <span class="brand-sep"></span>
-      <div class="brand-text"><b id="brandTitleText">CONTENT GENERATOR</b></div>
+      <div class="brand-text"><b>CONTENT GENERATOR</b></div>
     </button>
 
     <div class="spacer"></div>
