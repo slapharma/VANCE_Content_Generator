@@ -250,6 +250,15 @@ html { font-size: 16px; }
 .card-header h2 { color: #fff; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; display: flex; align-items: center; gap: 7px; }
 .card-header h2 svg { width: 13px; height: 13px; opacity: 0.8; }
 .card-body { padding: 14px; }
+
+/* Info tooltip — replaces long always-visible descriptions under a
+   container title. Native title attribute drives the tooltip so it
+   inherits the same hover/keyboard-focus behaviour used everywhere
+   else in the app; aria-label repeats it for screen readers that
+   don't announce title on focus. */
+.info-tip { display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; flex-shrink:0; border-radius:50%; color:var(--text-muted); opacity:0.7; cursor:help; vertical-align:middle; transition:opacity 0.15s, color 0.15s; }
+.info-tip svg { width:100%; height:100%; }
+.info-tip:hover, .info-tip:focus-visible { opacity:1; color:var(--vance-primary); outline:none; }
 .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
 .form-group:last-child { margin-bottom: 0; }
 label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); }
@@ -2156,6 +2165,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 </script>
 </head>
 <body>
+<svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true"><symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol></svg>
 
 <!-- ══════════════════════════════ AUTH OVERLAYS ════════════════════════════ -->
 <div id="authBootCover" style="position:fixed;inset:0;background:var(--bg);z-index:9998;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;color:var(--text-muted);font-size:0.78rem;">Loading…</div>
@@ -3101,8 +3111,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
   <div class="pane-head">
     <div class="pane-head-text">
-      <h2>Kit Builder</h2>
-      <p>Turn one published article into a full multi-platform post kit &mdash; caption, hook, image and video per platform. Review and approve each asset, then deploy the kit to auto-schedule it across the next 7 days.</p>
+      <h2 style="display:flex;align-items:center;gap:6px;">Kit Builder<span class="info-tip" tabindex="0" role="img" aria-label="Turn one published article into a full multi-platform post kit — caption, hook, image and video per platform. Review and approve each asset, then deploy the kit to auto-schedule it across the next 7 days." title="Turn one published article into a full multi-platform post kit — caption, hook, image and video per platform. Review and approve each asset, then deploy the kit to auto-schedule it across the next 7 days."><svg><use href="#icon-info"/></svg></span></h2>
     </div>
     <div class="pane-stats">
       <div class="pane-stat"><span id="kitStatAssets">—</span><label>Assets</label></div>
@@ -3187,8 +3196,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <div class="social-pane" id="socialPane-queue">
   <div class="pane-head">
     <div class="pane-head-text">
-      <h2>Post Queue</h2>
-      <p>Approved posts waiting on their scheduled slot. The social cron drains this queue every 15 minutes and moves each post to Posted once it is live.</p>
+      <h2 style="display:flex;align-items:center;gap:6px;">Post Queue<span class="info-tip" tabindex="0" role="img" aria-label="Approved posts waiting on their scheduled slot. The social cron drains this queue every 15 minutes and moves each post to Posted once it is live." title="Approved posts waiting on their scheduled slot. The social cron drains this queue every 15 minutes and moves each post to Posted once it is live."><svg><use href="#icon-info"/></svg></span></h2>
     </div>
     <div class="pane-stats">
       <div class="pane-stat"><span id="queueStatPending">—</span><label>Queued</label></div>
@@ -3207,8 +3215,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <div class="social-pane" id="socialPane-instagram">
   <div class="pane-head">
     <div class="pane-head-text">
-      <h2>Instagram</h2>
-      <p>Carousels and (soon) Reels for Instagram, built from your published articles. Enable auto-creation per rule under <strong>Automation &rsaquo; Generation</strong>, or build one manually below.</p>
+      <h2 style="display:flex;align-items:center;gap:6px;">Instagram<span class="info-tip" tabindex="0" role="img" aria-label="Carousels and (soon) Reels for Instagram, built from your published articles. Enable auto-creation per rule under Automation › Generation, or build one manually below." title="Carousels and (soon) Reels for Instagram, built from your published articles. Enable auto-creation per rule under Automation › Generation, or build one manually below."><svg><use href="#icon-info"/></svg></span></h2>
     </div>
     <div class="pane-stats">
       <div class="pane-stat"><span id="carStatReady">—</span><label>Ready</label></div>
@@ -3300,8 +3307,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <div class="social-pane" id="socialPane-promos">
   <div class="pane-head">
     <div class="pane-head-text">
-      <h2>Promotional Carousels</h2>
-      <p>Standing campaigns that build an Instagram carousel on a schedule. Write the brief once, choose a cover, and each occurrence is generated, rendered and actioned for you.</p>
+      <h2 style="display:flex;align-items:center;gap:6px;">Promotional Carousels<span class="info-tip" tabindex="0" role="img" aria-label="Standing campaigns that build an Instagram carousel on a schedule. Write the brief once, choose a cover, and each occurrence is generated, rendered and actioned for you." title="Standing campaigns that build an Instagram carousel on a schedule. Write the brief once, choose a cover, and each occurrence is generated, rendered and actioned for you."><svg><use href="#icon-info"/></svg></span></h2>
     </div>
     <div class="pane-stats">
       <div class="pane-stat"><span id="promoStatActive">—</span><label>Active</label></div>
@@ -3637,8 +3643,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <div class="social-pane" id="socialPane-posted">
   <div class="pane-head">
     <div class="pane-head-text">
-      <h2>Posted</h2>
-      <p>Everything that has gone live from this account, newest first &mdash; post kits, article carousels and promotional campaigns alike. Filter by how it was generated, which campaign or automation rule produced it, the platform, the content type, or a date range.</p>
+      <h2 style="display:flex;align-items:center;gap:6px;">Posted<span class="info-tip" tabindex="0" role="img" aria-label="Everything that has gone live from this account, newest first — post kits, article carousels and promotional campaigns alike. Filter by how it was generated, which campaign or automation rule produced it, the platform, the content type, or a date range." title="Everything that has gone live from this account, newest first — post kits, article carousels and promotional campaigns alike. Filter by how it was generated, which campaign or automation rule produced it, the platform, the content type, or a date range."><svg><use href="#icon-info"/></svg></span></h2>
     </div>
     <div class="pane-stats">
       <div class="pane-stat"><span id="postedStatTotal">—</span><label>Posted</label></div>
@@ -3659,8 +3664,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <div class="social-pane" id="socialPane-library">
   <div class="pane-head">
     <div class="pane-head-text">
-      <h2>Prompts &amp; Connections</h2>
-      <p>The AI prompts behind every generated post and campaign, and the accounts and services they post through.</p>
+      <h2 style="display:flex;align-items:center;gap:6px;">Prompts &amp; Connections<span class="info-tip" tabindex="0" role="img" aria-label="The AI prompts behind every generated post and campaign, and the accounts and services they post through." title="The AI prompts behind every generated post and campaign, and the accounts and services they post through."><svg><use href="#icon-info"/></svg></span></h2>
     </div>
     <div class="pane-stats">
       <div class="pane-stat"><span id="socialPromptsStatTotal">—</span><label>Prompts</label></div>
@@ -3988,8 +3992,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div class="llm-section-header">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
         <div style="flex:1;">
-          <div class="llm-section-title">Token Usage</div>
-          <div class="llm-section-desc">OpenRouter token consumption — total, last 28 days, last 24 hours, last hour. Recorded across automation runs, AI revisions, and every in-app generator, for every user.</div>
+          <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">Token Usage<span class="info-tip" tabindex="0" role="img" aria-label="OpenRouter token consumption — total, last 28 days, last 24 hours, last hour. Recorded across automation runs, AI revisions, and every in-app generator, for every user." title="OpenRouter token consumption — total, last 28 days, last 24 hours, last hour. Recorded across automation runs, AI revisions, and every in-app generator, for every user."><svg><use href="#icon-info"/></svg></span></div>
         </div>
         <div class="pipeline-layout-btns" id="usageTabBtns">
           <button class="pipeline-layout-btn active" id="usage-tab-btn-models" onclick="setUsageTab('models')" style="padding:5px 12px;font-size:0.7rem;font-weight:700;">By model</button>
@@ -4007,8 +4010,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div class="llm-section-header">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
         <div style="flex:1;">
-          <div class="llm-section-title">A/B Test — Models</div>
-          <div class="llm-section-desc">Route a percentage of automation generations to alternative models. Outcomes (success/failure) and cost-per-successful-generation surface below so you can compare effective economics, not just sticker price.</div>
+          <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">A/B Test — Models<span class="info-tip" tabindex="0" role="img" aria-label="Route a percentage of automation generations to alternative models. Outcomes (success/failure) and cost-per-successful-generation surface below so you can compare effective economics, not just sticker price." title="Route a percentage of automation generations to alternative models. Outcomes (success/failure) and cost-per-successful-generation surface below so you can compare effective economics, not just sticker price."><svg><use href="#icon-info"/></svg></span></div>
         </div>
         <label class="btn btn-orange btn-sm" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
           <input type="checkbox" id="abEnabled" onchange="abMarkDirty()" style="accent-color:#fff;"/> Enabled
@@ -4039,8 +4041,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div class="llm-section-header">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/><path d="M2 7l10 5 10-5"/><path d="M12 22V12"/></svg>
         <div style="flex:1;">
-          <div class="llm-section-title">Master Prompt (Golden Rules)</div>
-          <div class="llm-section-desc">Prepended to <strong>every</strong> LLM generation — automation and in-browser. Single source of truth for brand identity and global style rules (em-dash ban, UK English, omega-3, etc.). Edit once, applies everywhere.</div>
+          <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">Master Prompt (Golden Rules)<span class="info-tip" tabindex="0" role="img" aria-label="Prepended to every LLM generation — automation and in-browser. Single source of truth for brand identity and global style rules (em-dash ban, UK English, omega-3, etc.). Edit once, applies everywhere." title="Prepended to every LLM generation — automation and in-browser. Single source of truth for brand identity and global style rules (em-dash ban, UK English, omega-3, etc.). Edit once, applies everywhere."><svg><use href="#icon-info"/></svg></span></div>
         </div>
       </div>
       <div class="llm-section-body">
@@ -4059,15 +4060,13 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div class="llm-section-header">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
         <div style="flex:1;">
-          <div class="llm-section-title">API Keys</div>
-          <div class="llm-section-desc">Configure your AI provider credentials</div>
+          <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">API Keys<span class="info-tip" tabindex="0" role="img" aria-label="Configure your AI provider credentials" title="Configure your AI provider credentials"><svg><use href="#icon-info"/></svg></span></div>
         </div>
       </div>
       <div class="llm-section-body">
         <!-- OpenRouter -->
         <div id="apiKeyCard" style="margin-bottom:4px;">
-          <div style="font-size:0.75rem;font-weight:800;color:var(--vance-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">OpenRouter</div>
-          <p style="font-size:0.68rem;color:var(--text-muted);margin-bottom:10px;">OpenRouter provides access to all free models. Enter your own key to increase rate limits.</p>
+          <div style="font-size:0.75rem;font-weight:800;color:var(--vance-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;">OpenRouter<span class="info-tip" tabindex="0" role="img" aria-label="OpenRouter provides access to all free models. Enter your own key to increase rate limits." title="OpenRouter provides access to all free models. Enter your own key to increase rate limits."><svg><use href="#icon-info"/></svg></span></div>
           <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
             <div style="flex:1;min-width:200px;">
               <input type="password" id="apiKeyInput" placeholder="Using built-in key — enter to override" oninput="onApiKeyInput()" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:0;font-family:'Montserrat',sans-serif;font-size:0.72rem;" />
@@ -4081,8 +4080,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <hr style="border:none;border-top:1px solid var(--border);margin:8px 0;" />
 
         <!-- Premium Providers -->
-        <div style="font-size:0.75rem;font-weight:800;color:var(--vance-dark);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Premium Providers</div>
-        <p style="font-size:0.68rem;color:var(--text-muted);margin-bottom:10px;">Add a direct API key to unlock premium models. Check "Prioritize" to route all generations through that provider.</p>
+        <div style="font-size:0.75rem;font-weight:800;color:var(--vance-dark);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;">Premium Providers<span class="info-tip" tabindex="0" role="img" aria-label="Add a direct API key to unlock premium models. Check &quot;Prioritize&quot; to route all generations through that provider." title="Add a direct API key to unlock premium models. Check &quot;Prioritize&quot; to route all generations through that provider."><svg><use href="#icon-info"/></svg></span></div>
 
         <!-- Claude -->
         <div class="llm-provider-row">
@@ -4139,8 +4137,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div class="llm-section-header">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <div style="flex:1;">
-          <div class="llm-section-title">Default LLM per Article Category</div>
-          <div class="llm-section-desc">Override the global model for specific content types</div>
+          <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">Default LLM per Article Category<span class="info-tip" tabindex="0" role="img" aria-label="Override the global model for specific content types" title="Override the global model for specific content types"><svg><use href="#icon-info"/></svg></span></div>
         </div>
       </div>
       <div class="llm-section-body">
@@ -4328,8 +4325,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <div class="llm-section-header">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         <div style="flex:1;">
-          <div class="llm-section-title">Default LLM per Social Network</div>
-          <div class="llm-section-desc">Override the global model for specific social platforms</div>
+          <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">Default LLM per Social Network<span class="info-tip" tabindex="0" role="img" aria-label="Override the global model for specific social platforms" title="Override the global model for specific social platforms"><svg><use href="#icon-info"/></svg></span></div>
         </div>
       </div>
       <div class="llm-section-body">
@@ -4532,9 +4528,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
     <!-- Reviewers -->
     <div class="settings-section" style="grid-column: 1 / -1;" data-require-role="admin">
-      <div class="settings-section-header">
-        <h3>Users</h3>
-        <p>People who can sign in to Vance Content. Roles control what they can do; any user can be assigned as a reviewer on content.</p>
+      <div class="settings-section-header" style="display:flex;align-items:center;">
+        <h3 style="display:flex;align-items:center;gap:6px;">Users<span class="info-tip" tabindex="0" role="img" aria-label="People who can sign in to Vance Content. Roles control what they can do; any user can be assigned as a reviewer on content." title="People who can sign in to Vance Content. Roles control what they can do; any user can be assigned as a reviewer on content."><svg><use href="#icon-info"/></svg></span></h3>
       </div>
       <div class="settings-section-body">
         <div class="reviewer-list" id="reviewerList">
@@ -4559,9 +4554,9 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
     <!-- Reset Databases (admin only) -->
     <div class="settings-section" style="grid-column: 1 / -1;" data-require-role="admin">
-      <div class="settings-section-header">
-        <h3>Reset Databases</h3>
-        <p>Selectively clear generated data and counters. Prompts, users, and automation rules are always preserved. <strong style="color:var(--critical);">This permanently deletes the selected data and cannot be undone.</strong></p>
+      <div class="settings-section-header" style="display:flex;align-items:center;">
+        <h3 style="display:flex;align-items:center;gap:6px;">Reset Databases<span class="info-tip" tabindex="0" role="img" aria-label="Selectively clear generated data and counters. Prompts, users, and automation rules are always preserved." title="Selectively clear generated data and counters. Prompts, users, and automation rules are always preserved."><svg><use href="#icon-info"/></svg></span></h3>
+        <span style="margin-left:12px;font-size:0.68rem;color:var(--critical);font-weight:700;">This permanently deletes the selected data and cannot be undone.</span>
       </div>
       <div class="settings-section-body">
         <div id="adminResetTargets" style="display:grid;grid-template-columns:1fr 1fr;gap:9px 18px;margin-bottom:14px;">
@@ -4585,9 +4580,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
     <!-- Google Connections (Drive + Gmail + Calendar) -->
     <div class="settings-section">
-      <div class="settings-section-header">
-        <h3>Google Connections</h3>
-        <p>One connection covers Drive, Gmail, and Calendar</p>
+      <div class="settings-section-header" style="display:flex;align-items:center;">
+        <h3 style="display:flex;align-items:center;gap:6px;">Google Connections<span class="info-tip" tabindex="0" role="img" aria-label="One connection covers Drive, Gmail, and Calendar" title="One connection covers Drive, Gmail, and Calendar"><svg><use href="#icon-info"/></svg></span></h3>
       </div>
       <div class="settings-section-body">
         <div id="googleConnectionStatus" style="margin-bottom:12px;">
@@ -4606,9 +4600,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
     <!-- WordPress -->
     <div class="settings-section">
-      <div class="settings-section-header">
-        <h3>WordPress Publishing</h3>
-        <p>Auto-publish approved content to vancehealthhub.co.uk</p>
+      <div class="settings-section-header" style="display:flex;align-items:center;">
+        <h3 style="display:flex;align-items:center;gap:6px;">WordPress Publishing<span class="info-tip" tabindex="0" role="img" aria-label="Auto-publish approved content to vancehealthhub.co.uk" title="Auto-publish approved content to vancehealthhub.co.uk"><svg><use href="#icon-info"/></svg></span></h3>
       </div>
       <div class="settings-section-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -4627,9 +4620,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
     <!-- Social Platform Connections -->
     <div class="settings-section">
-      <div class="settings-section-header">
-        <h3>Social Media Connections</h3>
-        <p>Live posting runs through connected accounts (Composio). Manage them in Social → Connections.</p>
+      <div class="settings-section-header" style="display:flex;align-items:center;">
+        <h3 style="display:flex;align-items:center;gap:6px;">Social Media Connections<span class="info-tip" tabindex="0" role="img" aria-label="Live posting runs through connected accounts (Composio). Manage them in Social → Connections." title="Live posting runs through connected accounts (Composio). Manage them in Social → Connections."><svg><use href="#icon-info"/></svg></span></h3>
       </div>
       <div class="settings-section-body">
         <div id="socialComposioSummary" style="margin:0 0 18px;">
@@ -4649,9 +4641,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
     <!-- Cloud Storage Integrations -->
     <div class="settings-section" style="grid-column:1/-1;">
-      <div class="settings-section-header">
-        <h3>Cloud Storage Integrations</h3>
-        <p>Connect Google Drive or Dropbox to monitor folders and upload files as automation sources</p>
+      <div class="settings-section-header" style="display:flex;align-items:center;">
+        <h3 style="display:flex;align-items:center;gap:6px;">Cloud Storage Integrations<span class="info-tip" tabindex="0" role="img" aria-label="Connect Google Drive or Dropbox to monitor folders and upload files as automation sources" title="Connect Google Drive or Dropbox to monitor folders and upload files as automation sources"><svg><use href="#icon-info"/></svg></span></h3>
       </div>
       <div class="settings-section-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
@@ -5492,8 +5483,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 
             <!-- Sources: shown only for custom categories -->
             <div class="ced-section" id="catSourcesSection">
-              <div class="ced-section-title">Available Sources</div>
-              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">Choose what source types users can provide when generating content in this category.</p>
+              <div class="ced-section-title">Available Sources<span class="info-tip" tabindex="0" role="img" aria-label="Choose what source types users can provide when generating content in this category." title="Choose what source types users can provide when generating content in this category."><svg><use href="#icon-info"/></svg></span></div>
               <div class="cat-sources-grid">
                 <label class="cat-src-label"><input type="checkbox" id="csrc-single" value="single" /> Upload Single Document <span class="cat-src-hint">PDF, TXT</span></label>
                 <label class="cat-src-label"><input type="checkbox" id="csrc-multiple" value="multiple" /> Upload Multiple Documents <span class="cat-src-hint">Up to 10 files</span></label>
@@ -5516,8 +5506,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           <!-- TAB: Settings -->
           <div class="ced-pane" id="cedPane-settings">
             <div class="ced-section">
-              <div class="ced-section-title">WordPress Integration</div>
-              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">Enter the WordPress post category slug. Published articles will be assigned to that category.</p>
+              <div class="ced-section-title">WordPress Integration<span class="info-tip" tabindex="0" role="img" aria-label="Enter the WordPress post category slug. Published articles will be assigned to that category." title="Enter the WordPress post category slug. Published articles will be assigned to that category."><svg><use href="#icon-info"/></svg></span></div>
               <label class="ced-label">WP Category Slug</label>
               <div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;">
                 <input type="text" id="catEditorWpSlug" class="ced-input" placeholder="e.g. content-patient-stories" style="flex:1;" />
@@ -5527,14 +5516,12 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             </div>
 
             <div class="ced-section">
-              <div class="ced-section-title">Default AI Model</div>
-              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">AI model used by default for this category. Can also be set on the LLM Management page.</p>
+              <div class="ced-section-title">Default AI Model<span class="info-tip" tabindex="0" role="img" aria-label="AI model used by default for this category. Can also be set on the LLM Management page." title="AI model used by default for this category. Can also be set on the LLM Management page."><svg><use href="#icon-info"/></svg></span></div>
               <select id="catEditorLlm" class="ced-input" style="appearance:none;-webkit-appearance:none;background:var(--bg);cursor:pointer;"></select>
             </div>
 
             <div class="ced-section">
-              <div class="ced-section-title">Content Length</div>
-              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">Maximum word count for articles generated in this category. If a draft exceeds the limit, generation runs one automatic compression pass to bring it under. This applies to both the generator and automation.</p>
+              <div class="ced-section-title">Content Length<span class="info-tip" tabindex="0" role="img" aria-label="Maximum word count for articles generated in this category. If a draft exceeds the limit, generation runs one automatic compression pass to bring it under. This applies to both the generator and automation." title="Maximum word count for articles generated in this category. If a draft exceeds the limit, generation runs one automatic compression pass to bring it under. This applies to both the generator and automation."><svg><use href="#icon-info"/></svg></span></div>
               <label class="ced-label">Maximum words</label>
               <select id="catEditorWordLimitMode" class="ced-input" style="appearance:none;-webkit-appearance:none;background:var(--bg);cursor:pointer;margin-bottom:8px;" onchange="onCatWordLimitModeChange()">
                 <option value="default">System default</option>
@@ -5552,8 +5539,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           <!-- TAB: Hero Image -->
           <div class="ced-pane" id="cedPane-hero">
             <div class="ced-section">
-              <div class="ced-section-title">Hero Image Source</div>
-              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 8px;">How the hero image is produced for this category — applies to both the generator and automation.</p>
+              <div class="ced-section-title">Hero Image Source<span class="info-tip" tabindex="0" role="img" aria-label="How the hero image is produced for this category — applies to both the generator and automation." title="How the hero image is produced for this category — applies to both the generator and automation."><svg><use href="#icon-info"/></svg></span></div>
               <div class="hero-mode-toggle" style="margin-bottom:0;">
                 <button type="button" class="hero-mode-btn active" id="catEditorHeroSourceAi" onclick="setCatHeroSource('ai')" title="Generate a unique hero image with AI from the prompt below">✨ AI Generated</button>
                 <button type="button" class="hero-mode-btn" id="catEditorHeroSourceStock" onclick="setCatHeroSource('stock')" title="Search your configured stock provider (Pexels or Unsplash) for a matching photo — set it on Prompt Library ▸ Images">🔍 Stock Photo</button>
@@ -5561,8 +5547,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             </div>
 
             <div class="ced-section" id="catEditorHeroPromptSection">
-              <div class="ced-section-title">Hero Image Prompt</div>
-              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">The AI image prompt used when generating a hero image for this category — in the generator and in automation. Leave on <strong>Global default</strong> to inherit the prompt set on Prompt Library ▸ Images, or override it here. Use <code>{topic}</code> where the article subject should be inserted.</p>
+              <div class="ced-section-title">Hero Image Prompt<span class="info-tip" tabindex="0" role="img" aria-label="The AI image prompt used when generating a hero image for this category — in the generator and in automation. Leave on Global default to inherit the prompt set on Prompt Library ▸ Images, or override it here. Use {topic} where the article subject should be inserted." title="The AI image prompt used when generating a hero image for this category — in the generator and in automation. Leave on Global default to inherit the prompt set on Prompt Library ▸ Images, or override it here. Use {topic} where the article subject should be inserted."><svg><use href="#icon-info"/></svg></span></div>
               <div id="catEditorHeroStockNote" class="alert" style="display:none;background:rgba(244,121,32,0.08);border:1px solid rgba(244,121,32,0.25);color:var(--vance-primary);font-size:0.68rem;line-height:1.55;padding:8px 12px;border-radius:6px;margin:0 0 10px;"><strong>Note:</strong> Stock Photo is selected, so hero images are pulled from your stock provider (Pexels or Unsplash — set on Prompt Library ▸ Images) using the article title. This prompt only applies when the source is AI Generated.</div>
               <label class="ced-label">Prompt source</label>
               <select id="catEditorHeroPromptPreset" class="ced-input" style="appearance:none;-webkit-appearance:none;background:var(--bg);cursor:pointer;margin-bottom:8px;" onchange="onCatHeroPromptPresetChange()"></select>
@@ -5570,8 +5555,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
             </div>
 
             <div class="ced-section">
-              <div class="ced-section-title">Category Fallback Image</div>
-              <p style="font-size:0.69rem;color:var(--text-muted);margin:0 0 10px;">Fallback image used for articles in this category that don't have their own hero image. Paste a publicly accessible image URL.</p>
+              <div class="ced-section-title">Category Fallback Image<span class="info-tip" tabindex="0" role="img" aria-label="Fallback image used for articles in this category that don't have their own hero image. Paste a publicly accessible image URL." title="Fallback image used for articles in this category that don't have their own hero image. Paste a publicly accessible image URL."><svg><use href="#icon-info"/></svg></span></div>
               <label class="ced-label">Hero Image URL</label>
               <input type="url" id="catEditorHeroImage" class="ced-input" placeholder="https://example.com/hero.jpg" oninput="renderCatHeroPreview()" />
               <div id="catEditorHeroPreview" style="margin-top:8px;min-height:60px;"></div>
@@ -5634,8 +5618,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <div class="llm-section-header">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
           <div style="flex:1;">
-            <div class="llm-section-title">Hero Image Prompts</div>
-            <div class="llm-section-desc">The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use <code>{topic}</code> where the article subject should be inserted. Set a per-category override on the <a href="#" onclick="switchTab('categories');return false;" style="color:var(--vance-primary);">Categories</a> page; this is the global default plus a reusable preset library.</div>
+            <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">Hero Image Prompts<span class="info-tip" tabindex="0" role="img" aria-label="The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use {topic} where the article subject should be inserted. Set a per-category override on the Categories page; this is the global default plus a reusable preset library." title="The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use {topic} where the article subject should be inserted. Set a per-category override on the Categories page; this is the global default plus a reusable preset library."><svg><use href="#icon-info"/></svg></span></div>
           </div>
         </div>
         <div class="llm-section-body">
