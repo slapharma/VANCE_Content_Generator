@@ -915,8 +915,7 @@ table.kv th { width: 32%; }
   .header .whoami,
   .header .savestate span:not(.dot):not(.status-dot),
   .header .status-badge span:not(.status-dot),
-  .header #hardRefreshText,
-  .header #hqBtnText { display: none; }
+  .header #hardRefreshText { display: none; }
   .header > .signout-btn { display: none; }   /* Sign out — in the drawer */
   .header .brand-text b { font-size: 13.5px; white-space: normal; line-height: 1.2; }
   .savestate, .status-badge { margin-left: auto; }
