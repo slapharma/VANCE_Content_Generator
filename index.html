@@ -1425,12 +1425,12 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 /* Wraps rather than scrolls: a horizontally scrolling nav hides tabs behind a
    gesture, and with six buttons in three groups there is always room to stack
    the groups instead. */
-.social-tabs-bar { display:flex; align-items:flex-end; flex-wrap:wrap; gap:6px; row-gap:8px; border-bottom:2px solid var(--border); margin-bottom:1.5rem; }
+.social-tabs-bar { display:flex; align-items:flex-end; flex-wrap:wrap; gap:6px; row-gap:10px; border-bottom:2px solid var(--border); margin-bottom:1.5rem; }
 .social-tab-group { display:flex; flex-direction:column; }
-.social-tab-group-label { font-size:0.58rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); opacity:0.65; padding:0 18px 5px; }
-.social-tab-group-btns { display:flex; flex-wrap:wrap; gap:2px; }
-.social-tab-divider { width:1px; align-self:stretch; margin:6px 12px 8px; background:var(--border); flex-shrink:0; }
-.social-tab-btn { padding:9px 18px 11px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; border:none; background:none; cursor:pointer; color:var(--text-muted); border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.14s; display:flex; align-items:center; gap:8px; white-space:nowrap; }
+.social-tab-group-label { font-size:0.62rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); opacity:0.8; padding:0 18px 7px; }
+.social-tab-group-btns { display:flex; flex-wrap:wrap; gap:4px; }
+.social-tab-divider { width:2px; align-self:stretch; margin:2px 14px 8px; background:var(--border-strong); flex-shrink:0; border-radius:2px; }
+.social-tab-btn { padding:9px 18px 11px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; border:none; background:none; cursor:pointer; color:var(--text-muted); border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.14s; display:flex; align-items:center; gap:8px; white-space:nowrap; }
 .social-tab-btn:hover { color:var(--vance-dark); }
 .social-tab-btn.active { color:var(--vance-accent); border-bottom-color:var(--vance-accent); }
 
@@ -3049,18 +3049,18 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <span class="social-tab-group-label">Create</span>
       <div class="social-tab-group-btns">
         <button class="social-tab-btn active" id="socialTabBtn-kit" onclick="switchSocialTab('kit')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           Kit Builder
         </button>
         <button class="social-tab-btn" id="socialTabBtn-instagram" onclick="switchSocialTab('instagram')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
           Instagram
-          <span id="socialCarouselBadge" style="background:var(--vance-primary);color:#fff;font-size:0.55rem;font-weight:800;padding:2px 7px;border-radius:20px;display:none;">0</span>
+          <span id="socialCarouselBadge" style="background:var(--vance-primary);color:#fff;font-size:0.62rem;font-weight:800;padding:2px 7px;border-radius:20px;display:none;">0</span>
         </button>
         <button class="social-tab-btn" id="socialTabBtn-promos" onclick="switchSocialTab('promos')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
           Promos
-          <span id="socialPromoBadge" style="background:var(--vance-accent);color:#fff;font-size:0.55rem;font-weight:800;padding:2px 7px;border-radius:20px;display:none;">0</span>
+          <span id="socialPromoBadge" style="background:var(--vance-accent);color:#fff;font-size:0.62rem;font-weight:800;padding:2px 7px;border-radius:20px;display:none;">0</span>
         </button>
       </div>
     </div>
@@ -3071,14 +3071,14 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <span class="social-tab-group-label">Distribute</span>
       <div class="social-tab-group-btns">
         <button class="social-tab-btn" id="socialTabBtn-queue" onclick="switchSocialTab('queue')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Queue
-          <span id="socialQueueBadge" style="background:var(--vance-dark);color:#fff;font-size:0.55rem;font-weight:800;padding:2px 7px;border-radius:20px;display:none;">0</span>
+          <span id="socialQueueBadge" style="background:var(--vance-dark);color:#fff;font-size:0.62rem;font-weight:800;padding:2px 7px;border-radius:20px;display:none;">0</span>
         </button>
         <button class="social-tab-btn" id="socialTabBtn-posted" onclick="switchSocialTab('posted')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="20 6 9 17 4 12"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>
           Posted
-          <span id="socialPostedBadge" style="background:#15803d;color:#fff;font-size:0.55rem;font-weight:800;padding:2px 7px;border-radius:20px;display:none;">0</span>
+          <span id="socialPostedBadge" style="background:#15803d;color:#fff;font-size:0.62rem;font-weight:800;padding:2px 7px;border-radius:20px;display:none;">0</span>
         </button>
       </div>
     </div>
@@ -3089,9 +3089,9 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
       <span class="social-tab-group-label">Setup</span>
       <div class="social-tab-group-btns">
         <button class="social-tab-btn" id="socialTabBtn-library" onclick="switchSocialTab('library')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
           Prompts &amp; Connections
-          <span id="socialPromptsTotalBadge" style="background:var(--vance-accent);color:#fff;font-size:0.55rem;font-weight:800;padding:2px 7px;border-radius:20px;">—</span>
+          <span id="socialPromptsTotalBadge" style="background:var(--vance-accent);color:#fff;font-size:0.62rem;font-weight:800;padding:2px 7px;border-radius:20px;">—</span>
         </button>
       </div>
     </div>
