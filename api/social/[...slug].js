@@ -21,8 +21,13 @@ import designTemplatesHandler from '../../lib/social/handlers/design-templates.j
 import stockHandler from '../../lib/social/handlers/stock.js';
 import canvaHandler from '../../lib/social/handlers/canva.js';
 import { isKvUnavailable } from '../../lib/api.js';
+import { getCurrentUser } from '../../lib/auth.js';
+import { isCronRequest } from '../../lib/api-auth.js';
 
-export default async function handler(req, res) {
+// `currentUser` is injected so the guard below can be tested without a real
+// session — same deps-object shape as api/content/[id].js. Production passes
+// nothing and gets the real one.
+export async function handler(req, res, { currentUser = getCurrentUser } = {}) {
   // In non-Next.js Vercel serverless, [...slug].js exposes matched segments as
   // req.query['...slug'] (three dots are part of the key name), not req.query.slug.
   // Single-segment paths arrive as a plain string ('generate').
@@ -35,6 +40,23 @@ export default async function handler(req, res) {
   const [resource, id, action] = slug; // e.g. ['kits', 'kit_123'] or ['carousels', 'car_1', 'render']
 
   try {
+    // Until 2026-08-18 nothing on this router checked a caller, and the worst
+    // of it was POST /social/post: it publishes to the live connected
+    // Instagram / LinkedIn / X / TikTok accounts, for anyone who could reach
+    // the URL. POST /social/generate and /social/image spent model credit the
+    // same way.
+    //
+    // `cron` is left out because it runs its own CRON_SECRET check and must
+    // stay reachable by GET, which is how Vercel invokes scheduled paths.
+    // connections/check is the 06:00 cron and is named rather than assumed.
+    if (resource !== 'cron') {
+      const cronDriven = resource === 'connections' && id === 'check' && isCronRequest(req);
+      if (!cronDriven) {
+        const me = await currentUser(req).catch(() => null);
+        if (!me) return res.status(401).json({ error: 'Not authenticated' });
+      }
+    }
+
     // POST /social/generate
     if (req.method === 'POST' && resource === 'generate') {
       return await generateHandler(req, res);
@@ -140,3 +162,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default handler;

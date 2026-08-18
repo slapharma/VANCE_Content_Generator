@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { getCurrentUser, requireRole } from '../../lib/auth.js';
 import { countBodyWords } from '../../lib/word-count.js';
 import { withErrorBoundary } from '../../lib/api.js';
+import { isInternalRequest } from '../../lib/api-auth.js';
 import { markStockUsed, heroAsStockPhoto } from '../../lib/social/stock-ledger.js';
 
 // ── Pure helpers (exported for testing) ─────────────────────────────────────
@@ -471,6 +472,14 @@ async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
+    // Until 2026-08-18 creating content was ungated — only ?action=review-tasks
+    // and the two admin diagnostics above ever checked a caller, so anyone could
+    // inject an article into the pipeline. run.js posts generated articles here
+    // server-to-server, so internal calls stay allowed.
+    if (!isInternalRequest(req)) {
+      const me = await getCurrentUser(req).catch(() => null);
+      if (!me) return res.status(401).json({ error: 'Not authenticated' });
+    }
     try {
       validateContentItem(req.body);
     } catch (err) {

@@ -1,4 +1,6 @@
 import { kv } from '../../lib/kv.js';
+import { getCurrentUser } from '../../lib/auth.js';
+import { isCronRequest, isInternalRequest } from '../../lib/api-auth.js';
 import { resolveOrCreateWpCategory, resolveOrCreateWpTags, parseTagList } from '../../lib/wp-taxonomy.js';
 import { uploadImageUrlToWp } from '../../lib/social/wp-media.js';
 import { carouselOnPublish } from '../../lib/social/carousel-on-publish.js';
@@ -403,8 +405,20 @@ async function defer(promise) {
   }
 }
 
-export default async function handler(req, res) {
+export async function handler(req, res, { currentUser = getCurrentUser } = {}) {
   if (req.method !== 'POST') return res.status(405).end();
+
+  // Until 2026-08-18 this had no check at all: an anonymous POST with a known
+  // contentId published that article to the live WordPress site, using the
+  // stored WP_APP_PASSWORD.
+  //
+  // Four callers are legitimate and only one is a person: the 08:00 publish
+  // cron, and approve.js / run.js / telegram.js server-to-server, plus an
+  // operator hitting Publish Now.
+  if (!isCronRequest(req) && !isInternalRequest(req)) {
+    const me = await currentUser(req).catch(() => null);
+    if (!me) return res.status(401).json({ error: 'Not authenticated' });
+  }
 
   const { contentId, fallbackHeroImageUrl } = req.body;
   if (!contentId) return res.status(400).json({ error: 'contentId required' });
@@ -455,3 +469,5 @@ export default async function handler(req, res) {
     taxonomy: wpPost._taxonomy ?? null,
   });
 }
+
+export default handler;

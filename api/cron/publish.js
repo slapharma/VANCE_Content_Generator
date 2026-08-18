@@ -1,4 +1,5 @@
 import { kv } from '../../lib/kv.js';
+import { internalHeaders } from '../../lib/api-auth.js';
 import { heartbeat } from '../../lib/heartbeat.js';
 
 export default async function handler(req, res) {
@@ -25,7 +26,7 @@ export default async function handler(req, res) {
       due.map(item =>
         fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/publish`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-cron': process.env.CRON_SECRET ?? '' },
+          headers: { 'Content-Type': 'application/json', ...internalHeaders() },
           body: JSON.stringify({ contentId: item.id }),
         })
       )
