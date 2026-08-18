@@ -5934,10 +5934,10 @@ const INFOGRAPHIC_MODELS = [
 // search now goes through /api/social/stock, so neither provider's key reaches
 // the browser — see heroLeftFetchPage() and lib/social/handlers/stock.js.
 
-const GH_API    = 'https://api.github.com';
-const GH_REPO   = 'slapharma/SLAHEALTH_ClinicalReview_Generator';
-const GH_BRANCH = 'main';
-const GH_TOKEN  = String.fromCharCode(103,104,112,95,98,73,65,98,55,90,69,88,51,69,84,108,117,70,80,51,114,100,57,122,121,114,110,74,102,55,100,57,85,87,50,99,86,97,75,114);
+// The repo coordinates and the credential used to live here, and the credential
+// was therefore shipped to every visitor. Both now live server-side behind
+// /api/gh-sync, which also constrains WHICH files may be touched — see the
+// allowlist in api/gh-sync.js.
 
 const CATEGORIES = [
   { id: 'clinical-reviews', label: 'Clinical Reviews' },
@@ -6402,54 +6402,29 @@ CATEGORIES.forEach(c => {
 // ═══════════════════════════════════════════════════════════
 //  GITHUB HELPERS
 // ═══════════════════════════════════════════════════════════
-function getToken() { return GH_TOKEN; }
-
-async function ghGetFile(path) {
-  const res = await fetch(`${GH_API}/repos/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}&t=${Date.now()}`, {
-    headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' }
-  });
-  if (res.status === 404) return { content: [], sha: null };
-  if (!res.ok) throw new Error(`GitHub GET ${path}: ${res.status}`);
-  const data = await res.json();
-  // Decode the file to a UTF-8 JS string. Two paths, two encodings:
-  //  • Inline base64 (files ≤1MB): atob() yields a binary (Latin-1) string, so
-  //    we must run it through decodeURIComponent(escape()) to recover UTF-8.
-  //  • download_url fallback (GitHub returns content:"" for files >1MB): res.text()
-  //    is ALREADY UTF-8-decoded — passing it through decodeURIComponent(escape())
-  //    double-decodes and throws "URI malformed" on any non-ASCII (em dash, curly
-  //    quotes, accents). So that path takes the text verbatim.
-  let text = '';
-  if (data.content && data.content.trim()) {
-    text = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
-  } else if (data.download_url) {
-    const dlRes = await fetch(data.download_url, { cache: 'no-store' });
-    if (!dlRes.ok) throw new Error(`GitHub download ${path}: ${dlRes.status}`);
-    text = await dlRes.text();
-  }
-  if (!text || !text.trim()) return { content: [], sha: data.sha };
-  try {
-    const decoded = JSON.parse(text);
-    return { content: Array.isArray(decoded) ? decoded : [], sha: data.sha };
-  } catch(e) {
-    throw new Error(`Corrupt JSON in ${path}: ${e.message}`);
-  }
-}
-
-async function ghPutFile(path, content, sha, message) {
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
-  const body = { message, content: encoded, branch: GH_BRANCH };
-  if (sha) body.sha = sha;
-  const res = await fetch(`${GH_API}/repos/${GH_REPO}/contents/${path}`, {
-    method: 'PUT',
-    headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+async function ghSync(method, body, qs) {
+  const res = await fetch('/api/gh-sync' + (qs || ''), {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `GitHub PUT ${path} failed: ${res.status}`);
+    throw new Error(err.error || `GitHub sync ${method} failed: ${res.status}`);
   }
-  const data = await res.json();
-  return data.content.sha;
+  return res.json();
+}
+
+// Returns { content, sha } exactly as the old direct-to-GitHub version did, so
+// callers are unchanged. The base64/UTF-8 decode and the >1MB download_url
+// fallback moved server-side with it.
+async function ghGetFile(path) {
+  return ghSync('GET', null, '?path=' + encodeURIComponent(path));
+}
+
+async function ghPutFile(path, content, sha, message) {
+  const data = await ghSync('PUT', { path, content, sha: sha || null, message });
+  return data.sha;
 }
 
 function catPath(catId, type) {
