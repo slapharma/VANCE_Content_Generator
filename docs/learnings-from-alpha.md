@@ -535,3 +535,58 @@ The "Implication for Beta" field is the key one — it forces the entry to be us
   they go in the sidebar cards **and** in `allTabs`, and per-tenant theming should re-point
   the `:root, :root[data-theme="light"]` token block rather than overriding component rules.
 - **Tag**: #ui #wizard #brand-identity #ship-pipeline
+
+## 2026-08-18 — The CS-mirror bridge lightens containers by class; it doesn't touch what's inside them
+
+- **Context**: a follow-on to the 2026-08-06 CS-mirror rewrite — a later pass ("Align all
+  views and both wizards with the Generate page's design") had `vance-cs.css` turn several
+  previously-dark bars into light `.card-header`-style ones (`.article-toolbar`'s background,
+  `.card-header`'s background, `.source-tab-btn.active`'s implied look). A user screenshot
+  showed the article toolbar's word count, model badge, source chip and icon buttons all
+  rendering as near-invisible white-on-white.
+- **Finding**: `vance-cs.css`'s bridge section overrides containers by class, one property at
+  a time — it is not aware of, and does not touch, whatever inline `<style>` rules or JS
+  `.style.*` writes style the *children* of that container. Two distinct failure shapes came
+  from the same root cause:
+  1. **Static CSS**: `.article-toolbar`'s background moved from `var(--vance-dark)` (navy) to
+     `var(--surface-2)` (light mint), but `.word-count`, `.tb-meta`, `.tb-divider` and
+     `.tb-icon-btn` were never updated off their original `rgba(255,255,255,…)` white/
+     translucent-white palette — because nothing in the cascade forced anyone to touch them,
+     they just silently stopped being readable.
+  2. **JS-applied inline styles are worse**, because they win the cascade outright and don't
+     show up in a CSS diff at all. `_setArticleCommentMode()` set `btn.style.color = '#fff'`
+     unconditionally on every call (on *and* off state) — a leftover from the same
+     white-on-navy era. Fixing the button's CSS class did nothing until this line was found
+     separately; a plain "grep the stylesheet for rgba(255,255,255" pass would have missed it.
+  3. **A third shape, opposite in direction**: `.source-tab-btn.active` kept its own
+     `background: var(--vance-dark)` from before the CS mirror unified it with
+     `.ced-tab`/`.social-tab-btn`/`.sub-tab` into one shared underline-tab rule. The shared
+     rule only sets `color` and `border-bottom-color` for `.active` (teal, by design) — it
+     never claimed `background`, so the *old* rule's dark background silently kept winning
+     underneath the *new* teal text. Same root cause as the white-on-white bugs, opposite
+     symptom: instead of a container going light under stale light children, a class got
+     folded into a new light-themed family while one of its own overrides stayed dark.
+  4. **What actually caught all of this**: eyeballing the diff wasn't reliable — the browser
+     harness (`scripts/build-render-harness.py`) plus a small in-page contrast scanner
+     (walk every visible text/icon node in the active `.tab-view`, compute effective
+     background by climbing ancestors for the first opaque `background-color`, treat a
+     `background-image` gradient as opaque-but-unknown and stop climbing rather than
+     mis-blaming the page bg, flag ratio < 2.2) caught the real bugs and cleanly separated
+     them from lookalikes: hidden (`display:none`) elements and alpha-tinted "chip" pairs
+     (e.g. `background:rgba(0,201,167,0.15)` with matching teal text) that fail the raw
+     ratio math but are legible in practice because the tint and the text were designed
+     together. Swept all 18 tabs/views this way in one pass rather than tab-by-tab manual
+     review.
+- **Implication for Beta**: Beta inherited `vance-cs.css` and the bridge section wholesale
+  (per the 2026-08-06 entry above), so any further container-lightening passes on Beta's own
+  side carry the identical risk — the bridge will happily repaint a bar's background without
+  anyone auditing what's drawn on top of it, and JS-driven inline style toggles are exactly
+  the kind of thing a stylesheet-only review misses. Two concrete carries: (1) before or after
+  any pass that changes a shared container's background in `vance-cs.css`, grep the app file
+  for `.style.background`/`.style.color`/`.style.borderColor` writes touching elements inside
+  that container, not just its CSS class — the class fix alone is not sufficient proof. (2) the
+  contrast-scanner technique above (gradient-aware, tint-pair-aware, run per-tab against the
+  render harness) is reusable as-is on Beta's own harness and is materially faster and more
+  reliable than a manual tab-by-tab visual pass, especially across Beta's larger, per-tenant
+  view surface.
+- **Tag**: #ui #brand-identity #ship-pipeline
