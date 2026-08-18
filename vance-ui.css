@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    VANCE UI — shared design tokens and primitives
-   vance-ui.css  v1.1.0
+   vance-ui.css  v1.1.1
 
-   ONE source of truth for the look of every internal Vance system: V-Net,
+   ONE source of truth for the look of every internal Vance system: VANCE-HQ,
    the Content Generator, the Customer Service console and the Alerts
    dashboard. Vendored into each repo rather than published as a package —
    the Alerts dashboard is zero-dependency by design, and a copied file with
