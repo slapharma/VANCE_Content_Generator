@@ -11349,11 +11349,11 @@ function renderHeroPresets() {
   el.innerHTML = presets.map(function(p, i) {
     return '<div style="border:1px solid var(--border);padding:10px 12px;background:var(--bg);">' +
       '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">' +
-        '<input type="text" id="heroPresetName-' + i + '" value="' + escapeHtml(p.name || '') + '" placeholder="Preset name" style="flex:1;padding:6px 8px;border:1px solid var(--border);font-family:\'Montserrat\',sans-serif;font-size:0.72rem;background:var(--bg);color:var(--text);" />' +
+        '<input type="text" id="heroPresetName-' + i + '" value="' + escHtml(p.name || '') + '" placeholder="Preset name" style="flex:1;padding:6px 8px;border:1px solid var(--border);font-family:\'Montserrat\',sans-serif;font-size:0.72rem;background:var(--bg);color:var(--text);" />' +
         '<button class="btn btn-orange btn-xs" onclick="saveHeroPreset(' + i + ')">Save</button>' +
         '<button class="btn btn-outline btn-xs" style="color:var(--error);" onclick="deleteHeroPreset(' + i + ')" title="Delete preset">✕</button>' +
       '</div>' +
-      '<textarea id="heroPresetText-' + i + '" rows="4" placeholder="Prompt text… use {topic} for the article subject." style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);font-family:Georgia,serif;font-size:0.74rem;line-height:1.5;resize:vertical;background:var(--bg);color:var(--text);">' + escapeHtml(p.text || '') + '</textarea>' +
+      '<textarea id="heroPresetText-' + i + '" rows="4" placeholder="Prompt text… use {topic} for the article subject." style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);font-family:Georgia,serif;font-size:0.74rem;line-height:1.5;resize:vertical;background:var(--bg);color:var(--text);">' + escHtml(p.text || '') + '</textarea>' +
     '</div>';
   }).join('');
 }
@@ -12718,8 +12718,8 @@ async function _wizRenderEmailUserList() {
     var checked = _wizEmailUserIds.indexOf(u.id) !== -1 ? 'checked' : '';
     return '<label style="display:flex;align-items:center;gap:8px;padding:5px 6px;cursor:pointer;font-size:0.78rem;color:var(--text);">'
       +   '<input type="checkbox" value="' + u.id + '" ' + checked + ' onchange="wizToggleEmailUser(\'' + u.id + '\', this.checked)" style="margin:0;">'
-      +   '<span style="flex:1;">' + escapeHtml(u.name || u.email)
-      +     '<span style="display:block;font-size:0.62rem;color:var(--text-muted);">' + escapeHtml(u.email) + ' · ' + (u.appRole || 'user') + '</span>'
+      +   '<span style="flex:1;">' + escHtml(u.name || u.email)
+      +     '<span style="display:block;font-size:0.62rem;color:var(--text-muted);">' + escHtml(u.email) + ' · ' + (u.appRole || 'user') + '</span>'
       +   '</span>'
       + '</label>';
   }).join('');
@@ -14344,7 +14344,7 @@ function renderPromptLibrary() {
     li.className = 'prompt-list-item' + (syntheticId === activePromptId ? ' active' : '');
     li.innerHTML =
       '<div class="prompt-item-info">' +
-        '<div class="prompt-item-name">' + escapeHtml(pName) + (isDefault ? ' <span style="font-size:0.55rem;font-weight:800;text-transform:uppercase;padding:1px 5px;background:rgba(0,201,167,0.12);color:#009e85;">Active</span>' : '') + '</div>' +
+        '<div class="prompt-item-name">' + escHtml(pName) + (isDefault ? ' <span style="font-size:0.55rem;font-weight:800;text-transform:uppercase;padding:1px 5px;background:rgba(0,201,167,0.12);color:#009e85;">Active</span>' : '') + '</div>' +
         '<div class="prompt-item-meta">' + pText.split(/\s+/).length + ' words · Prompt Library</div>' +
       '</div>' +
       '<div class="prompt-item-actions">' +
@@ -14361,7 +14361,7 @@ function renderPromptLibrary() {
     li.className = 'prompt-list-item' + (isActive ? ' active' : '');
     li.innerHTML =
       '<div class="prompt-item-info">' +
-        '<div class="prompt-item-name">' + escapeHtml(p.name) + '</div>' +
+        '<div class="prompt-item-name">' + escHtml(p.name) + '</div>' +
         '<div class="prompt-item-meta">Saved ' + date + ' · ' + p.text.split(/\s+/).length.toLocaleString() + ' words</div>' +
       '</div>' +
       '<div class="prompt-item-actions">' +
@@ -15257,7 +15257,7 @@ function formatArticleHTML(text, category) {
   // Inline markdown → HTML. Escape first (body is untrusted), then apply
   // **bold** and *italic* (italic guarded against word-internal *).
   const inline = (s) => {
-    let e = escapeHtml(s);
+    let e = escHtml(s);
     e = e.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     e = e.replace(/(?<!\w)\*([^*]+?)\*(?!\w)/g, '<em>$1</em>');
     return e;
@@ -15331,10 +15331,10 @@ function formatArticleHTML(text, category) {
 
     // Markdown headings. Reaching a section heading closes the opening window
     // and re-evaluates the meta-block / boxed-list state for what follows.
-    if (trimmed.startsWith('### ')) { seenSection = true; const txt = trimmed.slice(4).replace(/\*\*/g, ''); applyHeadingEffects(txt); out.push(`<h3>${escapeHtml(txt)}</h3>`); continue; }
-    if (trimmed.startsWith('## '))  { seenSection = true; const txt = trimmed.slice(3).replace(/\*\*/g, ''); applyHeadingEffects(txt); out.push(`<h2>${escapeHtml(txt)}</h2>`); continue; }
+    if (trimmed.startsWith('### ')) { seenSection = true; const txt = trimmed.slice(4).replace(/\*\*/g, ''); applyHeadingEffects(txt); out.push(`<h3>${escHtml(txt)}</h3>`); continue; }
+    if (trimmed.startsWith('## '))  { seenSection = true; const txt = trimmed.slice(3).replace(/\*\*/g, ''); applyHeadingEffects(txt); out.push(`<h2>${escHtml(txt)}</h2>`); continue; }
     if (trimmed.startsWith('# '))   {
-      const txt = escapeHtml(stripCategoryTitlePrefix(trimmed.slice(2).replace(/\*\*/g, '')));
+      const txt = escHtml(stripCategoryTitlePrefix(trimmed.slice(2).replace(/\*\*/g, '')));
       if (!subtitleDone) { subtitleDone = true; out.push(`<h1>${txt}</h1>`); continue; }
       seenSection = true; applyHeadingEffects(txt); out.push(`<h2>${txt}</h2>`); continue;
     }
@@ -15343,7 +15343,7 @@ function formatArticleHTML(text, category) {
     if (boldOnly && sectionHeaders.test(boldOnly[1].trim())) {
       seenSection = true;
       applyHeadingEffects(boldOnly[1].trim());
-      out.push(`<h2>${escapeHtml(boldOnly[1].trim())}</h2>`);
+      out.push(`<h2>${escHtml(boldOnly[1].trim())}</h2>`);
       continue;
     }
 
@@ -15413,10 +15413,6 @@ function formatFileSize(bytes) {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
   return (bytes/1024/1024).toFixed(1) + ' MB';
-}
-
-function escapeHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -15993,7 +15989,7 @@ function renderCatHeroPromptControls(catId) {
   var presets = (typeof heroPromptsConfig !== 'undefined' && heroPromptsConfig.presets) ? heroPromptsConfig.presets : [];
   var current = (typeof heroPromptsConfig !== 'undefined' && heroPromptsConfig.categories && heroPromptsConfig.categories[catId]) || '';
   var opts = '<option value="__default">Global default (inherit from Prompt Library ▸ Images)</option>';
-  presets.forEach(function(p, i) { opts += '<option value="preset:' + i + '">Preset: ' + escapeHtml(p.name || ('Preset ' + (i + 1))) + '</option>'; });
+  presets.forEach(function(p, i) { opts += '<option value="preset:' + i + '">Preset: ' + escHtml(p.name || ('Preset ' + (i + 1))) + '</option>'; });
   opts += '<option value="__custom">Custom (edit below)</option>';
   sel.innerHTML = opts;
   ta.value = current;
@@ -16286,7 +16282,7 @@ function renderCustomMultiDocList(catId) {
   const docs = multiDocs[catId] || [];
   listEl.innerHTML = docs.map((d, i) =>
     `<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;">
-      <span style="flex:1;">${escapeHtml(d.name)}</span>
+      <span style="flex:1;">${escHtml(d.name)}</span>
       <button class="btn btn-danger-outline btn-xs" onclick="removeCustomDoc('${catId}',${i})">✕</button>
     </div>`
   ).join('');
@@ -16373,8 +16369,8 @@ function renderCategoriesPage() {
     return `<div class="cat-card" id="catcard-${cat.id}" onclick="openCategoryEditor('${editorId}')">
       <div class="cat-card-icon">${getCatSvgIcon(cat.id)}</div>
       <div class="cat-card-body">
-        <div class="cat-card-name">${escapeHtml(cat.name)}</div>
-        <div class="cat-card-desc">${escapeHtml(cat.description || 'No description')}</div>
+        <div class="cat-card-name">${escHtml(cat.name)}</div>
+        <div class="cat-card-desc">${escHtml(cat.description || 'No description')}</div>
         <div class="cat-card-meta">
           <span class="cat-card-pill ${cat.builtIn ? 'builtin' : 'custom'}">${cat.builtIn ? 'Built-in' : 'Custom'}</span>
           <span class="cat-card-pill stat">${promptCount} prompt${promptCount !== 1 ? 's' : ''}</span>
@@ -16403,7 +16399,7 @@ function renderPromptLibraryArticleList() {
     return `<div class="cat-card" id="plcard-${cat.id}" onclick="selectPromptLibraryCategory('${editorId}')">
       <div class="cat-card-icon">${getCatSvgIcon(cat.id)}</div>
       <div class="cat-card-body">
-        <div class="cat-card-name">${escapeHtml(cat.name)}</div>
+        <div class="cat-card-name">${escHtml(cat.name)}</div>
         <div class="cat-card-meta">
           <span class="cat-card-pill ${cat.builtIn ? 'builtin' : 'custom'}">${cat.builtIn ? 'Built-in' : 'Custom'}</span>
           <span class="cat-card-pill stat">${promptCount} prompt${promptCount !== 1 ? 's' : ''}</span>
@@ -16750,10 +16746,10 @@ function renderCatPromptPanel(catId, targetId) {
     '<div class="ced-prompt-active">' +
       '<div class="ced-prompt-active-badge">✓ Active — used for AI generation</div>' +
       '<div class="ced-prompt-active-fields">' +
-        '<div class="ced-prompt-active-field"><label>Prompt Name</label><input type="text" id="cedp-name-' + catId + '-0" class="ced-input" value="' + escapeHtml(aName) + '" placeholder="e.g. Formal Clinical" /></div>' +
-        '<div class="ced-prompt-active-field"><label>Created By</label><input type="text" id="cedp-by-' + catId + '-0" class="ced-input" value="' + escapeHtml(aBy) + '" placeholder="Author name" /></div>' +
+        '<div class="ced-prompt-active-field"><label>Prompt Name</label><input type="text" id="cedp-name-' + catId + '-0" class="ced-input" value="' + escHtml(aName) + '" placeholder="e.g. Formal Clinical" /></div>' +
+        '<div class="ced-prompt-active-field"><label>Created By</label><input type="text" id="cedp-by-' + catId + '-0" class="ced-input" value="' + escHtml(aBy) + '" placeholder="Author name" /></div>' +
       '</div>' +
-      '<textarea class="ced-prompt-active-textarea" id="cedp-text-' + catId + '-0" rows="8">' + escapeHtml(aText) + '</textarea>' +
+      '<textarea class="ced-prompt-active-textarea" id="cedp-text-' + catId + '-0" rows="8">' + escHtml(aText) + '</textarea>' +
       '<div class="ced-prompt-active-footer">' +
         '<button class="btn btn-orange btn-sm" onclick="cedSavePromptItem(\'' + catId + '\',0)">Save Active Prompt</button>' +
         '<button class="btn btn-outline btn-sm" onclick="cedGenerateCategoryPrompt(\'' + catId + '\')">' +
@@ -16774,8 +16770,8 @@ function renderCatPromptPanel(catId, targetId) {
           var pBy   = typeof p === 'string' ? '' : (p.createdBy || '');
           return '<div class="ced-prompt-saved-item" onclick="cedSetDefaultPrompt(\'' + catId + '\',' + i + ')" title="Click to make active">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;flex-shrink:0;color:var(--text-muted)"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>' +
-            '<span class="ced-prompt-saved-item-name">' + escapeHtml(pName) + '</span>' +
-            (pBy ? '<span class="ced-prompt-saved-item-by">' + escapeHtml(pBy) + '</span>' : '') +
+            '<span class="ced-prompt-saved-item-name">' + escHtml(pName) + '</span>' +
+            (pBy ? '<span class="ced-prompt-saved-item-by">' + escHtml(pBy) + '</span>' : '') +
             '<div class="ced-prompt-saved-item-actions" onclick="event.stopPropagation()">' +
               '<button class="btn btn-outline btn-xs" onclick="cedSetDefaultPrompt(\'' + catId + '\',' + i + ')" title="Make active">Use</button>' +
               '<button class="btn btn-outline btn-xs" style="color:var(--error);" onclick="cedDeletePromptItem(\'' + catId + '\',' + i + ')" title="Remove">✕</button>' +
@@ -17468,8 +17464,8 @@ function renderDistribution(items) {
       sorted.map(function(item) {
         const catLabel = (CATEGORIES.find(function(c) { return c.id === item.category; }) || {}).label || item.category || '';
         const prefix = catLabel ? '[' + catLabel + '] ' : '';
-        return '<option value="' + escapeHtml(item.id || '') + '">' +
-          prefix + escapeHtml((item.title || 'Untitled').slice(0, 75)) + '</option>';
+        return '<option value="' + escHtml(item.id || '') + '">' +
+          prefix + escHtml((item.title || 'Untitled').slice(0, 75)) + '</option>';
       }).join('');
     if (prevVal && sorted.find(function(i) { return i.id === prevVal; })) {
       select.value = prevVal;
@@ -17489,7 +17485,7 @@ function renderDistribution(items) {
       .sort(function(a, b) { return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0); });
     if (!catItems.length) return;
     html += '<div class="social-cat-group-hdr">' +
-      '<span class="social-cat-group-label">' + escapeHtml(cat.label) + '</span>' +
+      '<span class="social-cat-group-label">' + escHtml(cat.label) + '</span>' +
       '<span class="social-cat-group-count">' + catItems.length + ' article' + (catItems.length !== 1 ? 's' : '') + '</span>' +
     '</div>';
     html += catItems.map(function(item) { return renderSocialArticleRow(item); }).join('');
@@ -17521,9 +17517,9 @@ function renderDistribution(items) {
 }
 
 function renderSocialArticleRow(item) {
-  const title = escapeHtml((item.title || 'Untitled').slice(0, 90));
+  const title = escHtml((item.title || 'Untitled').slice(0, 90));
   const catLabel = (CATEGORIES.find(function(c) { return c.id === item.category; }) || {}).label || item.category || '—';
-  const cat = escapeHtml(catLabel);
+  const cat = escHtml(catLabel);
   const hasPosts = !!(item.socialPosts || socialPostCache[item.id]);
   const statusHtml = hasPosts ? '<span class="social-article-status">Posts ready</span>' : '';
 
@@ -17914,7 +17910,7 @@ function heroLeftPopulateKeywords() {
   if (!text && !titleQuery) return;
   const keywords = extractKeywordsFromText(text, 6);
   if (chips) chips.innerHTML = keywords.map(function(k){
-    return '<span class="keyword-chip">' + escapeHtml(k) + '</span>';
+    return '<span class="keyword-chip">' + escHtml(k) + '</span>';
   }).join('');
   if (input && !input.value) input.value = titleQuery || keywords.join(', ');
 }
@@ -18007,9 +18003,9 @@ function heroCreditHtml(c) {
     pUrl += (pUrl.indexOf('?') >= 0 ? '&' : '?') + utm;
   }
   var name = pUrl
-    ? '<a href="' + escapeHtml(pUrl) + '" target="_blank" rel="noopener nofollow">' + escapeHtml(c.photographer) + '</a>'
-    : escapeHtml(c.photographer);
-  return 'Photo by ' + name + ' on <a href="' + escapeHtml(home) + '" target="_blank" rel="noopener nofollow">' + svc + '</a>';
+    ? '<a href="' + escHtml(pUrl) + '" target="_blank" rel="noopener nofollow">' + escHtml(c.photographer) + '</a>'
+    : escHtml(c.photographer);
+  return 'Photo by ' + name + ' on <a href="' + escHtml(home) + '" target="_blank" rel="noopener nofollow">' + svc + '</a>';
 }
 
 // Query-broadening ladder — client mirror of heroStockQueries() in
@@ -18321,7 +18317,7 @@ function libRenderStatusChips() {
     const label = _STATUS_LABELS[st] || st;
     return '<label style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border:1px solid ' + (on ? color.fg : 'var(--border)') + ';background:' + (on ? color.bg : 'transparent') + ';color:' + (on ? color.fg : 'var(--text-muted)') + ';font-size:0.62rem;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;cursor:pointer;user-select:none;">'
       + '<input type="checkbox" ' + (on ? 'checked' : '') + ' onchange="libToggleStatus(\'' + st + '\', this.checked)" style="margin:0;accent-color:' + color.fg + ';"/>'
-      + escapeHtml(label)
+      + escHtml(label)
       + '</label>';
   }).join('');
 }
@@ -18342,7 +18338,7 @@ function libRenderCategoryChips() {
     const on = _libCategorySel.has(c.id);
     rows.push('<label style="' + rowStyle(on) + '">'
       + '<input type="checkbox" ' + (on ? 'checked' : '') + ' onchange="libToggleCategory(\'' + c.id + '\', this.checked)" style="margin:0;accent-color:var(--vance-dark);"/>'
-      + escapeHtml(c.name)
+      + escHtml(c.name)
       + '</label>');
   }
   wrap.innerHTML = rows.join('');
@@ -18463,14 +18459,14 @@ function renderLibrary() {
         return ''
           + '<div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 14px;">'
           +   '<div style="flex:1;min-width:0;">'
-          +     '<div style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(it.title || 'Untitled') + '</div>'
+          +     '<div style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(it.title || 'Untitled') + '</div>'
           +     '<div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px;">'
-          +       (catLabel ? escapeHtml(catLabel) + ' &middot; ' : '')
+          +       (catLabel ? escHtml(catLabel) + ' &middot; ' : '')
           +       (date || '')
           +       (words ? ' &middot; ' + words + ' words' : '')
           +     '</div>'
           +   '</div>'
-          +   '<span class="status-pill" style="background:' + stColor.bg + ';color:' + stColor.fg + ';">' + escapeHtml(stLabel) + '</span>'
+          +   '<span class="status-pill" style="background:' + stColor.bg + ';color:' + stColor.fg + ';">' + escHtml(stLabel) + '</span>'
           +   '<button class="btn btn-outline btn-sm" onclick="viewArticleFromPipeline(\'' + it.id + '\')">View</button>'
           + '</div>';
       }).join('')
@@ -18510,7 +18506,7 @@ function catArticlesRenderChips() {
     const label = _STATUS_LABELS[st] || st;
     return '<label style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border:1px solid ' + (on ? color.fg : 'var(--border)') + ';background:' + (on ? color.bg : 'transparent') + ';color:' + (on ? color.fg : 'var(--text-muted)') + ';font-size:0.62rem;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;cursor:pointer;user-select:none;">'
       + '<input type="checkbox" ' + (on ? 'checked' : '') + ' onchange="catArticlesToggleStatus(\'' + st + '\', this.checked)" style="margin:0;accent-color:' + color.fg + ';"/>'
-      + escapeHtml(label)
+      + escHtml(label)
       + '</label>';
   }).join('');
 }
@@ -18589,13 +18585,13 @@ function renderCategoryArticles() {
         return ''
           + '<div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 14px;">'
           +   '<div style="flex:1;min-width:0;">'
-          +     '<div style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(it.title || 'Untitled') + '</div>'
+          +     '<div style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(it.title || 'Untitled') + '</div>'
           +     '<div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px;">'
           +       (date ? date : '')
           +       (words ? ' &middot; ' + words + ' words' : '')
           +     '</div>'
           +   '</div>'
-          +   '<span class="status-pill" style="background:' + stColor.bg + ';color:' + stColor.fg + ';">' + escapeHtml(stLabel) + '</span>'
+          +   '<span class="status-pill" style="background:' + stColor.bg + ';color:' + stColor.fg + ';">' + escHtml(stLabel) + '</span>'
           +   '<button class="btn btn-outline btn-sm" onclick="viewArticleFromPipeline(\'' + it.id + '\')">View</button>'
           + '</div>';
       }).join('')
@@ -18633,17 +18629,17 @@ function openReviewBucketPopup(bucket) {
   const rowsHtml = rows.length
     ? rows.map(r => {
         const ts = r[tsField[bucket]] || r.updatedAt || r.createdAt;
-        const rule = r.automationRuleName ? escapeHtml(r.automationRuleName) : '<span style="color:var(--text-muted);">Manual</span>';
+        const rule = r.automationRuleName ? escHtml(r.automationRuleName) : '<span style="color:var(--text-muted);">Manual</span>';
         const canApprove = r.status === 'draft' || r.status === 'in_review' || r.status === 'rejected';
         const approveBtn = canApprove
           ? `<button class="btn btn-xs" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.4);color:#15803d;" onclick="reviewPopupApprove('${r.id}', this)">✓ Approve</button>`
           : `<button class="btn btn-xs" style="opacity:0.4;cursor:not-allowed;" disabled>✓ Approve</button>`;
         return `
           <tr data-row-id="${r.id}">
-            <td style="padding:8px 10px;font-size:0.74rem;font-weight:600;color:var(--text);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(r.title || 'Untitled')}">${escapeHtml(r.title || 'Untitled')}</td>
-            <td style="padding:8px 10px;font-size:0.68rem;color:var(--text-muted);white-space:nowrap;">${escapeHtml(fmtDT(ts))}</td>
+            <td style="padding:8px 10px;font-size:0.74rem;font-weight:600;color:var(--text);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(r.title || 'Untitled')}">${escHtml(r.title || 'Untitled')}</td>
+            <td style="padding:8px 10px;font-size:0.68rem;color:var(--text-muted);white-space:nowrap;">${escHtml(fmtDT(ts))}</td>
             <td style="padding:8px 10px;font-size:0.68rem;color:var(--text);">${rule}</td>
-            <td style="padding:8px 10px;font-size:0.68rem;color:var(--text);">${escapeHtml(catLabel(r.category))}</td>
+            <td style="padding:8px 10px;font-size:0.68rem;color:var(--text);">${escHtml(catLabel(r.category))}</td>
             <td style="padding:8px 10px;white-space:nowrap;display:flex;gap:5px;justify-content:flex-end;">
               <button class="btn btn-outline btn-xs" onclick="reviewPopupView('${r.id}')">View</button>
               ${approveBtn}
@@ -18774,9 +18770,9 @@ async function loadReviewTasks() {
         return ''
           + '<div style="display:flex;align-items:center;gap:12px;background:var(--card-bg,#fff);border:1px solid var(--border);border-left:3px solid #f47920;padding:10px 14px;">'
           +   '<div style="flex:1;min-width:0;">'
-          +     '<div style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(it.title || 'Untitled') + '</div>'
+          +     '<div style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(it.title || 'Untitled') + '</div>'
           +     '<div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px;">'
-          +       escapeHtml(catLabelFor(it.category))
+          +       escHtml(catLabelFor(it.category))
           +       (waiting ? ' &middot; ' + waiting : '')
           +       (wordCount ? ' &middot; ' + wordCount + ' words' : '')
           +     '</div>'
@@ -18809,7 +18805,7 @@ function loadDashboard() {
       var reviews = (ghData[cat.id] && ghData[cat.id].reviews) ? ghData[cat.id].reviews : [];
       return '<div class="dash-cat-card" data-cat-id="' + cat.id + '" onclick="startGeneratorForCategory(\'' + cat.id + '\')">' +
         '<div class="dash-cat-icon">' + getCatSvgIcon(cat.id) + '</div>' +
-        '<div class="dash-cat-name">' + escapeHtml(cat.name) + '</div>' +
+        '<div class="dash-cat-name">' + escHtml(cat.name) + '</div>' +
         '<div class="dash-cat-count">' + reviews.length + ' saved</div>' +
         '<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">' +
           '<button class="dash-cat-btn" onclick="event.stopPropagation();startGeneratorForCategory(\'' + cat.id + '\')">Generate</button>' +
@@ -18868,8 +18864,8 @@ function loadDashboard() {
           var plBadge = '<span class="dash-pl-badge s-' + st.replace(/_/g, '-') + '">' + (STATUS_LABELS[st] || st) + '</span>';
           return '<div class="dash-recent-item">' +
             '<div class="dash-recent-dot"></div>' +
-            '<div class="dash-recent-title">' + escapeHtml(r.title || 'Untitled') + '</div>' +
-            '<div class="dash-recent-meta">' + escapeHtml(catLabel) + ' &middot; ' + dateStr + '</div>' +
+            '<div class="dash-recent-title">' + escHtml(r.title || 'Untitled') + '</div>' +
+            '<div class="dash-recent-meta">' + escHtml(catLabel) + ' &middot; ' + dateStr + '</div>' +
             plBadge +
             '<button class="btn btn-outline btn-xs" onclick="viewArticleFromPipeline(\'' + r.id + '\')" style="flex-shrink:0;">View</button>' +
           '</div>';
@@ -18989,7 +18985,7 @@ function buildCalDay(date, otherMonth, events) {
 
   let html = `<div class="calendar-day-num">${date.getDate()}</div>`;
   (events[key] || []).forEach(ev => {
-    html += `<div class="cal-event ${ev.type}" title="${escapeHtml(ev.title)}" onclick="calEventClick('${ev.id}',event)">${escapeHtml(ev.title.substring(0,22))}${ev.title.length > 22 ? '...' : ''}</div>`;
+    html += `<div class="cal-event ${ev.type}" title="${escHtml(ev.title)}" onclick="calEventClick('${ev.id}',event)">${escHtml(ev.title.substring(0,22))}${ev.title.length > 22 ? '...' : ''}</div>`;
   });
   cell.innerHTML = html;
   return cell;
@@ -19122,7 +19118,7 @@ function syncPipelineCatFilterOptions(items) {
   const current = getPipelineCatFilter();
   sel.innerHTML = '<option value="all">All categories</option>' +
     Object.keys(known).map(function(id) {
-      return '<option value="' + escapeHtml(id) + '">' + escapeHtml(known[id]) + '</option>';
+      return '<option value="' + escHtml(id) + '">' + escHtml(known[id]) + '</option>';
     }).join('');
   sel.value = (current === 'all' || known[current]) ? current : 'all';
 }
@@ -19148,7 +19144,7 @@ function renderPipelineNewMenu() {
   menu.innerHTML = CATEGORIES.map(function(cat) {
     return '<button class="pipeline-new-menu-item" onclick="pipelineNewArticle(\'' + cat.id + '\')">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;flex-shrink:0;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>' +
-      escapeHtml(cat.label) +
+      escHtml(cat.label) +
     '</button>';
   }).join('');
 }
@@ -19291,12 +19287,12 @@ function renderListRow(item) {
   const dateStr  = item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'2-digit' }) + ' ' + new Date(item.createdAt).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }) : '—';
   const checked  = selectedPipelineIds.has(item.id) ? 'checked' : '';
   const ruleSuffix = item.automationRuleName
-    ? ` <span title="Automation rule: ${escapeHtml(item.automationRuleName)}" style="background:rgba(0,104,104,0.10);color:#006868;border:1px solid rgba(0,104,104,0.25);padding:1px 5px;font-size:0.58rem;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;margin-left:6px;">⚙ ${escapeHtml(item.automationRuleName)}</span>`
+    ? ` <span title="Automation rule: ${escHtml(item.automationRuleName)}" style="background:rgba(0,104,104,0.10);color:#006868;border:1px solid rgba(0,104,104,0.25);padding:1px 5px;font-size:0.58rem;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;margin-left:6px;">⚙ ${escHtml(item.automationRuleName)}</span>`
     : '';
   return `<div class="pipeline-list-row">
     <input type="checkbox" class="pipeline-bulk-cb" ${checked} onchange="togglePipelineSelect('${item.id}', this.checked)" style="margin-right:8px;flex-shrink:0;cursor:pointer;" />
-    <span class="pipeline-list-cat">${escapeHtml(catLabel)}</span>
-    <span class="pipeline-list-title" title="${escapeHtml(item.title || '')}">${escapeHtml(item.title || 'Untitled')}${ruleSuffix}</span>
+    <span class="pipeline-list-cat">${escHtml(catLabel)}</span>
+    <span class="pipeline-list-title" title="${escHtml(item.title || '')}">${escHtml(item.title || 'Untitled')}${ruleSuffix}</span>
     <span class="pipeline-list-date">${dateStr}</span>
     <div class="pipeline-list-actions">
       <button class="btn btn-outline btn-xs" onclick="viewArticleFromPipeline('${item.id}')">View Article</button>
@@ -19310,7 +19306,7 @@ function renderKanbanCard(item) {
   const dateStr  = item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'2-digit' }) + ' ' + new Date(item.createdAt).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }) : '';
   const wordCount = (item.wordCount != null) ? item.wordCount : (item.body ? countBodyProse(item.body) : 0);
   const ruleChip = item.automationRuleName
-    ? `<span title="Generated by automation rule: ${escapeHtml(item.automationRuleName)}" style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,104,104,0.10);color:#006868;border:1px solid rgba(0,104,104,0.25);padding:2px 6px;font-size:0.6rem;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;margin-top:6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>${escapeHtml(item.automationRuleName)}</span>`
+    ? `<span title="Generated by automation rule: ${escHtml(item.automationRuleName)}" style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,104,104,0.10);color:#006868;border:1px solid rgba(0,104,104,0.25);padding:2px 6px;font-size:0.6rem;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;margin-top:6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>${escHtml(item.automationRuleName)}</span>`
     : '';
 
   let badge = '';
@@ -19338,10 +19334,10 @@ function renderKanbanCard(item) {
       ? inReviewComments.map((c, idx) => `
           <div style="margin-top:8px;background:rgba(231,76,60,0.06);border-left:3px solid #e74c3c;border-radius:0 6px 6px 0;padding:8px 10px;">
             <div style="font-size:0.62rem;color:#c0392b;font-weight:700;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;gap:6px;">
-              <span>${escapeHtml(reviewerName(c.reviewerId))} requested changes</span>
+              <span>${escHtml(reviewerName(c.reviewerId))} requested changes</span>
               ${canAiEditInReview ? `<button onclick="openAiRevise('${item.id}',[${idx}])" title="Use AI to revise the article based on this comment" style="background:#1e2d40;color:#fff;border:none;padding:3px 8px;font-size:0.58rem;font-weight:700;letter-spacing:0.4px;cursor:pointer;font-family:inherit;">✨ AI REVISE</button>` : ''}
             </div>
-            <div style="font-size:0.72rem;color:var(--text);line-height:1.5;">${escapeHtml(c.comment || '')}</div>
+            <div style="font-size:0.72rem;color:var(--text);line-height:1.5;">${escHtml(c.comment || '')}</div>
             <div style="font-size:0.6rem;color:var(--text-muted);margin-top:3px;">${c.at ? new Date(c.at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ''}</div>
           </div>`).join('')
       : '';
@@ -19366,7 +19362,7 @@ function renderKanbanCard(item) {
   } else if (item.status === 'approved') {
     badge   = `<div class="kbadge kbadge-approved">✓ Approved</div>`;
     actions = `
-      <button class="btn btn-orange btn-sm" onclick="openScheduleModal('${item.id}','${escapeHtml(item.title)}','${item.category||''}')">Schedule Post</button>
+      <button class="btn btn-orange btn-sm" onclick="openScheduleModal('${item.id}','${jsAttr(item.title)}','${item.category||''}')">Schedule Post</button>
       <button class="btn btn-outline btn-sm" onclick="publishNow('${item.id}')">Publish Now</button>`;
   } else if (item.status === 'scheduled') {
     const schedDate = item.scheduledAt ? new Date(item.scheduledAt).toLocaleString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
@@ -19375,7 +19371,7 @@ function renderKanbanCard(item) {
       ? `<div class="kcard-service-row"><svg viewBox="0 0 24 24" fill="none" stroke="#4285f4" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Google Calendar synced ✓</div>`
       : '';
     actions = `
-      <button class="btn btn-outline btn-sm" onclick="openScheduleModal('${item.id}','${escapeHtml(item.title)}','${item.category||''}')">Edit Schedule</button>
+      <button class="btn btn-outline btn-sm" onclick="openScheduleModal('${item.id}','${jsAttr(item.title)}','${item.category||''}')">Edit Schedule</button>
       <button class="btn btn-orange btn-sm" onclick="publishNow('${item.id}')">Publish Now</button>`;
   } else if (item.status === 'published') {
     const pubDate = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
@@ -19398,10 +19394,10 @@ function renderKanbanCard(item) {
       extra = comments.map((c, idx) => `
         <div style="margin-top:8px;background:rgba(231,76,60,0.06);border-left:3px solid #e74c3c;border-radius:0 6px 6px 0;padding:8px 10px;">
           <div style="font-size:0.62rem;color:#c0392b;font-weight:700;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;gap:6px;">
-            <span>${escapeHtml(reviewerName(c.reviewerId))} requested changes</span>
+            <span>${escHtml(reviewerName(c.reviewerId))} requested changes</span>
             ${canAiEdit ? `<button onclick="openAiRevise('${item.id}',[${idx}])" title="Use AI to revise the article based on this comment" style="background:#1e2d40;color:#fff;border:none;padding:3px 8px;font-size:0.58rem;font-weight:700;letter-spacing:0.4px;cursor:pointer;font-family:inherit;">✨ AI REVISE</button>` : ''}
           </div>
-          <div style="font-size:0.72rem;color:var(--text);line-height:1.5;">${escapeHtml(c.comment)}</div>
+          <div style="font-size:0.72rem;color:var(--text);line-height:1.5;">${escHtml(c.comment)}</div>
           <div style="font-size:0.6rem;color:var(--text-muted);margin-top:3px;">${c.at ? new Date(c.at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ''}</div>
         </div>`).join('');
     }
@@ -19434,8 +19430,8 @@ function renderKanbanCard(item) {
   return `
     <div class="kcard">
       <input type="checkbox" class="pipeline-bulk-cb" ${cbChecked} onchange="togglePipelineSelect('${item.id}', this.checked)" style="position:absolute;top:8px;right:8px;cursor:pointer;z-index:2;" />
-      <span class="kcard-cat">${escapeHtml(catLabel)}</span>
-      <div class="kcard-title">${escapeHtml(item.title || 'Untitled')}</div>
+      <span class="kcard-cat">${escHtml(catLabel)}</span>
+      <div class="kcard-title">${escHtml(item.title || 'Untitled')}</div>
       ${ruleChip}
       ${badge}
       ${extra}
@@ -19488,8 +19484,8 @@ function pickReviewers(contentId) {
             <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer;border-radius:4px;font-size:0.78rem;color:#1e2d40;">
               <input type="checkbox" value="${u.id}" ${preselect.has(u.id) ? 'checked' : ''} style="margin:0;"/>
               <span style="flex:1;">
-                <span style="font-weight:600;">${escapeHtml(u.name || u.email)}</span>
-                <span style="display:block;font-size:0.65rem;color:#9aa5b4;">${escapeHtml(u.email)} · ${u.appRole || 'user'}</span>
+                <span style="font-weight:600;">${escHtml(u.name || u.email)}</span>
+                <span style="display:block;font-size:0.65rem;color:#9aa5b4;">${escHtml(u.email)} · ${u.appRole || 'user'}</span>
               </span>
             </label>`).join('')}
         </div>
@@ -19553,15 +19549,15 @@ async function openReviewersStatusModal(contentId) {
     <div style="background:#fff;border-radius:10px;padding:24px 28px;width:480px;max-width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);">
       <h3 style="font-size:0.95rem;margin:0 0 4px;color:#1e2d40;">Reviewers — approval status</h3>
       <p style="font-size:0.72rem;color:#6b7a8d;margin:0 0 14px;">
-        ${escapeHtml(item.title || 'Article')} · ${approvedSet.size}/${assignedIds.length} approved · ${pendingCount} pending
+        ${escHtml(item.title || 'Article')} · ${approvedSet.size}/${assignedIds.length} approved · ${pendingCount} pending
       </p>
       <div id="revStatusList" style="overflow-y:auto;max-height:360px;border:1px solid #dde3ea;border-radius:6px;padding:6px;margin-bottom:14px;">
         ${rows.map(r => `
           <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer;border-radius:4px;font-size:0.78rem;color:#1e2d40;">
             <input type="checkbox" value="${r.id}" ${shouldDefaultCheck(r) ? 'checked' : ''} style="margin:0;" />
             <span style="flex:1;min-width:0;">
-              <span style="font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(r.name)}</span>
-              <span style="display:block;font-size:0.65rem;color:#9aa5b4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(r.email)}</span>
+              <span style="font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(r.name)}</span>
+              <span style="display:block;font-size:0.65rem;color:#9aa5b4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(r.email)}</span>
             </span>
             <span style="font-size:0.65rem;font-weight:700;color:${r.statusColor};white-space:nowrap;">${r.statusLabel}</span>
           </label>`).join('')}
@@ -19612,13 +19608,13 @@ async function openAiRevise(contentId, selector) {
     <div style="background:#fff;border-radius:10px;padding:24px 28px;width:min(900px,100%);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
         <span style="background:#1e2d40;color:#fff;font-size:0.6rem;font-weight:700;padding:3px 8px;letter-spacing:0.6px;">✨ AI REVISE</span>
-        <h3 style="font-size:1rem;margin:0;color:#1e2d40;flex:1;">${escapeHtml(item.title || 'Article')}</h3>
+        <h3 style="font-size:1rem;margin:0;color:#1e2d40;flex:1;">${escHtml(item.title || 'Article')}</h3>
         <button id="aiReviseClose" type="button" style="background:none;border:none;font-size:1.3rem;color:#6b7a8d;cursor:pointer;line-height:1;">×</button>
       </div>
       <p style="font-size:0.72rem;color:#6b7a8d;margin:0 0 14px;">Addressing ${selectedComments.length} comment${selectedComments.length !== 1 ? 's' : ''}. Review the suggested rewrite before applying.</p>
       <div style="background:#fff7ed;border:1px solid #fed7aa;padding:10px 12px;margin-bottom:14px;max-height:160px;overflow-y:auto;">
         ${selectedComments.map(c => `<div style="font-size:0.72rem;color:#1e2d40;margin-bottom:6px;">
-          <strong>${escapeHtml(reviewerName(c.reviewerId))}:</strong> ${escapeHtml(c.comment)}
+          <strong>${escHtml(reviewerName(c.reviewerId))}:</strong> ${escHtml(c.comment)}
         </div>`).join('')}
       </div>
       <div id="aiReviseStatus" style="font-size:0.78rem;color:#6b7a8d;text-align:center;padding:30px 10px;">Generating revision… this may take 20–60 seconds.</div>
@@ -19661,7 +19657,7 @@ async function openAiRevise(contentId, selector) {
       document.getElementById('aiReviseApply').style.display = '';
       document.getElementById('aiReviseRetry').style.display = '';
     } catch (e) {
-      document.getElementById('aiReviseStatus').innerHTML = '<div style="color:#c0392b;">' + escapeHtml(e.message) + '</div>';
+      document.getElementById('aiReviseStatus').innerHTML = '<div style="color:#c0392b;">' + escHtml(e.message) + '</div>';
       document.getElementById('aiReviseRetry').style.display = '';
     }
   }
@@ -19870,14 +19866,14 @@ async function loadReviewRequestCard() {
     var ruleLine = item.automationRuleName
       ? '<p style="font-size:0.7rem;color:#006868;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' +
-        'Generated by rule: <strong>' + escapeHtml(item.automationRuleName) + '</strong></p>'
+        'Generated by rule: <strong>' + escHtml(item.automationRuleName) + '</strong></p>'
       : '';
     var sourceLine = item.sourceDocName
       ? '<p style="font-size:0.7rem;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
         'Source: ' + (item.sourceDocUrl
-          ? '<a href="' + escapeHtml(item.sourceDocUrl) + '" target="_blank" rel="noopener" style="color:var(--vance-primary);text-decoration:underline;"><strong>' + escapeHtml(item.sourceDocName) + '</strong></a>'
-          : '<strong>' + escapeHtml(item.sourceDocName) + '</strong>') +
+          ? '<a href="' + escHtml(item.sourceDocUrl) + '" target="_blank" rel="noopener" style="color:var(--vance-primary);text-decoration:underline;"><strong>' + escHtml(item.sourceDocName) + '</strong></a>'
+          : '<strong>' + escHtml(item.sourceDocName) + '</strong>') +
         '</p>'
       : '';
     var closeBtn = st !== 'draft'
@@ -19980,13 +19976,13 @@ function openDiffModal(beforeText, afterText, opts) {
     else if (op.t === 'del') { l = op.a; r = ''; lc = 'del'; dels++; }
     else { l = ''; r = op.b; rc = 'ins'; inss++; }
     return '<div class="diff-row">' +
-      '<div class="diff-cell ' + lc + '">' + (l === '' ? '&nbsp;' : escapeHtml(l)) + '</div>' +
-      '<div class="diff-cell ' + rc + '">' + (r === '' ? '&nbsp;' : escapeHtml(r)) + '</div>' +
+      '<div class="diff-cell ' + lc + '">' + (l === '' ? '&nbsp;' : escHtml(l)) + '</div>' +
+      '<div class="diff-cell ' + rc + '">' + (r === '' ? '&nbsp;' : escHtml(r)) + '</div>' +
       '</div>';
   }).join('');
-  var leftLabel = escapeHtml(opts.leftLabel || 'Before');
-  var rightLabel = escapeHtml(opts.rightLabel || 'After');
-  var title = escapeHtml(opts.title || 'Compare changes');
+  var leftLabel = escHtml(opts.leftLabel || 'Before');
+  var rightLabel = escHtml(opts.rightLabel || 'After');
+  var title = escHtml(opts.title || 'Compare changes');
   var wrap = document.createElement('div');
   wrap.id = 'docDiffModal';
   wrap.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,34,0.6);z-index:9700;display:flex;align-items:center;justify-content:center;font-family:Montserrat,sans-serif;padding:20px;';
@@ -20088,8 +20084,8 @@ function populateArticleToolbarMeta(item) {
     var name = item.sourceDocName ? String(item.sourceDocName).split(' — ')[0].trim() : '';
     if (name) {
       srcBadge.innerHTML = item.sourceDocUrl
-        ? 'Source: <a href="' + escapeHtml(item.sourceDocUrl) + '" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline;">' + escapeHtml(name) + '</a>'
-        : 'Source: ' + escapeHtml(name);
+        ? 'Source: <a href="' + escHtml(item.sourceDocUrl) + '" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline;">' + escHtml(name) + '</a>'
+        : 'Source: ' + escHtml(name);
       srcBadge.style.display = 'inline-flex';
     } else { srcBadge.style.display = 'none'; }
   }
@@ -20280,12 +20276,12 @@ function _renderChangesModal() {
       if (op.t === 'eq') { l = op.a; r = op.b; }
       else if (op.t === 'del') { l = op.a; r = ''; lc = 'del'; dels++; }
       else { l = ''; r = op.b; rc = 'ins'; inss++; }
-      return '<div class="diff-row"><div class="diff-cell ' + lc + '">' + (l === '' ? '&nbsp;' : escapeHtml(l)) + '</div><div class="diff-cell ' + rc + '">' + (r === '' ? '&nbsp;' : escapeHtml(r)) + '</div></div>';
+      return '<div class="diff-row"><div class="diff-cell ' + lc + '">' + (l === '' ? '&nbsp;' : escHtml(l)) + '</div><div class="diff-cell ' + rc + '">' + (r === '' ? '&nbsp;' : escHtml(r)) + '</div></div>';
     }).join('');
     var contrib = (data.events || []).map(function(e) {
       var who = (typeof _alActor === 'function') ? _alActor(e.actor) : (e.actor || 'System');
       var when = (typeof _alFmtDate === 'function') ? _alFmtDate(e.at) : '';
-      return '<span style="display:inline-block;margin-right:10px;white-space:nowrap;">' + escapeHtml(who) + (when ? ' &middot; ' + escapeHtml(when) : '') + '</span>';
+      return '<span style="display:inline-block;margin-right:10px;white-space:nowrap;">' + escHtml(who) + (when ? ' &middot; ' + escHtml(when) : '') + '</span>';
     }).join('');
     bodyHtml =
       '<div style="padding:6px 14px;font-size:0.66rem;color:#6b7a8d;background:#f8f9fa;border-bottom:1px solid #dde3ea;"><strong style="color:#1a7245;">+' + inss + '</strong> / <strong style="color:#c0392b;">-' + dels + '</strong> lines' + (contrib ? ' &middot; by ' + contrib : '') + '</div>' +
@@ -20302,7 +20298,7 @@ function _renderChangesModal() {
   wrap.innerHTML =
     '<div style="background:#fff;border-radius:10px;width:min(1100px,100%);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;">' +
       '<div style="padding:16px 22px;border-bottom:1px solid #dde3ea;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">' +
-        '<div><h3 style="font-size:0.92rem;margin:0 0 6px;color:#1e2d40;">' + escapeHtml(item.title || 'Article') + ' — changes</h3>' +
+        '<div><h3 style="font-size:0.92rem;margin:0 0 6px;color:#1e2d40;">' + escHtml(item.title || 'Article') + ' — changes</h3>' +
           '<div style="display:flex;gap:8px;">' + tabBtn('edits', 'User edits') + tabBtn('compress', 'Compression') + '</div>' +
         '</div>' +
         '<button type="button" id="_chgClose" style="padding:8px 14px;background:#f0f2f5;color:#1e2d40;border:1px solid #dde3ea;font-weight:600;font-size:0.76rem;cursor:pointer;border-radius:4px;flex-shrink:0;">Close</button>' +
@@ -20400,9 +20396,9 @@ function renderTimelineHtml(item) {
       ? ' <button class="btn btn-outline btn-xs" style="font-size:0.58rem;padding:2px 7px;" onclick="openVersionDiff(\'' + item.id + '\',' + e.versionIdx + ',\'' + _alDiffLabel(e.type) + '\')">Compare before/after</button>'
       : '';
     return '<div class="al-event al-' + e.type + '"><div class="al-ev-dot"></div><div class="al-ev-body">' +
-      '<div class="al-ev-label">' + escapeHtml(e.label) + cmpBtn + '</div>' +
-      (e.detail ? '<div class="al-ev-detail">' + escapeHtml(e.detail) + '</div>' : '') +
-      '<div class="al-ev-meta">' + escapeHtml(_alActor(e.actor)) + (e.at ? ' &middot; ' + _alFmtDate(e.at) : '') + '</div>' +
+      '<div class="al-ev-label">' + escHtml(e.label) + cmpBtn + '</div>' +
+      (e.detail ? '<div class="al-ev-detail">' + escHtml(e.detail) + '</div>' : '') +
+      '<div class="al-ev-meta">' + escHtml(_alActor(e.actor)) + (e.at ? ' &middot; ' + _alFmtDate(e.at) : '') + '</div>' +
       '</div></div>';
   }).join('') : '<p class="al-empty" style="padding:6px 0;">No recorded history.</p>';
   return tl + '<div style="padding:8px 0 2px;"><button class="btn btn-outline btn-xs" onclick="viewArticleFromPipeline(\'' + item.id + '\')">Open article</button></div>';
@@ -20451,9 +20447,9 @@ function renderApprovalLog(items, fromFilter) {
   var ST = { draft: 'Draft', in_review: 'In Review', rejected: 'Changes Requested', approved: 'Approved', scheduled: 'Scheduled', published: 'Published' };
   listEl.innerHTML = items.map(function(item) {
     var st = item.status || 'draft';
-    return '<details class="al-card" data-id="' + escapeHtml(item.id) + '">' +
+    return '<details class="al-card" data-id="' + escHtml(item.id) + '">' +
       '<summary class="al-summary">' +
-        '<span class="al-title">' + escapeHtml(item.title || 'Untitled') + '</span>' +
+        '<span class="al-title">' + escHtml(item.title || 'Untitled') + '</span>' +
         '<span class="review-req-status s-' + st + '">' + (ST[st] || st) + '</span>' +
         '<span class="al-date">' + _alFmtDate(item.updatedAt || item.createdAt) + '</span>' +
       '</summary>' +
@@ -20904,7 +20900,7 @@ async function loadUsageSummary() {
     if (typeof abRenderComparison === 'function') abRenderComparison();
     renderUsageSummary(data);
   } catch (e) {
-    el.innerHTML = '<div style="color:#c0392b;font-size:0.72rem;">Failed to load usage: ' + escapeHtml(e.message) + '</div>';
+    el.innerHTML = '<div style="color:#c0392b;font-size:0.72rem;">Failed to load usage: ' + escHtml(e.message) + '</div>';
   }
 }
 
@@ -20952,7 +20948,7 @@ function renderUsageModelsTable(data) {
 
   const rows = data.models.map(function(m) {
     return '<tr style="border-top:1px solid var(--border);">'
-      + _usageTd(escapeHtml(_shortModel(m.model)), { tabular: false, title: escapeHtml(m.model) })
+      + _usageTd(escHtml(_shortModel(m.model)), { tabular: false, title: escHtml(m.model) })
       + _usageTd(_fmtRate(m.rate), { align: 'right', tabular: false })
       + _usageTd(_fmtNum(m.total.tokens), { align: 'right' })
       + _usageTd(_fmtUsd(m.total.costUsd), { align: 'right' })
@@ -21002,9 +20998,9 @@ function renderUsageUsersTable(data) {
 
   const rows = users.map(function(u) {
     const label = u.email
-      ? escapeHtml(u.name || u.email) + '<div style="font-size:0.6rem;color:var(--text-muted);">' + escapeHtml(u.email) + '</div>'
-      : '<span style="font-style:italic;color:var(--text-muted);">' + escapeHtml(u.name || 'Unknown') + '</span>';
-    const modelsLabel = u.models.map(_shortModel).map(escapeHtml).join(', ');
+      ? escHtml(u.name || u.email) + '<div style="font-size:0.6rem;color:var(--text-muted);">' + escHtml(u.email) + '</div>'
+      : '<span style="font-style:italic;color:var(--text-muted);">' + escHtml(u.name || 'Unknown') + '</span>';
+    const modelsLabel = u.models.map(_shortModel).map(escHtml).join(', ');
     const lastActive = u.lastAt ? new Date(u.lastAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
     return '<tr style="border-top:1px solid var(--border);">'
       + _usageTd(label, { tabular: false })
@@ -21059,8 +21055,8 @@ function abRenderVariants() {
   list.innerHTML = _abConfig.variants.map(function(v, i) {
     return ''
       + '<div style="display:flex;gap:6px;align-items:center;background:var(--bg);border:1px solid var(--border);padding:6px 8px;">'
-      +   '<input type="text" value="' + escapeHtml(v.label || '') + '" placeholder="Label (e.g. Llama 70B free)" oninput="abEditVariant(' + i + ', \'label\', this.value)" style="flex:1;padding:5px 8px;border:1px solid var(--border);font-family:inherit;font-size:0.72rem;background:#fff;color:var(--text);"/>'
-      +   '<input type="text" value="' + escapeHtml(v.model || '') + '" placeholder="OpenRouter model id" oninput="abEditVariant(' + i + ', \'model\', this.value)" style="flex:2;padding:5px 8px;border:1px solid var(--border);font-family:inherit;font-size:0.72rem;background:#fff;color:var(--text);"/>'
+      +   '<input type="text" value="' + escHtml(v.label || '') + '" placeholder="Label (e.g. Llama 70B free)" oninput="abEditVariant(' + i + ', \'label\', this.value)" style="flex:1;padding:5px 8px;border:1px solid var(--border);font-family:inherit;font-size:0.72rem;background:#fff;color:var(--text);"/>'
+      +   '<input type="text" value="' + escHtml(v.model || '') + '" placeholder="OpenRouter model id" oninput="abEditVariant(' + i + ', \'model\', this.value)" style="flex:2;padding:5px 8px;border:1px solid var(--border);font-family:inherit;font-size:0.72rem;background:#fff;color:var(--text);"/>'
       +   '<input type="number" value="' + (v.weight || 1) + '" min="0" step="1" title="Relative weight" oninput="abEditVariant(' + i + ', \'weight\', this.value)" style="width:64px;padding:5px 8px;border:1px solid var(--border);font-family:inherit;font-size:0.72rem;background:#fff;color:var(--text);text-align:right;"/>'
       +   '<button type="button" onclick="abRemoveVariant(' + i + ')" title="Remove" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:1rem;line-height:1;padding:0 6px;">×</button>'
       + '</div>';
@@ -21164,7 +21160,7 @@ function abRenderComparison() {
     const tag = isBest ? ' <span style="background:#006868;color:#fff;font-size:0.5rem;padding:1px 5px;letter-spacing:0.5px;">BEST</span>' : '';
     const cps = v.costPerSuccess != null ? _fmtUsd(v.costPerSuccess) : '<span style="color:var(--text-muted);">—</span>';
     return '<tr style="' + rowStyle + '">'
-      + '<td style="padding:7px 9px;font-size:0.74rem;color:var(--text);" title="' + escapeHtml(v.models.join(', ')) + '">' + escapeHtml(v.label) + tag + '<div style="font-size:0.58rem;color:var(--text-muted);">' + escapeHtml(v.models.join(', ')) + '</div></td>'
+      + '<td style="padding:7px 9px;font-size:0.74rem;color:var(--text);" title="' + escHtml(v.models.join(', ')) + '">' + escHtml(v.label) + tag + '<div style="font-size:0.58rem;color:var(--text-muted);">' + escHtml(v.models.join(', ')) + '</div></td>'
       + '<td style="padding:7px 9px;font-size:0.74rem;text-align:right;font-variant-numeric:tabular-nums;">' + _fmtNum(v.calls) + '</td>'
       + '<td style="padding:7px 9px;font-size:0.74rem;text-align:right;font-variant-numeric:tabular-nums;color:#006868;">' + _fmtNum(v.successes) + '</td>'
       + '<td style="padding:7px 9px;font-size:0.74rem;text-align:right;font-variant-numeric:tabular-nums;color:' + (v.failures ? '#c0392b' : 'var(--text-muted)') + ';">' + _fmtNum(v.failures) + '</td>'
@@ -21210,12 +21206,12 @@ function renderReviewerList() {
       <div class="reviewer-row" id="rev-row-${r.id}">
         <div class="reviewer-avatar-sm">${initials}</div>
         <div class="reviewer-info" id="rev-info-${r.id}">
-          <div class="rname">${escapeHtml(r.name)}${mustChange}</div>
-          <div class="remail">${escapeHtml(r.email)}</div>
+          <div class="rname">${escHtml(r.name)}${mustChange}</div>
+          <div class="remail">${escHtml(r.email)}</div>
         </div>
         <div class="reviewer-info" id="rev-edit-${r.id}" style="display:none;flex:1;">
-          <input id="rev-edit-name-${r.id}" value="${escapeHtml(r.name)}" placeholder="Name" style="width:100%;margin-bottom:4px;padding:4px 6px;border:1px solid var(--border);font-family:'Montserrat',sans-serif;font-size:0.72rem;background:var(--bg);color:var(--text);" />
-          <input id="rev-edit-email-${r.id}" value="${escapeHtml(r.email)}" placeholder="Email" type="email" style="width:100%;padding:4px 6px;border:1px solid var(--border);font-family:'Montserrat',sans-serif;font-size:0.72rem;background:var(--bg);color:var(--text);" />
+          <input id="rev-edit-name-${r.id}" value="${escHtml(r.name)}" placeholder="Name" style="width:100%;margin-bottom:4px;padding:4px 6px;border:1px solid var(--border);font-family:'Montserrat',sans-serif;font-size:0.72rem;background:var(--bg);color:var(--text);" />
+          <input id="rev-edit-email-${r.id}" value="${escHtml(r.email)}" placeholder="Email" type="email" style="width:100%;padding:4px 6px;border:1px solid var(--border);font-family:'Montserrat',sans-serif;font-size:0.72rem;background:var(--bg);color:var(--text);" />
         </div>
         <select onchange="updateUserAppRole('${r.id}', this.value)" id="rev-role-sel-${r.id}" style="padding:4px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.68rem;font-family:'Montserrat',sans-serif;cursor:pointer;" title="App role — controls what this person can do">
           <option value="user"    ${appRole === 'user'    ? 'selected' : ''}>User</option>
@@ -21223,7 +21219,7 @@ function renderReviewerList() {
           <option value="admin"   ${appRole === 'admin'   ? 'selected' : ''}>Admin</option>
         </select>
         <button class="btn btn-outline btn-sm" id="rev-edit-btn-${r.id}" onclick="startEditReviewer('${r.id}')" title="Edit name/email">${pencilSvg}</button>
-        <button class="btn btn-outline btn-sm" onclick="resetUserPassword('${r.id}','${escapeHtml(r.name || r.email)}')" title="Reset password to 2026" style="font-size:0.65rem;">Reset pwd</button>
+        <button class="btn btn-outline btn-sm" onclick="resetUserPassword('${r.id}','${jsAttr(r.name || r.email)}')" title="Reset password to 2026" style="font-size:0.65rem;">Reset pwd</button>
         <button class="btn btn-orange btn-sm" id="rev-save-btn-${r.id}" onclick="saveReviewerEdit('${r.id}')" style="display:none;">Save</button>
         <button class="btn btn-outline btn-sm" id="rev-cancel-btn-${r.id}" onclick="cancelEditReviewer('${r.id}')" style="display:none;">Cancel</button>
         <button class="btn btn-outline btn-sm" id="rev-remove-btn-${r.id}" style="color:#e74c3c;border-color:#e74c3c;" onclick="removeReviewer('${r.id}')">Remove</button>
@@ -21490,7 +21486,7 @@ async function renderComposioAccounts() {
         var isDefault = !!a.isDefault;
         var cfgVal = meta.cfgKey && a.config ? a.config[meta.cfgKey] : '';
         var cfgLine = cfgVal
-          ? '<div style="font-family:monospace;font-size:0.65rem;color:var(--text-muted);margin:4px 0 0 20px;">' + meta.cfgLabel + ': ' + escapeHtml(String(cfgVal)) + '</div>'
+          ? '<div style="font-family:monospace;font-size:0.65rem;color:var(--text-muted);margin:4px 0 0 20px;">' + meta.cfgLabel + ': ' + escHtml(String(cfgVal)) + '</div>'
           : '';
         var defaultBadge = isDefault
           ? '<span style="font-size:0.6rem;font-weight:700;color:#15803d;background:rgba(34,197,94,0.12);padding:1px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:0.4px;">Default</span>'
@@ -21501,26 +21497,26 @@ async function renderComposioAccounts() {
         return '<div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;">' +
           '<div>' +
             '<div style="display:flex;align-items:center;gap:10px;">' +
-              '<span title="' + escapeHtml(a.status || 'unknown') + '" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + dot + ';flex-shrink:0;"></span>' +
-              '<strong style="font-size:0.82rem;">' + escapeHtml(a.label || plat) + '</strong>' +
+              '<span title="' + escHtml(a.status || 'unknown') + '" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + dot + ';flex-shrink:0;"></span>' +
+              '<strong style="font-size:0.82rem;">' + escHtml(a.label || plat) + '</strong>' +
               defaultBadge +
-              '<span style="font-size:0.62rem;color:var(--text-muted);">· ' + escapeHtml((a.status || '').toLowerCase()) + '</span>' +
+              '<span style="font-size:0.62rem;color:var(--text-muted);">· ' + escHtml((a.status || '').toLowerCase()) + '</span>' +
             '</div>' +
             cfgLine +
           '</div>' +
           '<div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;">' +
             setDefaultBtn +
-            '<button class="btn btn-outline btn-sm" onclick="removeComposioAccount(\'' + a.id + '\')" title="Remove account" aria-label="Remove ' + escapeHtml(a.label || plat) + '">Remove</button>' +
+            '<button class="btn btn-outline btn-sm" onclick="removeComposioAccount(\'' + a.id + '\')" title="Remove account" aria-label="Remove ' + escHtml(a.label || plat) + '">Remove</button>' +
           '</div>' +
         '</div>';
       }).join('');
       return '<div>' +
-        '<div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--vance-dark);margin:0 0 8px;">' + escapeHtml(meta.label) + '</div>' +
+        '<div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--vance-dark);margin:0 0 8px;">' + escHtml(meta.label) + '</div>' +
         '<div style="display:flex;flex-direction:column;gap:8px;">' + rows + '</div>' +
       '</div>';
     }).join('');
   } catch (err) {
-    list.innerHTML = '<div style="color:#ef4444;font-size:0.78rem;padding:1rem;">Failed to load accounts: ' + escapeHtml(err.message || String(err)) + '</div>';
+    list.innerHTML = '<div style="color:#ef4444;font-size:0.78rem;padding:1rem;">Failed to load accounts: ' + escHtml(err.message || String(err)) + '</div>';
   }
 }
 
@@ -21544,7 +21540,7 @@ async function discoverInstagramAccounts() {
     _igDiscoverInfo = res;
     renderIgDiscoverResults();
   } catch (err) {
-    if (out) out.innerHTML = '<div class="social-empty" style="color:#ef4444;">Discovery failed: ' + escapeHtml(err.message) + '</div>';
+    if (out) out.innerHTML = '<div class="social-empty" style="color:#ef4444;">Discovery failed: ' + escHtml(err.message) + '</div>';
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Find Instagram accounts'; }
   }
@@ -21568,7 +21564,7 @@ function renderIgDiscoverResults() {
       msg = 'The connected Facebook login manages no Pages that this app can see. Re-authorise Facebook and make sure every Page you need is ticked during the permissions step.';
     } else {
       msg = 'Walked ' + pages.length + ' Facebook Page' + (pages.length === 1 ? '' : 's') + ' &mdash; <strong>'
-        + escapeHtml(pages.join(', ')) + '</strong> &mdash; and none exposed a linked Instagram Business account.'
+        + escHtml(pages.join(', ')) + '</strong> &mdash; and none exposed a linked Instagram Business account.'
         + '<div style="margin-top:8px;">Each Instagram account must (a) be a <strong>Business or Creator</strong> account, (b) be linked to one of these Pages, and (c) be covered by the Facebook token\'s <code>instagram_basic</code> + <code>pages_show_list</code> scopes. '
         + 'If you have more Instagram accounts than Pages listed above, re-authorise Facebook and tick every Page.</div>'
         + '<div style="margin-top:8px;">You can also add any account by hand with <strong>Add account manually</strong> below &mdash; it only needs the Instagram user id.</div>';
@@ -21578,12 +21574,12 @@ function renderIgDiscoverResults() {
   }
   out.innerHTML = _igDiscoverCandidates.map(function(c, i) {
     var label = c.username ? ('@' + c.username) : ('IG user ' + c.igUserId);
-    var sub = c.pageName ? ('Linked to Facebook Page "' + escapeHtml(c.pageName) + '"') : '';
+    var sub = c.pageName ? ('Linked to Facebook Page "' + escHtml(c.pageName) + '"') : '';
     var action = c.alreadyRegistered
       ? '<span class="kit-badge gen">Registered</span>'
       : '<button class="btn btn-navy btn-sm" onclick="registerDiscoveredAccount(' + i + ')">Register</button>';
     return '<div style="background:#fff;border:1px solid var(--border);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;">' +
-      '<div><strong style="font-size:0.8rem;">' + escapeHtml(label) + '</strong>' +
+      '<div><strong style="font-size:0.8rem;">' + escHtml(label) + '</strong>' +
         (sub ? '<div style="font-size:0.66rem;color:var(--text-muted);margin-top:2px;">' + sub + '</div>' : '') +
       '</div>' + action +
     '</div>';
@@ -21701,12 +21697,12 @@ async function renderComposioSummary() {
         var def = a.isDefault ? '<span style="font-size:0.58rem;font-weight:700;color:#15803d;margin-left:6px;">DEFAULT</span>' : '';
         return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:0.74rem;">' +
           '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dot + ';flex-shrink:0;"></span>' +
-          '<span style="color:var(--text-muted);min-width:74px;">' + escapeHtml(meta.label) + '</span>' +
-          '<strong style="color:var(--text);">' + escapeHtml(a.label || a.platform) + '</strong>' + def +
+          '<span style="color:var(--text-muted);min-width:74px;">' + escHtml(meta.label) + '</span>' +
+          '<strong style="color:var(--text);">' + escHtml(a.label || a.platform) + '</strong>' + def +
         '</div>';
       }).join('');
   } catch (err) {
-    el.innerHTML = '<div style="color:#ef4444;font-size:0.72rem;">Failed to load accounts: ' + escapeHtml(err.message || String(err)) + '</div>';
+    el.innerHTML = '<div style="color:#ef4444;font-size:0.72rem;">Failed to load accounts: ' + escHtml(err.message || String(err)) + '</div>';
   }
 }
 
@@ -21965,13 +21961,13 @@ function loadPromptsTab_articleOnly() {
     var activeEditor = '<div class="prompt-active-editor">' +
       '<div class="prompt-active-badge">✓ Active prompt</div>' +
       '<div class="prompt-active-fields">' +
-        '<div class="prompt-active-field"><label>Prompt Name</label><input type="text" id="prompt-name-' + aId + '" value="' + escapeHtml(aName) + '" placeholder="e.g. Formal Clinical" /></div>' +
-        '<div class="prompt-active-field"><label>Created By</label><input type="text" id="prompt-by-' + aId + '" value="' + escapeHtml(aBy) + '" placeholder="Author name" /></div>' +
+        '<div class="prompt-active-field"><label>Prompt Name</label><input type="text" id="prompt-name-' + aId + '" value="' + escHtml(aName) + '" placeholder="e.g. Formal Clinical" /></div>' +
+        '<div class="prompt-active-field"><label>Created By</label><input type="text" id="prompt-by-' + aId + '" value="' + escHtml(aBy) + '" placeholder="Author name" /></div>' +
       '</div>' +
-      '<textarea class="prompt-active-textarea" id="prompt-text-' + aId + '" rows="4">' + escapeHtml(aText) + '</textarea>' +
+      '<textarea class="prompt-active-textarea" id="prompt-text-' + aId + '" rows="4">' + escHtml(aText) + '</textarea>' +
       '<div class="prompt-active-footer">' +
         '<button class="btn btn-orange btn-sm" onclick="savePromptItem(\'' + cat.id + '\',0)">Save</button>' +
-        '<span class="prompt-active-note">Used for AI generation in ' + escapeHtml(cat.label) + '</span>' +
+        '<span class="prompt-active-note">Used for AI generation in ' + escHtml(cat.label) + '</span>' +
       '</div>' +
     '</div>';
 
@@ -21985,8 +21981,8 @@ function loadPromptsTab_articleOnly() {
           var pBy   = typeof p === 'string' ? '' : (p.createdBy || '');
           return '<div class="prompt-saved-item" onclick="setDefaultPrompt(\'' + cat.id + '\',' + i + ')" title="Click to make active">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;color:var(--text-muted)"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>' +
-            '<span class="prompt-saved-item-name">' + escapeHtml(pName) + '</span>' +
-            (pBy ? '<span class="prompt-saved-item-by">' + escapeHtml(pBy) + '</span>' : '') +
+            '<span class="prompt-saved-item-name">' + escHtml(pName) + '</span>' +
+            (pBy ? '<span class="prompt-saved-item-by">' + escHtml(pBy) + '</span>' : '') +
             '<div class="prompt-saved-item-actions" onclick="event.stopPropagation()">' +
               '<button class="btn btn-outline btn-xs" onclick="setDefaultPrompt(\'' + cat.id + '\',' + i + ')" title="Make active">Use</button>' +
               '<button class="btn btn-outline btn-xs" style="color:var(--error);" onclick="deletePromptItem(\'' + cat.id + '\',' + i + ')" title="Remove">✕</button>' +
@@ -21998,7 +21994,7 @@ function loadPromptsTab_articleOnly() {
 
     return '<div class="prompt-cat-block">' +
       '<div class="prompt-cat-header">' +
-        '<div class="prompt-cat-header-title">' + escapeHtml(cat.label) + '</div>' +
+        '<div class="prompt-cat-header-title">' + escHtml(cat.label) + '</div>' +
         '<span class="prompt-cat-header-count">' + prompts.length + ' prompt' + (prompts.length !== 1 ? 's' : '') + '</span>' +
       '</div>' +
       activeEditor +
@@ -22065,10 +22061,10 @@ function loadSocialPromptsTab() {
     var activeEditor = '<div class="prompt-active-editor">' +
       '<div class="prompt-active-badge">✓ Active prompt</div>' +
       '<div class="prompt-active-fields">' +
-        '<div class="prompt-active-field"><label>Prompt Name</label><input type="text" id="prompt-name-' + aId + '" value="' + escapeHtml(aName) + '" placeholder="e.g. Engagement style" /></div>' +
-        '<div class="prompt-active-field"><label>Created By</label><input type="text" id="prompt-by-' + aId + '" value="' + escapeHtml(aBy) + '" placeholder="Author" /></div>' +
+        '<div class="prompt-active-field"><label>Prompt Name</label><input type="text" id="prompt-name-' + aId + '" value="' + escHtml(aName) + '" placeholder="e.g. Engagement style" /></div>' +
+        '<div class="prompt-active-field"><label>Created By</label><input type="text" id="prompt-by-' + aId + '" value="' + escHtml(aBy) + '" placeholder="Author" /></div>' +
       '</div>' +
-      '<textarea class="prompt-active-textarea" id="prompt-text-' + aId + '" rows="4">' + escapeHtml(aText) + '</textarea>' +
+      '<textarea class="prompt-active-textarea" id="prompt-text-' + aId + '" rows="4">' + escHtml(aText) + '</textarea>' +
       '<div class="prompt-active-footer">' +
         '<button class="btn btn-orange btn-sm" onclick="saveSocialPromptItem(\'' + plat.id + '\',0)">Save</button>' +
       '</div>' +
@@ -22083,8 +22079,8 @@ function loadSocialPromptsTab() {
           var pBy   = typeof p === 'string' ? '' : (p.createdBy || '');
           return '<div class="prompt-saved-item" onclick="setDefaultSocialPrompt(\'' + plat.id + '\',' + i + ')" title="Click to make active">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;color:var(--text-muted)"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>' +
-            '<span class="prompt-saved-item-name">' + escapeHtml(pName) + '</span>' +
-            (pBy ? '<span class="prompt-saved-item-by">' + escapeHtml(pBy) + '</span>' : '') +
+            '<span class="prompt-saved-item-name">' + escHtml(pName) + '</span>' +
+            (pBy ? '<span class="prompt-saved-item-by">' + escHtml(pBy) + '</span>' : '') +
             '<div class="prompt-saved-item-actions" onclick="event.stopPropagation()">' +
               '<button class="btn btn-outline btn-xs" onclick="setDefaultSocialPrompt(\'' + plat.id + '\',' + i + ')">Use</button>' +
               '<button class="btn btn-outline btn-xs" style="color:var(--error);" onclick="deleteSocialPromptItem(\'' + plat.id + '\',' + i + ')">✕</button>' +
@@ -22098,7 +22094,7 @@ function loadSocialPromptsTab() {
       '<div class="prompt-cat-header">' +
         '<div style="display:flex;align-items:center;gap:6px;flex:1;">' +
           '<div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;">' + smallSvg + '</div>' +
-          '<div class="prompt-cat-header-title">' + escapeHtml(plat.label) + '</div>' +
+          '<div class="prompt-cat-header-title">' + escHtml(plat.label) + '</div>' +
         '</div>' +
         '<span class="prompt-cat-header-count">' + prompts.length + ' prompt' + (prompts.length !== 1 ? 's' : '') + '</span>' +
       '</div>' +
@@ -22111,7 +22107,7 @@ function loadSocialPromptsTab() {
           '<div class="prompt-add-field"><label>Name</label><input type="text" id="prompt-new-name-sp-' + plat.id + '" placeholder="e.g. Engagement style" /></div>' +
           '<div class="prompt-add-field"><label>Author</label><input type="text" id="prompt-new-by-sp-' + plat.id + '" placeholder="Author name" /></div>' +
         '</div>' +
-        '<textarea class="prompt-add-textarea" placeholder="Enter prompt for ' + escapeHtml(plat.label) + '…" id="prompt-new-sp-' + plat.id + '" rows="3"></textarea>' +
+        '<textarea class="prompt-add-textarea" placeholder="Enter prompt for ' + escHtml(plat.label) + '…" id="prompt-new-sp-' + plat.id + '" rows="3"></textarea>' +
         '<div class="prompt-add-actions">' +
           '<button class="btn btn-orange btn-sm" onclick="addSocialPromptToPlat(\'' + plat.id + '\')">Add Prompt</button>' +
         '</div>' +
@@ -22353,8 +22349,8 @@ function renderTrash(items) {
 }
 
 function renderTrashCard(item, type, catId) {
-  const title   = escapeHtml(item.title || 'Untitled');
-  const catLabel = escapeHtml(CATEGORY_LABELS[item.category || catId] || item.category || catId || '—');
+  const title   = escHtml(item.title || 'Untitled');
+  const catLabel = escHtml(CATEGORY_LABELS[item.category || catId] || item.category || catId || '—');
   const dateStr  = item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '—';
   const source   = type === 'pipeline' ? `<span class="trash-source-badge trash-source-pipeline">Pipeline</span>` : `<span class="trash-source-badge trash-source-archive">Library</span>`;
   const catArg   = catId ? `'${catId}'` : 'null';

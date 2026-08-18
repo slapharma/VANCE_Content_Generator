@@ -19,6 +19,7 @@
     "node": "24.x"
   },
   "scripts": {
+    "test": "node --test \"**/*.test.js\"",
     "verify": "node scripts/verify-google-login.mjs && node scripts/verify-vance-sso.mjs",
     "verify:login": "node scripts/verify-google-login.mjs",
     "verify:sso": "node scripts/verify-vance-sso.mjs"

@@ -164,7 +164,7 @@ test('Telegram webhook handler', async (t) => {
     // Verify publish API was called
     const publishCall = fetchCalls.find((c) => c.url.includes('/api/publish'));
     assert.ok(publishCall, 'publish API should be called');
-    assert.deepEqual(JSON.parse(publishCall.opts.body), { id: 'content_1' });
+    assert.deepEqual(JSON.parse(publishCall.opts.body), { contentId: 'content_1' });
   });
 
   await t.test('rejects job and updates status', async () => {

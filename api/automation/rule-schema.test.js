@@ -14,7 +14,9 @@ test('buildRule sets defaults', () => {
   assert.equal(rule.enabled, true);
   assert.equal(rule.review.required, true);
   assert.equal(rule.review.timeoutHours, 48);
-  assert.equal(rule.review.onTimeout, 'approve');
+  // Default is 'urgent_reminder', not 'approve': auto-approving on timeout
+  // silently published any article nobody got round to reviewing.
+  assert.equal(rule.review.onTimeout, 'urgent_reminder');
   assert.equal(rule.generation.maxArticlesPerRun, 3);
   assert.equal(rule.stats.totalRuns, 0);
   assert.ok(rule.createdAt);
