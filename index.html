@@ -5934,10 +5934,10 @@ const INFOGRAPHIC_MODELS = [
 // search now goes through /api/social/stock, so neither provider's key reaches
 // the browser — see heroLeftFetchPage() and lib/social/handlers/stock.js.
 
-const GH_API    = 'https://api.github.com';
-const GH_REPO   = 'slapharma/SLAHEALTH_ClinicalReview_Generator';
-const GH_BRANCH = 'main';
-const GH_TOKEN  = String.fromCharCode(103,104,112,95,98,73,65,98,55,90,69,88,51,69,84,108,117,70,80,51,114,100,57,122,121,114,110,74,102,55,100,57,85,87,50,99,86,97,75,114);
+// The repo coordinates and the credential used to live here, and the credential
+// was therefore shipped to every visitor. Both now live server-side behind
+// /api/gh-sync, which also constrains WHICH files may be touched — see the
+// allowlist in api/gh-sync.js.
 
 const CATEGORIES = [
   { id: 'clinical-reviews', label: 'Clinical Reviews' },
@@ -6002,7 +6002,17 @@ STRUCTURE
 3. Background Context (75–125 words) — orient readers with relevant disease or treatment context from the source.
 4. Key Findings (150–200 words) — most important results or developments, plain numerical values, clearly attributed to the study authors or originating organisation.
 5. Clinical Relevance (75–125 words) — why this matters for IBD patients or the clinicians treating them, grounded in what the source states.
-6. Reference — full citation in Vancouver format with DOI where available.
+6. Reference — full citation in Vancouver format with DOI where available. Cite the ultimate source, not the outlet that reported it — see SOURCE PRIORITY below.
+
+SOURCE PRIORITY (REFERENCES)
+Always reference the ultimate source, never the intermediary that reported it. The source material supplied to you is often a secondary write-up — a news site, aggregator, university media office, or press release — that is itself reporting on a primary publication. Follow the chain back and cite the original.
+Trace every claim to its origin: the secondary report almost always names or links the underlying paper, trial, dataset, guideline, or regulatory decision. Identify that and cite it.
+Preferred order: peer-reviewed journal article (with DOI) > preprint or conference abstract > trial registry record, regulatory decision, or official guideline > institutional press release > news article reporting on any of the above.
+Give the full primary citation — authors, article title, journal, year, volume(issue), pages, and DOI. Do not cite a bare URL when a DOI or full citation exists, and cite the publisher's own record in preference to a mirror or a PDF hosted elsewhere.
+Worked example: if the source material is a MedicalXpress news story about a paper in Cellular and Molecular Gastroenterology and Hepatology, the reference is the CMGH paper itself — not the MedicalXpress page.
+Only cite a news outlet or press release when it IS the primary source, i.e. it reports something with no underlying publication (a company announcement, a regulatory statement, an interview). Where the secondary report contributes something of its own — an expert comment, context absent from the paper — you may cite it in addition to the primary source, clearly attributed and listed after it.
+If the underlying primary source cannot be identified from the material provided, say so plainly in the Reference section rather than presenting the secondary report as though it were the original research.
+Never fabricate a citation, DOI, journal name, volume, or page range. Omit any detail you cannot establish from the source material rather than inventing it.
 
 OUTPUT FORMAT
 Output the article in markdown. The very first line MUST be the title prefixed with "# Gastro Health News: ..." All other section headers use "## ". Do NOT use "IBD Industry News", "IBD Health News", or any other variant — always start the title with "Gastro Health News: ".
@@ -6402,54 +6412,29 @@ CATEGORIES.forEach(c => {
 // ═══════════════════════════════════════════════════════════
 //  GITHUB HELPERS
 // ═══════════════════════════════════════════════════════════
-function getToken() { return GH_TOKEN; }
-
-async function ghGetFile(path) {
-  const res = await fetch(`${GH_API}/repos/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}&t=${Date.now()}`, {
-    headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' }
-  });
-  if (res.status === 404) return { content: [], sha: null };
-  if (!res.ok) throw new Error(`GitHub GET ${path}: ${res.status}`);
-  const data = await res.json();
-  // Decode the file to a UTF-8 JS string. Two paths, two encodings:
-  //  • Inline base64 (files ≤1MB): atob() yields a binary (Latin-1) string, so
-  //    we must run it through decodeURIComponent(escape()) to recover UTF-8.
-  //  • download_url fallback (GitHub returns content:"" for files >1MB): res.text()
-  //    is ALREADY UTF-8-decoded — passing it through decodeURIComponent(escape())
-  //    double-decodes and throws "URI malformed" on any non-ASCII (em dash, curly
-  //    quotes, accents). So that path takes the text verbatim.
-  let text = '';
-  if (data.content && data.content.trim()) {
-    text = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
-  } else if (data.download_url) {
-    const dlRes = await fetch(data.download_url, { cache: 'no-store' });
-    if (!dlRes.ok) throw new Error(`GitHub download ${path}: ${dlRes.status}`);
-    text = await dlRes.text();
-  }
-  if (!text || !text.trim()) return { content: [], sha: data.sha };
-  try {
-    const decoded = JSON.parse(text);
-    return { content: Array.isArray(decoded) ? decoded : [], sha: data.sha };
-  } catch(e) {
-    throw new Error(`Corrupt JSON in ${path}: ${e.message}`);
-  }
-}
-
-async function ghPutFile(path, content, sha, message) {
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
-  const body = { message, content: encoded, branch: GH_BRANCH };
-  if (sha) body.sha = sha;
-  const res = await fetch(`${GH_API}/repos/${GH_REPO}/contents/${path}`, {
-    method: 'PUT',
-    headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+async function ghSync(method, body, qs) {
+  const res = await fetch('/api/gh-sync' + (qs || ''), {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `GitHub PUT ${path} failed: ${res.status}`);
+    throw new Error(err.error || `GitHub sync ${method} failed: ${res.status}`);
   }
-  const data = await res.json();
-  return data.content.sha;
+  return res.json();
+}
+
+// Returns { content, sha } exactly as the old direct-to-GitHub version did, so
+// callers are unchanged. The base64/UTF-8 decode and the >1MB download_url
+// fallback moved server-side with it.
+async function ghGetFile(path) {
+  return ghSync('GET', null, '?path=' + encodeURIComponent(path));
+}
+
+async function ghPutFile(path, content, sha, message) {
+  const data = await ghSync('PUT', { path, content, sha: sha || null, message });
+  return data.sha;
 }
 
 function catPath(catId, type) {
