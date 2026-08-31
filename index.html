@@ -5997,7 +5997,7 @@ TONE & STYLE
 Write in clear, engaging journalistic prose — authoritative but accessible. Use correct clinical terminology with brief contextual explanation where needed. Active voice throughout. Convey genuine clinical relevance without sensationalism. Avoid phrases like "groundbreaking" or "revolutionary." Do not speculate beyond what the source states.
 
 STRUCTURE
-1. Headline (~10 words) — MUST start with "Gastro Health News: " followed by a clear, informative phrase. No clickbait.
+1. Headline (~10 words) — a clear, informative phrase describing what happened. No clickbait. Do NOT open the headline with a category label such as "Health News", "Healthcare News", or "Industry News".
 2. Lead Paragraph (50–75 words) — what happened, why it matters, who it affects.
 3. Background Context (75–125 words) — orient readers with relevant disease or treatment context from the source.
 4. Key Findings (150–200 words) — most important results or developments, plain numerical values, clearly attributed to the study authors or originating organisation.
@@ -6015,7 +6015,7 @@ If the underlying primary source cannot be identified from the material provided
 Never fabricate a citation, DOI, journal name, volume, or page range. Omit any detail you cannot establish from the source material rather than inventing it.
 
 OUTPUT FORMAT
-Output the article in markdown. The very first line MUST be the title prefixed with "# Gastro Health News: ..." All other section headers use "## ". Do NOT use "IBD Industry News", "IBD Health News", or any other variant — always start the title with "Gastro Health News: ".
+Output the article in markdown. The very first line MUST be the title prefixed with "# " (no other text on the first line). Do NOT add a category prefix to the title — no "Gastro Health News", "Vance Health News", "Healthcare News", "Industry News", "Clinical Review", or any other variant. The headline stands on its own. All other section headers use "## ".
 
 FORMATTING RULES
 Total length: 450–600 words. UK British English. Paraphrase throughout — do not reproduce verbatim text from the source. Attribute all findings clearly. Do not include advice to change clinical practice or medication. Add a disclaimer in small italic text at the bottom: This article is a journalistic summary for informational purposes only. It does not constitute clinical advice or a recommendation to alter treatment decisions.`;
@@ -15171,10 +15171,12 @@ async function _ahDeleteComment(articleId, rcIndex) {
 // ═══════════════════════════════════════════════════════════
 //  FORMATTING HELPERS
 // ═══════════════════════════════════════════════════════════
-// Category prefixes (e.g. "Gastro Living: ", "Clinical Review: ") are no longer
-// wanted on article titles. Strip any known prefix wherever a title/H1 is derived
-// or rendered, so prompts that still emit one don't leak it into the UI or WP.
-const CATEGORY_TITLE_PREFIX_RE = /^(clinical review|gastro living|gastro health news|op[-\s]?ed|white paper|infographic)\s*:\s*/i;
+// Category prefixes (e.g. "Gastro Living: ", "Clinical Review: ", "Vance Health
+// News: ") are no longer wanted on article titles. Strip any known prefix wherever
+// a title/H1 is derived or rendered, so prompts that still emit one don't leak it
+// into the UI or WP. The brand word is optional and interchangeable
+// (gastro/vance/ibd): rebrands leave older KV-saved prompts asking for the old label.
+const CATEGORY_TITLE_PREFIX_RE = /^(?:(?:vance|gastro|ibd)\s+(?:living|health(?:care)?\s+news)|clinical review|health(?:care)?\s+news|industry news|op[-\s]?ed|white paper|infographic)\s*:\s*/i;
 function stripCategoryTitlePrefix(s) {
   return s == null ? s : String(s).replace(CATEGORY_TITLE_PREFIX_RE, '').trim();
 }
