@@ -9,7 +9,7 @@ import { carouselOnPublish } from '../../lib/social/carousel-on-publish.js';
 // spreadsheet). The sub-category becomes the assigned category; the entry below
 // only tells us which parent to nest a freshly auto-created sub-category under.
 const CATEGORY_SLUG_MAP = {
-  'industry-news':    'content-healthcare-news',
+  'industry-news':    'content-health-news',
   'clinical-reviews': 'content-clinical-reviews',
   'op-eds':           'content-expert-opinions',
   'white-papers':     'content-white-papers',
@@ -279,8 +279,15 @@ async function publishToWordPress(item, { fallbackHeroImageUrl } = {}) {
   console.log(`[publish] item ${item.id} taxonomy input — category="${item.category}" wpCategorySlug="${item.wpCategorySlug || ''}" subCategory="${item.subCategory || ''}" tags=${JSON.stringify(item.tags)}`);
 
   // Resolve the parent category first so we always have it in the assignment.
+  // A stored override (item.wpCategorySlug) can go stale when the WP term is
+  // renamed; fall back to the default map slug before giving up, otherwise the
+  // post publishes uncategorised and the theme shows it under "Latest".
   if (explicitSlug) {
-    const parentId = await resolveWpCategoryId(explicitSlug, siteUrl, authHeader);
+    let parentId = await resolveWpCategoryId(explicitSlug, siteUrl, authHeader);
+    if (!parentId && parentAppSlug && parentAppSlug !== explicitSlug) {
+      console.warn(`[publish] WP category slug "${explicitSlug}" not found — retrying default "${parentAppSlug}"`);
+      parentId = await resolveWpCategoryId(parentAppSlug, siteUrl, authHeader);
+    }
     if (parentId) {
       categoryIdsSet.add(parentId);
     } else {
