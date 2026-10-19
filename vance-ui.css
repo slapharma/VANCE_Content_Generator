@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    VANCE UI — shared design tokens and primitives
-   vance-ui.css  v1.1.1
+   vance-ui.css  v1.2.0
 
    ONE source of truth for the look of every internal Vance system: VANCE-HQ,
    the Content Generator, the Customer Service console and the Alerts
@@ -767,6 +767,78 @@ a.v-card:hover {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ── Forced colours (Windows High Contrast) ───────────────────────────────
+   The OS throws away every colour on the page and substitutes a handful the
+   user chose themselves. That is not a theme this file gets to override, and
+   it should not try — the whole point is that the user's palette wins.
+
+   What it does mean is that anything this system says with a TINT stops
+   saying it. Backgrounds collapse to Canvas, so a filled button and an
+   outlined one become the same button; a badge's 14%-opacity wash vanishes
+   and leaves the label sitting on bare ground.
+
+   Two things save us from that being serious. Status is never carried by
+   colour alone anywhere in this estate — a glyph and a word always say it too
+   — and every badge already contains its own text. So the job here is not to
+   rebuild meaning that was lost; it is to put back the EDGES that the fills
+   were implying, and to keep the one distinction that is genuinely structural
+   rather than decorative: which control is the primary one.
+
+   System colour keywords, not hexes. `Highlight` is whatever the user picked
+   to make things stand out, so it is the honest choice for both focus and the
+   primary action — hard-coding teal here would be substituting our judgement
+   for the one they explicitly made.
+   ──────────────────────────────────────────────────────────────────────── */
+@media (forced-colors: active) {
+  /* A card is a fill and a hairline. The fill is gone, so the hairline is now
+     the entire boundary and has to be a colour that survives. */
+  .v-card,
+  .v-input,
+  .v-btn {
+    border-color: CanvasText;
+  }
+
+  /* The ring must be the user's own attention colour, not ours. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline-color: Highlight;
+  }
+
+  /* Primary versus secondary is expressed as a fill difference everywhere in
+     this system, and fills do not survive. forced-color-adjust: none opts
+     these two out of the substitution so the pairing below is kept exactly —
+     the only place in this file that opts out of anything, and it is doing so
+     to preserve a distinction, never an aesthetic. */
+  .v-btn-primary,
+  .v-skip {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  /* The wash goes; the outline is what is left to group the glyph with its
+     label, so it must be drawn rather than merely tinted. */
+  .v-badge {
+    border-color: CanvasText;
+  }
+
+  /* A dot is the one thing here with no text of its own — it is reinforcement
+     for a label beside it, and a filled circle with no border is invisible
+     once the fill is dropped. box-sizing is border-box globally, so this does
+     not resize it. */
+  .v-dot {
+    border: 1px solid CanvasText;
+  }
+
+  /* opacity is not forced, so a disabled control stays faded — but faded is
+     not the signal here, GrayText is, and it is the one the OS understands. */
+  .v-btn[disabled],
+  .v-btn[aria-busy="true"] {
+    color: GrayText;
+    border-color: GrayText;
   }
 }
 
