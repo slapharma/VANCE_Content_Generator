@@ -5781,9 +5781,18 @@ const contentApi = {
   // /api/content/:id (see getArticleBody / viewArticleFromPipeline).
   async getAll()      { try { return await contentCache.refresh(); } catch { return []; } },
   async create(data)  { try { const r = await fetch('/api/content', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); const out = r.ok ? await r.json() : null; if (out) contentCache.refresh(); return out; } catch { return null; } },
-  async update(id, d) { try { const r = await fetch(`/api/content/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) }); const out = r.ok ? await r.json() : null; if (out) contentCache.refresh(); return out; } catch { return null; } },
-  async remove(id)    { try { await fetch(`/api/content/${id}`, { method:'DELETE' }); contentCache.refresh(); } catch {} },
+  async update(id, d) { try { const r = await fetch(`/api/content/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) }); toastAuthFailure(r.status, 'edit content'); const out = r.ok ? await r.json() : null; if (out) contentCache.refresh(); return out; } catch { return null; } },
+  // Resolves to { ok, status } so callers can stop before updating local state.
+  // DELETE is admin-only on the server; a refusal used to be swallowed here, so
+  // the item vanished from the screen and came back on reload.
+  async remove(id)    { try { const r = await fetch(`/api/content/${id}`, { method:'DELETE' }); toastAuthFailure(r.status, 'permanently delete'); if (r.ok) contentCache.refresh(); return { ok: r.ok, status: r.status }; } catch { return { ok: false, status: 0 }; } },
 };
+
+// One message for a 401/403 from the content API, whichever call hit it.
+function toastAuthFailure(status, action) {
+  if (status === 401) showToast('Your session has expired. Sign in again to ' + action + '.');
+  else if (status === 403) showToast('Your role cannot ' + action + '.' + (action === 'permanently delete' ? ' Ask an admin.' : ''));
+}
 
 // ═══════════════════════════════════════════════════════════
 //  SHARED CONTENT CACHE — one slim list, reused across every list
@@ -15469,7 +15478,7 @@ async function toggleApproved(id, checked) {
 
   // When approving: add to pipeline as draft (bypasses email review flow)
   if (checked) {
-    const alreadyQueued = publishingQueue.some(q => q.sourceId === id || q.title === item.title);
+    const alreadyQueued = publishingQueue.some(q => q.status !== 'trash' && (q.sourceId === id || q.title === item.title));
     if (!alreadyQueued) {
       const created = await contentApi.create({
         title: item.title,
@@ -15491,9 +15500,13 @@ async function toggleQueueItem(id, btnEl) {
   CATEGORIES.forEach(c => { allReviews.push(...(ghData[c.id]?.reviews || [])); });
   const item = allReviews.find(x => x.id === id);
   if (!item) { console.warn('toggleQueueItem: item not found', id); return; }
-  const idx = publishingQueue.findIndex(q => q.sourceId === id || q.title === item.title);
+  // Trashed copies don't count as queued: un-queue below trashes rather than
+  // deletes, and the queue list keeps trashed items after a reload.
+  const idx = publishingQueue.findIndex(q => q.status !== 'trash' && (q.sourceId === id || q.title === item.title));
   if (idx >= 0) {
-    await contentApi.remove(publishingQueue[idx].id);
+    // Un-queue sends the item to trash (reversible) rather than hard-deleting it,
+    // which is admin-only.
+    if (!(await contentApi.update(publishingQueue[idx].id, { status: 'trash' }))) return;
     publishingQueue.splice(idx, 1);
   } else {
     if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Adding…'; }
@@ -15585,7 +15598,7 @@ function updateQueueHeaderBtn() {}
 
 async function removeFromQueue(idx) {
   const item = publishingQueue[idx];
-  if (item?.id) await contentApi.remove(item.id);
+  if (item?.id && !(await contentApi.update(item.id, { status: 'trash' }))) return;
   publishingQueue.splice(idx, 1);
   renderArchive();
 }
@@ -18415,7 +18428,8 @@ function libRenderFromCache(items) {
   const emptyBtn = document.getElementById('libEmptyTrashBtn');
   if (emptyBtn) {
     const trashedCount = _libCache.filter(it => (it.status || 'draft') === 'trash').length;
-    emptyBtn.style.display = trashedCount > 0 ? '' : 'none';
+    // Permanent delete is admin-only on the server (DELETE /api/content/:id).
+    emptyBtn.style.display = (trashedCount > 0 && isAdmin()) ? '' : 'none';
   }
 
   libRenderCategoryChips();
@@ -18469,7 +18483,7 @@ function renderLibrary() {
           ? '<div style="display:flex;gap:6px;flex-shrink:0;">'
             + '<button class="btn btn-outline btn-sm" onclick="viewTrashedArticle(\'' + it.id + '\',\'' + it._type + '\',' + catArg + ')">View</button>'
             + '<button class="btn btn-orange btn-sm" onclick="restoreFromTrash(\'' + it.id + '\',\'' + it._type + '\',' + catArg + ')">Restore</button>'
-            + '<button class="btn btn-outline btn-sm" style="color:#e74c3c;border-color:#e74c3c;" onclick="permanentlyDeleteFromTrash(\'' + it.id + '\',\'' + it._type + '\',' + catArg + ')">Delete Forever</button>'
+            + (isAdmin() ? '<button class="btn btn-outline btn-sm" style="color:#e74c3c;border-color:#e74c3c;" onclick="permanentlyDeleteFromTrash(\'' + it.id + '\',\'' + it._type + '\',' + catArg + ')">Delete Forever</button>' : '')
             + '</div>'
           : '<button class="btn btn-outline btn-sm" onclick="viewArticleFromPipeline(\'' + it.id + '\')">View</button>';
         return ''
@@ -20587,8 +20601,9 @@ async function publishNow(contentId) {
 }
 
 async function deletePipelineItem(contentId) {
+  if (!isAdmin()) { toastAuthFailure(403, 'permanently delete'); return; }
   if (!confirm('Permanently delete this item? This cannot be undone.')) return;
-  await contentApi.remove(contentId);
+  if (!(await contentApi.remove(contentId)).ok) return;
   loadPipeline();
 }
 
@@ -22351,9 +22366,10 @@ async function restoreFromTrash(id, type, catId) {
 }
 
 async function permanentlyDeleteFromTrash(id, type, catId) {
+  if (!isAdmin()) { toastAuthFailure(403, 'permanently delete'); return; }
   if (!confirm('Permanently delete this item? This cannot be undone.')) return;
   if (type === 'pipeline') {
-    await contentApi.remove(id);
+    if (!(await contentApi.remove(id)).ok) return;
   } else {
     const cat = ghData[catId];
     if (!cat) return;
@@ -22391,11 +22407,20 @@ async function viewTrashedArticle(id, type, catId) {
 }
 
 async function emptyTrash() {
+  if (!isAdmin()) { toastAuthFailure(403, 'permanently delete'); return; }
   if (!confirm('Permanently delete ALL items in trash? This cannot be undone.')) return;
 
   const allPipeline = await contentApi.getAll();
   const pipelineTrashed = allPipeline.filter(i => i.status === 'trash');
-  await Promise.all(pipelineTrashed.map(i => contentApi.remove(i.id)));
+  const results = await Promise.all(pipelineTrashed.map(i => contentApi.remove(i.id)));
+  // Stop before touching the Library archive if any pipeline delete was refused,
+  // so a half-done empty is not reported as done.
+  const failed = results.filter(r => !r.ok).length;
+  if (failed) {
+    if (!results.some(r => r.status === 401 || r.status === 403)) showToast(failed + ' item(s) could not be deleted. Trash not emptied.');
+    loadLibrary();
+    return;
+  }
 
   const saves = [];
   CATEGORIES.forEach(cat => {
