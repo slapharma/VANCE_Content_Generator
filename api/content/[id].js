@@ -43,17 +43,18 @@ export async function handler(req, res, { store = kv, currentUser = getCurrentUs
   }
 
   if (req.method === 'PUT') {
-    // Any signed-in user: editing an article and moving it through the pipeline is
-    // the content team's core job, so this is not role-restricted. It is checked
-    // before the transition is validated and before anything is written, so an
-    // anonymous request cannot reach kv.set at all.
+    // Admin or content role, matching the other content write routes (comment,
+    // ai-revise, apply-revision). The plain 'user' role can read but not edit or
+    // publish. It is checked before the transition is validated and before anything
+    // is written, so a refused request cannot reach kv.set at all.
     //
     // Until 2026-08-18 there was no check here. getCurrentUser was called, but only
     // to label the audit entry, falling back to 'Content team' when absent — so an
     // unauthenticated caller could retitle, rewrite or trash any article, including
     // a published one, and the audit log recorded it as the content team.
     const me = await currentUser(req).catch(() => null);
-    if (!me) return res.status(401).json({ error: 'Not authenticated' });
+    const guard = requireRole(me, 'admin', 'content');
+    if (!guard.ok) return res.status(guard.status).json({ error: guard.error });
 
     const updates = { ...req.body };
     if (updates.status && updates.status !== item.status) {
@@ -107,7 +108,7 @@ export async function handler(req, res, { store = kv, currentUser = getCurrentUs
   if (req.method === 'DELETE') {
     // Admin only, and deliberately stricter than PUT: this is a hard kv.del with no
     // trash state and no undo. The pipeline's own "delete" is a PUT to status
-    // 'trash', which is reversible and stays open to the whole content team.
+    // 'trash', which is reversible and open to the admin and content roles.
     const guard = requireRole(await currentUser(req).catch(() => null), 'admin');
     if (!guard.ok) return res.status(guard.status).json({ error: guard.error });
     await store.del(`content:${id}`);

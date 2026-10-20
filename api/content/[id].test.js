@@ -53,6 +53,7 @@ const ITEM = { id: 'c1', status: 'published', title: 'Live article', body: 'x' }
 const anon  = async () => null;
 const editor = async () => ({ id: 'u1', name: 'Editor', appRole: 'content' });
 const admin  = async () => ({ id: 'u2', name: 'Admin',  appRole: 'admin'   });
+const reader = async () => ({ id: 'u3', name: 'Reader', appRole: 'user'    });
 
 test('PUT without a session is refused and writes nothing', async () => {
   const store = mockStore(ITEM);
@@ -79,7 +80,24 @@ test('DELETE as a non-admin is refused and writes nothing', async () => {
   assert.deepEqual(store.writes, [], 'a content-role DELETE must not reach kv.del');
 });
 
+test('PUT as the plain user role is refused and writes nothing', async () => {
+  const store = mockStore(ITEM);
+  const { res, out } = mockRes();
+  await handler({ method: 'PUT', query: { id: 'c1' }, headers: {}, body: { status: 'trash' } },
+                res, { store, currentUser: reader });
+  assert.equal(out.code, 403);
+  assert.deepEqual(store.writes, [], 'a user-role PUT must not reach kv.set');
+});
+
 // Controls — these fail if the guards are too broad rather than too narrow.
+test('control: an admin can DELETE', async () => {
+  const store = mockStore(ITEM);
+  const { res, out } = mockRes();
+  await handler({ method: 'DELETE', query: { id: 'c1' }, headers: {} }, res, { store, currentUser: admin });
+  assert.equal(out.code, 204);
+  assert.ok(store.writes.some(w => w[0] === 'del' && w[1] === 'content:c1'), 'an admin delete must reach kv.del');
+});
+
 test('control: a signed-in editor can still PUT', async () => {
   const store = mockStore(ITEM);
   const { res, out } = mockRes();
