@@ -122,6 +122,7 @@ test('Telegram webhook handler', async (t) => {
           job = value;
         }
       },
+      srem: async () => {},
     };
 
     // Mock fetch for Telegram and publish
