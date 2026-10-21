@@ -3,6 +3,12 @@ docs/*.md
 docs/*.html
 docs/superpowers/
 
+# Operator CLI scripts are never imported by api/ or lib/, and Vercel serves
+# every non-api file statically: several of them have carried the live KV
+# token, and the prompt scrubber writes full KV backups into the repo root.
+scripts/
+*-backup-*.json
+
 # Individual automation handlers — excluded from Vercel function count.
 # They are imported by api/automation/[...slug].js at runtime (bundled together).
 api/automation/approve.js
