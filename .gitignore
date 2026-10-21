@@ -34,3 +34,6 @@ scripts/reformat-out/
 # untracked in the estate one 'git add -A' from being published.
 sec-*.txt
 _harness.html
+# Any other env file, so a new variant can't be committed by accident.
+.env*
+!.env.example
