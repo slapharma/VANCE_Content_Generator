@@ -62,7 +62,7 @@ async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader, cre
 // Category prefixes (e.g. "Gastro Living: ", "Clinical Review: ") are no longer
 // wanted on article titles. Strip any known prefix from the WP post title and the
 // body's title H1 so legacy/saved items and prompt-emitted prefixes don't leak through.
-const CATEGORY_TITLE_PREFIX_RE = /^(clinical review|gastro living|gastro health news|op[-\s]?ed|white paper|infographic)\s*:\s*/i;
+const CATEGORY_TITLE_PREFIX_RE = /^(?:(?:vance|gastro|ibd)\s+(?:living|health(?:care)?\s+news)|clinical review|health(?:care)?\s+news|industry news|op[-\s]?ed|white paper|infographic)\s*:\s*/i;
 function stripCategoryTitlePrefix(s) {
   return s == null ? s : String(s).replace(CATEGORY_TITLE_PREFIX_RE, '').trim();
 }
