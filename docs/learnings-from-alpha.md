@@ -632,3 +632,13 @@ The "Implication for Beta" field is the key one — it forces the entry to be us
 - **Fix**: slug corrected in both places. If a stored per-item `wpCategorySlug` override no longer resolves, publish now retries the default map slug before giving up. `api/publish/category-resolution.test.js` asserts the two maps agree and covers the fallback.
 - **Implication for Beta**: each tenant's WP category slugs are configuration that can drift out from under the code. Validate them against the tenant's `/wp-json/wp/v2/categories` when the tenant saves them. Also make a failed parent-category lookup visible in the UI instead of a server log line: an uncategorised post is a silent failure the operator only finds on the live site.
 - **Tag**: #publish #wordpress #automation
+
+---
+
+## 2026-10-21 — Every file outside api/ is public on the deploy, including scripts/ with the live KV token
+
+- **Context**: Housekeeping. Fetched production paths directly to compare live against main.
+- **Finding**: Vercel serves every non-`api/` file in the upload as a static asset, and deploys here are `npx vercel --prod` from the working directory. `https://vance-content.vercel.app/scripts/reset-content.mjs` and four sibling ops scripts returned the live read-write Upstash token (also in the public repo's history). `lib/*.js` is readable the same way. `.vercelignore` only listed tests, docs and handler files. When `.vercelignore` exists, the CLI does not fall back to `.gitignore`, so a gitignored local file such as a KV backup is still uploaded and served.
+- **Fix**: PR #29 added `scripts/` and `*-backup-*.json` to `.vercelignore` (nothing in `api/` or `lib/` imports `scripts/`). PR #28 moves the scripts onto env vars. The token itself still has to be rotated.
+- **Implication for Beta**: treat the deploy upload as public by default. Ship an allowlist-shaped `.vercelignore` (or an `outputDirectory`) so only `index.html`, its assets and `api/` go up. Never let a tenant's credentials or KV dumps sit in the repo root, and add a CI check that greps the deploy file list for token shapes.
+- **Tag**: #deploy #kv #security
