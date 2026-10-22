@@ -642,3 +642,12 @@ The "Implication for Beta" field is the key one — it forces the entry to be us
 - **Fix**: PR #29 added `scripts/` and `*-backup-*.json` to `.vercelignore` (nothing in `api/` or `lib/` imports `scripts/`). PR #28 moves the scripts onto env vars. The token itself still has to be rotated.
 - **Implication for Beta**: treat the deploy upload as public by default. Ship an allowlist-shaped `.vercelignore` (or an `outputDirectory`) so only `index.html`, its assets and `api/` go up. Never let a tenant's credentials or KV dumps sit in the repo root, and add a CI check that greps the deploy file list for token shapes.
 - **Tag**: #deploy #kv #security
+
+---
+
+## 2026-10-22 - Claude text calls go to Anthropic directly; OpenRouter stays for images and non-Claude models
+
+- **Context**: Anthropic API credits were added, and Claude calls (default `anthropic/claude-sonnet-5`) were moved off OpenRouter.
+- **Finding**: Swapping the key was not enough, because an Anthropic key does not work on OpenRouter's endpoint. All server text calls now go through `chatCompletion()` in `lib/llm-provider.js`. It sends `anthropic/...` slugs listed in `ANTHROPIC_MODEL_IDS` to the Anthropic SDK when `ANTHROPIC_API_KEY` is set, and returns an OpenRouter-shaped body so the fallback chains, usage pricing (keyed by OpenRouter slug) and A/B code did not change. Image generation cannot move, because Anthropic has no image models. Three details matter. Since 2026-10-21 the Anthropic API rejects `temperature`, so it is dropped on that path. Adaptive thinking can spend all of `max_tokens` and return no text, which is mapped to a 503 so the chain falls through. SDK retries are off and the timeout is 120 s, so one attempt plus a fallback fits inside the 300 s function limit.
+- **Implication for Beta**: keep one transport function per tenant rather than a `fetch` at each call site. Treat "provider key" and "model slug" as separate config: a tenant that has only an Anthropic key still needs OpenRouter for images and for the non-Claude fallbacks, so warn about it when a key is missing.
+- **Tag**: #llm #deploy
