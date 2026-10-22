@@ -25,12 +25,16 @@
  *   social:conn-health:*
  *
  * Usage:
- *   node scripts/reset-content.mjs            — dry run (shows counts only)
- *   node scripts/reset-content.mjs --delete   — actually deletes
+ *   node --env-file=.env.local scripts/reset-content.mjs            — dry run (shows counts only)
+ *   node --env-file=.env.local scripts/reset-content.mjs --delete   — actually deletes
  */
 
-const KV_URL   = 'https://nearby-werewolf-76207.upstash.io';
-const KV_TOKEN = 'gQAAAAAAASmvAAIncDI3MjExMjExZWM1NGE0MGNlYjYxNzZiODg1ODEzNWY5MnAyNzYyMDc';
+const KV_URL   = process.env.KV_REST_API_URL;
+const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+if (!KV_URL || !KV_TOKEN) {
+  console.error('KV_REST_API_URL and KV_REST_API_TOKEN must be set (run with: node --env-file=.env.local scripts/reset-content.mjs)');
+  process.exit(1);
+}
 
 const DRY_RUN = !process.argv.includes('--delete');
 
@@ -80,14 +84,18 @@ async function kvRest(path) {
 }
 
 async function scanPattern(pattern) {
+  // Cursor stays a STRING: Upstash cursors exceed Number.MAX_SAFE_INTEGER, so
+  // parseInt would round them and the scan would stop after the first page,
+  // leaving content behind on a --delete run.
   const keys = [];
-  let cursor = 0;
+  let cursor = '0';
   do {
     const result = await kvRest(`/scan/${cursor}?match=${encodeURIComponent(pattern)}&count=200`);
-    cursor = parseInt(result.result[0], 10);
+    if (!Array.isArray(result.result)) throw new Error('SCAN failed: ' + JSON.stringify(result));
+    cursor = String(result.result[0]);
     keys.push(...result.result[1]);
-  } while (cursor !== 0);
-  return keys;
+  } while (cursor !== '0');
+  return [...new Set(keys)]; // SCAN may return a key on more than one page
 }
 
 async function deleteKeys(keys) {

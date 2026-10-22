@@ -2,14 +2,20 @@
 // from vance:article-prompts (already clean + updated) into the rule.
 // The rule's current prompt was corrupted by PowerShell ConvertTo-Json.
 
-const KV_URL   = 'https://nearby-werewolf-76207.upstash.io';
-const KV_TOKEN = 'gQAAAAAAASmvAAIncDI3MjExMjExZWM1NGE0MGNlYjYxNzZiODg1ODEzNWY5MnAyNzYyMDc';
+const KV_URL   = process.env.KV_REST_API_URL;
+const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+if (!KV_URL || !KV_TOKEN) {
+  console.error('KV_REST_API_URL and KV_REST_API_TOKEN must be set (run with: node --env-file=.env.local scripts/patch-rule-prompt.mjs)');
+  process.exit(1);
+}
 const RULE_KEY = 'automation:rule:rule_0102c605-e526-4e28-9720-6af838abd66d';
 
 async function kvGet(key) {
   const r = await fetch(`${KV_URL}/get/${encodeURIComponent(key)}`,
     { headers: { Authorization: `Bearer ${KV_TOKEN}` } });
-  return (await r.json()).result;
+  const j = await r.json();
+  if (!r.ok || j.error) throw new Error(`GET ${key} failed: ${r.status} ${JSON.stringify(j)}`);
+  return j.result;
 }
 
 async function kvSet(key, obj) {
@@ -18,7 +24,9 @@ async function kvSet(key, obj) {
     headers: { Authorization: `Bearer ${KV_TOKEN}`, 'Content-Type': 'text/plain' },
     body: JSON.stringify(obj),
   });
-  return (await r.json()).result;
+  const j = await r.json();
+  if (!r.ok || j.error) throw new Error(`SET ${key} failed: ${r.status} ${JSON.stringify(j)}`);
+  return j.result;
 }
 
 // 1. Get the clean "Prompt Updated 12/06" text from vance:article-prompts

@@ -8,11 +8,15 @@
  *   - Jaccard similarity over word-5-grams (shingles)
  *   - count of identical paragraphs shared between the two bodies
  *
- *   node scripts/check-dup-prose.mjs
+ *   node --env-file=.env.local scripts/check-dup-prose.mjs
  */
 
-const KV_URL   = 'https://nearby-werewolf-76207.upstash.io';
-const KV_TOKEN = 'gQAAAAAAASmvAAIncDI3MjExMjExZWM1NGE0MGNlYjYxNzZiODg1ODEzNWY5MnAyNzYyMDc';
+const KV_URL   = process.env.KV_REST_API_URL;
+const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+if (!KV_URL || !KV_TOKEN) {
+  console.error('KV_REST_API_URL and KV_REST_API_TOKEN must be set (run with: node --env-file=.env.local scripts/check-dup-prose.mjs)');
+  process.exit(1);
+}
 
 async function rest(path) {
   const r = await fetch(`${KV_URL}${path}`, { headers: { Authorization: `Bearer ${KV_TOKEN}` } });
@@ -22,9 +26,16 @@ async function rest(path) {
 const g = async k => (await rest(`/get/${encodeURIComponent(k)}`)).result;
 const parse = v => { try { return typeof v === 'object' ? v : JSON.parse(v); } catch { return null; } };
 async function scan(pat) {
-  let c = 0, ks = [];
-  do { const j = await rest(`/scan/${c}?match=${encodeURIComponent(pat)}&count=400`); c = parseInt(j.result[0], 10); ks.push(...j.result[1]); } while (c !== 0);
-  return ks;
+  // Cursor stays a STRING: Upstash cursors exceed Number.MAX_SAFE_INTEGER, so
+  // parseInt would round them and the scan would stop after the first page.
+  let c = '0', ks = [];
+  do {
+    const j = await rest(`/scan/${c}?match=${encodeURIComponent(pat)}&count=400`);
+    if (!Array.isArray(j.result)) throw new Error('SCAN failed: ' + JSON.stringify(j));
+    c = String(j.result[0]);
+    ks.push(...j.result[1]);
+  } while (c !== '0');
+  return [...new Set(ks)]; // SCAN may return a key on more than one page
 }
 
 // strip html tags, collapse whitespace, lowercase
