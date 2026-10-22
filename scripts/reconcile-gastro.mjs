@@ -9,14 +9,22 @@
 //
 // Dry run by default. Pass --apply to write.
 
-const KV_URL   = process.env.KV_REST_API_URL   || 'https://nearby-werewolf-76207.upstash.io';
-const KV_TOKEN = process.env.KV_REST_API_TOKEN || 'gQAAAAAAASmvAAIncDI3MjExMjExZWM1NGE0MGNlYjYxNzZiODg1ODEzNWY5MnAyNzYyMDc';
+const KV_URL   = process.env.KV_REST_API_URL;
+const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+if (!KV_URL || !KV_TOKEN) {
+  console.error('KV_REST_API_URL and KV_REST_API_TOKEN must be set (run with: node --env-file=.env.local scripts/reconcile-gastro.mjs)');
+  process.exit(1);
+}
 const RULE_KEY = 'automation:rule:rule_0102c605-e526-4e28-9720-6af838abd66d';
 const APPLY    = process.argv.includes('--apply');
 
 async function kvGet(key) {
   const r = await fetch(`${KV_URL}/get/${encodeURIComponent(key)}`, { headers: { Authorization: `Bearer ${KV_TOKEN}` } });
-  return (await r.json()).result;
+  const j = await r.json();
+  // A failed read must stop the run, not look like a missing record: the stats
+  // written by --apply would otherwise undercount.
+  if (!r.ok || j.error) throw new Error(`GET ${key} failed: ${r.status} ${JSON.stringify(j)}`);
+  return j.result;
 }
 async function kvSet(key, obj) {
   const r = await fetch(`${KV_URL}/set/${encodeURIComponent(key)}`, {
@@ -27,14 +35,17 @@ async function kvSet(key, obj) {
   return (await r.json()).result;
 }
 async function kvScan(pattern) {
-  const keys = []; let cursor = 0;
+  // Cursor stays a STRING: Upstash cursors exceed Number.MAX_SAFE_INTEGER, so
+  // parseInt/Number would round them and the next page would be wrong or empty.
+  const keys = []; let cursor = '0';
   do {
     const r = await fetch(`${KV_URL}/scan/${cursor}?match=${encodeURIComponent(pattern)}&count=300`, { headers: { Authorization: `Bearer ${KV_TOKEN}` } });
     const j = await r.json();
-    cursor = parseInt(j.result[0], 10);
+    if (!Array.isArray(j.result)) throw new Error('SCAN failed: ' + JSON.stringify(j));
+    cursor = String(j.result[0]);
     keys.push(...j.result[1]);
-  } while (cursor !== 0);
-  return keys;
+  } while (cursor !== '0');
+  return [...new Set(keys)]; // SCAN may return a key on more than one page
 }
 function parse(v) { if (v == null) return null; if (typeof v === 'object') return v; try { return JSON.parse(v); } catch { return null; } }
 
@@ -48,11 +59,17 @@ console.log('Current stats:', JSON.stringify(rule.stats || {}));
 // ── 2. Find live content for this rule ──────────────────────────────────────────
 const contentKeys = await kvScan('content:*');
 const mine = [];
+const unreadable = [];
 for (const k of contentKeys) {
   if (k === 'content:index') continue;
-  const c = parse(await kvGet(k));
-  if (c && c.automationRuleId === RULE_ID) mine.push(c);
+  // A key that cannot be read (e.g. WRONGTYPE) is reported, not fatal, so the
+  // dry run still completes; --apply refuses to run while any are unreadable.
+  let c;
+  try { c = parse(await kvGet(k)); } catch { c = null; }
+  if (!c) { unreadable.push(k); continue; }
+  if (c.automationRuleId === RULE_ID) mine.push(c);
 }
+if (unreadable.length) console.log(`\n${unreadable.length} content key(s) were empty or unparseable: ${unreadable.join(', ')}`);
 console.log(`\nLive content records for this rule: ${mine.length}`);
 for (const c of mine) {
   console.log(`  - [${c.status}] "${c.title}"  src="${c.sourceDocName || ''}"`);
@@ -100,7 +117,7 @@ const newConsumed = uploadSources.map(s => {
     ...(Array.isArray(s.rows) ? s.rows.map(r => r && r.title).filter(Boolean) : []),
     ...(Array.isArray(s.titlesOnly) ? s.titlesOnly : []),
   ]);
-  const additions = matched.filter(t => titlesInThisSource.has(t) && !existing.includes(t));
+  const additions = [...new Set(matched)].filter(t => titlesInThisSource.has(t) && !existing.includes(t));
   return { src: s, additions, resulting: [...existing, ...additions] };
 });
 
@@ -118,11 +135,28 @@ if (!APPLY) {
 }
 
 // ── 5. Apply ─────────────────────────────────────────────────────────────────────
-newConsumed.forEach(nc => { nc.src.consumedTitles = nc.resulting; });
-rule.stats = { ...rule.stats, articlesGenerated: mine.length, articlesPublished: publishedCount };
-rule.updatedAt = new Date().toISOString();
-const w = await kvSet(RULE_KEY, rule);
+if (unreadable.length) {
+  console.error('\nRefusing to --apply: some content records could not be read, so the counts may be low.');
+  process.exit(1);
+}
+// Re-read the rule right before writing. If a run changed its stats or sources
+// during the content scan, the counts above are already stale: stop rather
+// than overwrite them. Otherwise write exactly what the dry run printed, onto
+// the fresh copy so other fields (lastRunAt etc.) are kept.
+const fresh = parse(await kvGet(RULE_KEY));
+if (!fresh) { console.error('Rule vanished before write'); process.exit(1); }
+if (JSON.stringify(fresh.stats) !== JSON.stringify(rule.stats) ||
+    JSON.stringify(fresh.sources) !== JSON.stringify(rule.sources)) {
+  console.error('\nRefusing to --apply: the rule changed during the scan (an automation run?). Re-run.');
+  process.exit(1);
+}
+const freshUploads = (fresh.sources || []).filter(s => s && s.type === 'upload');
+newConsumed.forEach((nc, i) => { freshUploads[i].consumedTitles = nc.resulting; });
+fresh.stats = { ...fresh.stats, articlesGenerated: mine.length, articlesPublished: publishedCount };
+fresh.updatedAt = new Date().toISOString();
+const w = await kvSet(RULE_KEY, fresh);
 console.log('\nKV write:', w);
+if (w !== 'OK') { console.error('KV write did not return OK'); process.exit(1); }
 
 // Verify
 const v = parse(await kvGet(RULE_KEY));
