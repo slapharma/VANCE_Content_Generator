@@ -5639,7 +5639,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <div class="llm-section-header">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
           <div style="flex:1;">
-            <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">Hero Image Prompts<span class="info-tip" tabindex="0" role="img" aria-label="The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use {topic} where the article subject should be inserted. Set a per-category override on the Categories page; this is the global default plus a reusable preset library." title="The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use {topic} where the article subject should be inserted. Set a per-category override on the Categories page; this is the global default plus a reusable preset library."><svg><use href="#icon-info"/></svg></span></div>
+            <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">Hero Image Prompts<span class="info-tip" tabindex="0" role="img" aria-label="The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use {topic} where the article subject should be inserted. Each image also gets a rotating visual approach (human scene, abstract, symbolic or still life): put {approach} where it should go, or it is added at the end. {neutralLeft} keeps the image full-bleed with no fade of its own, because the Health Hub adds its own fade and category colour; without it, the instruction is added for you. Set a per-category override on the Categories page; this is the global default plus a reusable preset library." title="The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use {topic} where the article subject should be inserted. Each image also gets a rotating visual approach (human scene, abstract, symbolic or still life): put {approach} where it should go, or it is added at the end. {neutralLeft} keeps the image full-bleed with no fade of its own, because the Health Hub adds its own fade and category colour; without it, the instruction is added for you. Set a per-category override on the Categories page; this is the global default plus a reusable preset library."><svg><use href="#icon-info"/></svg></span></div>
           </div>
         </div>
         <div class="llm-section-body">
@@ -5822,6 +5822,19 @@ const contentApi = {
 function toastAuthFailure(status, action) {
   if (status === 401) showToast('Your session has expired. Sign in again to ' + action + '.');
   else if (status === 403) showToast('Your role cannot ' + action + '.' + (action === 'permanently delete' ? ' Ask an admin.' : ''));
+}
+
+// For callers that would otherwise alert() the server's raw error. A 401 means the
+// 12-hour session cookie lapsed while this tab sat open (PUT /api/content/:id has
+// required a session since 2026-08-18): say so, and put the sign-in overlay back up
+// (bootAuth re-checks /api/auth/me and reveals it) instead of an opaque
+// "Not authenticated" alert. Returns true when the status was an auth failure and
+// has been handled, so the caller should only reset its button and stop.
+function handleAuthFailure(status, action) {
+  if (status !== 401 && status !== 403) return false;
+  toastAuthFailure(status, action);
+  if (status === 401) bootAuth();
+  return true;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -11211,10 +11224,11 @@ function saveGodPrompt() { return saveMasterPrompt(); }
 // Drives AI hero image generation for the in-app generator AND automation runs.
 // {topic} in a prompt is replaced with the article subject at generation time.
 var HERO_PROMPT_DEFAULT = 'Professional editorial hero image for a clinical medical article about: {topic}. ' +
-  'Right-weighted composition: all visual elements (medical imagery, abstract scientific elements, soft patterns) on the RIGHT 60% of the frame; ' +
-  'LEFT 40% kept clean with a subtle navy-to-teal gradient for text overlay. ' +
-  'Style: clean modern medical/scientific aesthetic, professional photography or soft medical illustration, ' +
-  'navy (#0a1929) and teal (#00c9a7) brand palette, soft natural lighting, calm authoritative mood, no people’s faces, ' +
+  'Visual approach: {approach} ' +
+  'Right-weighted composition: the main subject on the RIGHT of the frame; ' +
+  '{neutralLeft} ' +
+  'Style: clean modern editorial aesthetic, professional photography or soft illustration, ' +
+  'navy (#0a1929) and teal (#00c9a7) brand palette for the visual elements, soft natural lighting, calm authoritative mood, no people’s faces, ' +
   'widescreen 16:9 cinematic. ' +
   'STRICTLY NO molecular imagery, chemical structures, atoms, molecules, DNA helices, ball-and-stick models, lab-glassware close-ups, or any cliche "science-y" molecule illustrations. ' +
   'Absolutely no text, words, letters, numbers, labels, captions, watermarks, logos, or typography anywhere in the image.';
@@ -11297,14 +11311,51 @@ async function saveStockProvider() {
   }
 }
 
-// Resolve the effective hero prompt for a category, with {topic} substituted.
+// Rotated per generation so heroes are not always people. Mirror of
+// HERO_VISUAL_APPROACHES in lib/social/media.js — keep the two lists in step.
+var HERO_VISUAL_APPROACHES = [
+  { id: 'human', weight: 2, text: 'Human scene: a person or people in a calm, real-life setting connected to the topic, shown as hands, silhouettes, or figures seen from behind or at a distance (no identifiable faces).' },
+  { id: 'abstract', weight: 1, text: 'Abstract: NO people. Flowing shapes, soft light, layered translucent forms and organic textures that evoke the mood of the topic.' },
+  { id: 'symbolic', weight: 1, text: 'Symbolic: NO people. One strong visual metaphor or symbolic object that stands for the topic (for example a path, a bridge, a key, a growing plant, a balanced stone stack, a calm horizon).' },
+  { id: 'still-life', weight: 1, text: 'Editorial still life: NO people. A composed arrangement of real objects connected to the topic (food, natural elements, everyday or clinical items) with soft shadows.' },
+];
+
+function pickHeroApproach() {
+  var total = HERO_VISUAL_APPROACHES.reduce(function(n, a) { return n + a.weight; }, 0);
+  var r = Math.random() * total;
+  for (var i = 0; i < HERO_VISUAL_APPROACHES.length; i++) {
+    if ((r -= HERO_VISUAL_APPROACHES[i].weight) < 0) return HERO_VISUAL_APPROACHES[i];
+  }
+  return HERO_VISUAL_APPROACHES[HERO_VISUAL_APPROACHES.length - 1];
+}
+
+// Every hero is full-bleed with no fade of its own: the Health Hub draws the fade and its own
+// per-category colour overlay there. Mirror of HERO_NEUTRAL_LEFT in lib/social/media.js.
+var HERO_NEUTRAL_LEFT =
+  'The scene fills the whole frame edge to edge, with natural detail on the left side too. ' +
+  'No fade, no gradient, no colour wash, no vignette and no blank or empty area anywhere in the image.';
+
+// Resolve the effective hero prompt for a category, with {topic}, {approach} and
+// {neutralLeft} substituted. A template saved before {neutralLeft} existed has
+// its old navy-to-teal gradient clause swapped for it, or gets it appended.
 function getResolvedHeroPrompt(catId, topic) {
   var perCat = heroPromptsConfig.categories && heroPromptsConfig.categories[catId];
   var tmpl = (perCat && perCat.trim()) ? perCat : (heroPromptsConfig.default || HERO_PROMPT_DEFAULT);
   var t = (topic || '').trim() || 'healthcare clinical medicine';
+  var approach = pickHeroApproach().text;
   var hasToken = /\{topic\}|\{title\}/i.test(tmpl);
-  var filled = tmpl.replace(/\{topic\}/gi, t).replace(/\{title\}/gi, t);
-  return hasToken ? filled : (filled + ' Subject: ' + t + '.');
+  var hasApproach = /\{approach\}/i.test(tmpl);
+  var hasNeutral = /\{neutralLeft\}/i.test(tmpl);
+  var filled = tmpl.replace(/\{topic\}/gi, t).replace(/\{title\}/gi, t).replace(/\{approach\}/gi, approach)
+    .replace(/\{neutralLeft\}/gi, HERO_NEUTRAL_LEFT);
+  if (!hasNeutral) {
+    // Clause match stops at ';' too, so the old default keeps its "RIGHT 60%" clause.
+    var swapped = filled.replace(/[^.;]*navy-to-teal gradient[^.;]*[.;]?/gi, ' ' + HERO_NEUTRAL_LEFT).replace(/\s{2,}/g, ' ').trim();
+    filled = swapped !== filled.trim() ? swapped : (filled + ' ' + HERO_NEUTRAL_LEFT);
+  }
+  if (!hasToken) filled += ' Subject: ' + t + '.';
+  if (!hasApproach) filled += ' Visual approach: ' + approach;
+  return filled;
 }
 
 async function saveHeroPromptDefault() {
@@ -14733,6 +14784,13 @@ async function approveFromToolbar() {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'approved' }),
     });
+    if (handleAuthFailure(r.status, 'approve')) {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;"><polyline points="20 6 9 17 4 12"/></svg> Approve';
+      }
+      return;
+    }
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || r.statusText);
     if (typeof showToast === 'function') showToast('Approved');
@@ -15572,6 +15630,10 @@ async function approveDirect(contentId) {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'approved' })
     });
+    if (handleAuthFailure(r.status, 'approve')) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Approve'; }
+      return;
+    }
     const data = await r.json();
     if (r.ok) {
       const idx = publishingQueue.findIndex(q => q.id === contentId);
@@ -18696,6 +18758,10 @@ async function reviewPopupApprove(contentId, btn) {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'approved' }),
     });
+    if (handleAuthFailure(r.status, 'approve')) {
+      if (btn) { btn.disabled = false; btn.textContent = '✓ Approve'; }
+      return;
+    }
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || r.statusText);
     if (btn) { btn.textContent = '✓ Approved'; btn.style.opacity = '0.7'; }
