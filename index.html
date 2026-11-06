@@ -5639,7 +5639,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <div class="llm-section-header">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
           <div style="flex:1;">
-            <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">Hero Image Prompts<span class="info-tip" tabindex="0" role="img" aria-label="The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use {topic} where the article subject should be inserted. Each image also gets a rotating visual approach (human scene, abstract, symbolic or still life): put {approach} where it should go, or it is added at the end. {neutralLeft} keeps the image full-bleed with no fade of its own, because the Health Hub adds its own fade and category colour; without it, the instruction is added for you. Set a per-category override on the Categories page; this is the global default plus a reusable preset library." title="The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use {topic} where the article subject should be inserted. Each image also gets a rotating visual approach (human scene, abstract, symbolic or still life): put {approach} where it should go, or it is added at the end. {neutralLeft} keeps the image full-bleed with no fade of its own, because the Health Hub adds its own fade and category colour; without it, the instruction is added for you. Set a per-category override on the Categories page; this is the global default plus a reusable preset library."><svg><use href="#icon-info"/></svg></span></div>
+            <div class="llm-section-title" style="display:flex;align-items:center;gap:6px;">Hero Image Prompts<span class="info-tip" tabindex="0" role="img" aria-label="The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use {topic} where the article subject should be inserted. Each image also gets a rotating visual approach (human scene, abstract, symbolic or still life): put {approach} where it should go, or it is added at the end. {neutralLeft} keeps the image full-bleed with no fade of its own, because the Health Hub adds its own fade and category colour; without it, the instruction is added for you. {photoStyle} adds the real-photograph instruction; without it, it is added at the end. Set a per-category override on the Categories page; this is the global default plus a reusable preset library." title="The prompt that drives AI hero image generation — for the in-app generator and automated runs. Use {topic} where the article subject should be inserted. Each image also gets a rotating visual approach (human scene, abstract, symbolic or still life): put {approach} where it should go, or it is added at the end. {neutralLeft} keeps the image full-bleed with no fade of its own, because the Health Hub adds its own fade and category colour; without it, the instruction is added for you. {photoStyle} adds the real-photograph instruction; without it, it is added at the end. Set a per-category override on the Categories page; this is the global default plus a reusable preset library."><svg><use href="#icon-info"/></svg></span></div>
           </div>
         </div>
         <div class="llm-section-body">
@@ -11227,9 +11227,9 @@ var HERO_PROMPT_DEFAULT = 'Professional editorial hero image for a clinical medi
   'Visual approach: {approach} ' +
   'Right-weighted composition: the main subject on the RIGHT of the frame; ' +
   '{neutralLeft} ' +
-  'Style: clean modern editorial aesthetic, professional photography or soft illustration, ' +
-  'navy (#0a1929) and teal (#00c9a7) brand palette for the visual elements, soft natural lighting, calm authoritative mood, no people’s faces, ' +
-  'widescreen 16:9 cinematic. ' +
+  'Style: {photoStyle} ' +
+  'Navy (#0a1929) and teal (#00c9a7) only as subtle accents on real objects, calm authoritative mood, no people’s faces, ' +
+  'widescreen 16:9. ' +
   'STRICTLY NO molecular imagery, chemical structures, atoms, molecules, DNA helices, ball-and-stick models, lab-glassware close-ups, or any cliche "science-y" molecule illustrations. ' +
   'Absolutely no text, words, letters, numbers, labels, captions, watermarks, logos, or typography anywhere in the image.';
 
@@ -11314,10 +11314,10 @@ async function saveStockProvider() {
 // Rotated per generation so heroes are not always people. Mirror of
 // HERO_VISUAL_APPROACHES in lib/social/media.js — keep the two lists in step.
 var HERO_VISUAL_APPROACHES = [
-  { id: 'human', weight: 2, text: 'Human scene: a person or people in a calm, real-life setting connected to the topic, shown as hands, silhouettes, or figures seen from behind or at a distance (no identifiable faces).' },
-  { id: 'abstract', weight: 1, text: 'Abstract: NO people. Flowing shapes, soft light, layered translucent forms and organic textures that evoke the mood of the topic.' },
-  { id: 'symbolic', weight: 1, text: 'Symbolic: NO people. One strong visual metaphor or symbolic object that stands for the topic (for example a path, a bridge, a key, a growing plant, a balanced stone stack, a calm horizon).' },
-  { id: 'still-life', weight: 1, text: 'Editorial still life: NO people. A composed arrangement of real objects connected to the topic (food, natural elements, everyday or clinical items) with soft shadows.' },
+  { id: 'human', weight: 2, text: 'Human scene: a candid documentary photograph of a person or people in a calm, real-life setting connected to the topic, shown as hands, figures seen from behind, or faces turned away or out of frame (no identifiable faces).' },
+  { id: 'abstract', weight: 1, text: 'Abstract photograph: NO people. A real close-up or macro photograph of natural textures and light (for example water, linen, leaves, stone, light through glass) that evokes the mood of the topic.' },
+  { id: 'symbolic', weight: 1, text: 'Symbolic: NO people. One real object or place, photographed on location, that stands for the topic (for example a path, a bridge, a key, a growing plant, a balanced stone stack, a calm horizon).' },
+  { id: 'still-life', weight: 1, text: 'Editorial still life: NO people. A real tabletop photograph of objects connected to the topic (food, natural elements, everyday or clinical items) in natural window light with soft shadows.' },
 ];
 
 function pickHeroApproach() {
@@ -11335,19 +11335,33 @@ var HERO_NEUTRAL_LEFT =
   'The scene fills the whole frame edge to edge, with natural detail on the left side too. ' +
   'No fade, no gradient, no colour wash, no vignette and no blank or empty area anywhere in the image.';
 
-// Resolve the effective hero prompt for a category, with {topic}, {approach} and
-// {neutralLeft} substituted. A template saved before {neutralLeft} existed has
-// its old navy-to-teal gradient clause swapped for it, or gets it appended.
+// Pushes every hero toward a real photograph rather than a render.
+// Mirror of HERO_PHOTO_STYLE in lib/social/media.js.
+var HERO_PHOTO_STYLE =
+  'Real documentary photograph shot on a full-frame camera with a 50mm lens in natural light, ' +
+  'true-to-life colour and real textures. Not a 3D render, CGI or illustration; no plastic or ' +
+  'airbrushed look, no oversaturated colours, no glow or lens-flare effects.';
+
+// Resolve the effective hero prompt for a category, with {topic}, {approach},
+// {neutralLeft} and {photoStyle} substituted. A template saved before {neutralLeft}
+// existed has its old navy-to-teal gradient clause swapped for it, or gets it
+// appended. {photoStyle} is appended last when absent; old default style words are rewritten.
 function getResolvedHeroPrompt(catId, topic) {
   var perCat = heroPromptsConfig.categories && heroPromptsConfig.categories[catId];
   var tmpl = (perCat && perCat.trim()) ? perCat : (heroPromptsConfig.default || HERO_PROMPT_DEFAULT);
+  // Rewrite old default style words in the template only (mirror of LEGACY_STYLE_REWRITES).
+  tmpl = tmpl.replace(/,?\s*\bor soft illustration\b(?!s)/gi, '')
+    .replace(/\bbrand palette for the visual elements\b/gi, 'only as subtle accents on real objects')
+    .replace(/\b16:9 cinematic\b/gi, '16:9');
   var t = (topic || '').trim() || 'healthcare clinical medicine';
   var approach = pickHeroApproach().text;
   var hasToken = /\{topic\}|\{title\}/i.test(tmpl);
   var hasApproach = /\{approach\}/i.test(tmpl);
   var hasNeutral = /\{neutralLeft\}/i.test(tmpl);
+  var hasPhoto = /\{photoStyle\}/i.test(tmpl);
   var filled = tmpl.replace(/\{topic\}/gi, t).replace(/\{title\}/gi, t).replace(/\{approach\}/gi, approach)
-    .replace(/\{neutralLeft\}/gi, HERO_NEUTRAL_LEFT);
+    .replace(/\{neutralLeft\}/gi, HERO_NEUTRAL_LEFT)
+    .replace(/\{photoStyle\}/gi, HERO_PHOTO_STYLE);
   if (!hasNeutral) {
     // Clause match stops at ';' too, so the old default keeps its "RIGHT 60%" clause.
     var swapped = filled.replace(/[^.;]*navy-to-teal gradient[^.;]*[.;]?/gi, ' ' + HERO_NEUTRAL_LEFT).replace(/\s{2,}/g, ' ').trim();
@@ -11355,6 +11369,7 @@ function getResolvedHeroPrompt(catId, topic) {
   }
   if (!hasToken) filled += ' Subject: ' + t + '.';
   if (!hasApproach) filled += ' Visual approach: ' + approach;
+  if (!hasPhoto) filled += ' ' + HERO_PHOTO_STYLE;
   return filled;
 }
 
