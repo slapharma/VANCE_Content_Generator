@@ -11,7 +11,7 @@ import { carouselOnPublish } from '../../lib/social/carousel-on-publish.js';
 const CATEGORY_SLUG_MAP = {
   'industry-news':    'content-health-news',
   'clinical-reviews': 'content-clinical-reviews',
-  'op-eds':           'content-expert-opinions',
+  'op-eds':           'gastro-editorials',
   'white-papers':     'content-white-papers',
   'infographics':     'content-infographic',
   'ibd-living':       'content-gastro-living',

@@ -2497,7 +2497,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <select id="genCategorySelect" onchange="onGenCategoryChange()" style="width:100%;padding:8px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;font-family:'Montserrat',sans-serif;">
           <option value="clinical-reviews">Clinical Reviews</option>
           <option value="industry-news">Industry News</option>
-          <option value="op-eds">Op-Eds</option>
+          <option value="op-eds">Editorials</option>
           <option value="white-papers">White Papers</option>
           <option value="infographics">Infographics</option>
           <option value="ibd-living">Gastro Living</option>
@@ -3899,7 +3899,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
 <div class="cat-bar" id="catBar-archive">
   <button class="cat-bar-btn active" data-cat="clinical-reviews" onclick="switchCategory('clinical-reviews')">Clinical Reviews</button>
   <button class="cat-bar-btn" data-cat="industry-news" onclick="switchCategory('industry-news')">Industry News</button>
-  <button class="cat-bar-btn" data-cat="op-eds" onclick="switchCategory('op-eds')">Op-Eds</button>
+  <button class="cat-bar-btn" data-cat="op-eds" onclick="switchCategory('op-eds')">Editorials</button>
   <button class="cat-bar-btn" data-cat="white-papers" onclick="switchCategory('white-papers')">White Papers</button>
   <button class="cat-bar-btn" data-cat="infographics" onclick="switchCategory('infographics')">Infographics</button>
   <button class="cat-bar-btn" data-cat="ibd-living" onclick="switchCategory('ibd-living')">Gastro Living</button>
@@ -4212,8 +4212,8 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
           </div>
           <!-- Op-Eds -->
           <div class="llm-cat-card">
-            <div class="llm-cat-name">Op-Eds</div>
-            <select id="llm-cat-op-eds" class="llm-quick-select" onchange="saveCategoryModel('op-eds',this.value);showToast('✓ Saved for Op-Eds')">
+            <div class="llm-cat-name">Editorials</div>
+            <select id="llm-cat-op-eds" class="llm-quick-select" onchange="saveCategoryModel('op-eds',this.value);showToast('✓ Saved for Editorials')">
               <option value="">— Use global default —</option>
               <optgroup label="── Recommended (Free) ──">
                 <option value="arcee-ai/trinity-large-preview:free">Arcee AI: Trinity Large ★</option>
@@ -5761,7 +5761,7 @@ body.sidebar-collapsed .nav-item-child { padding-left: 10px; }
         <select id="schedCategory">
           <option value="clinical-reviews">IBD Clinical Reviews</option>
           <option value="industry-news">Gastroenterology Updates</option>
-          <option value="op-eds">Opinion &amp; Commentary</option>
+          <option value="op-eds">Editorials</option>
           <option value="white-papers">White Papers &amp; Guides</option>
           <option value="ibd-living">Gastro Living</option>
         </select>
@@ -5964,7 +5964,7 @@ const INFOGRAPHIC_MODELS = [
 const CATEGORIES = [
   { id: 'clinical-reviews', label: 'Clinical Reviews' },
   { id: 'industry-news',    label: 'Industry News' },
-  { id: 'op-eds',           label: 'Op-Eds' },
+  { id: 'op-eds',           label: 'Editorials' },
   { id: 'white-papers',     label: 'White Papers' },
   { id: 'infographics',     label: 'Infographics' },
   { id: 'ibd-living',       label: 'Gastro Living' }
@@ -15950,7 +15950,7 @@ function updateModelSelectForCategory(catId) {
 const BUILTIN_CATEGORY_META = {
   'clinical-reviews': { description: 'Structured, objective summaries of published clinical trials for physician audiences', sources: ['single'], wpCategorySlug: 'content-clinical-reviews', icon: '🔬' },
   'industry-news':    { description: 'Latest healthcare industry news, trends and developments', sources: ['links', 'paste'], wpCategorySlug: 'content-health-news', icon: '📰' },
-  'op-eds':           { description: 'Expert opinions and editorials on healthcare topics', sources: ['multiple'], wpCategorySlug: 'content-expert-opinions', icon: '💡' },
+  'op-eds':           { description: 'Expert opinions and editorials on healthcare topics', sources: ['multiple'], wpCategorySlug: 'gastro-editorials', icon: '💡' },
   'white-papers':     { description: 'Comprehensive research and position papers', sources: ['multiple'], wpCategorySlug: 'content-white-papers', icon: '📄' },
   'infographics':     { description: 'Visual content and data summaries', sources: ['single'], wpCategorySlug: 'content-infographic', icon: '📊' },
   'ibd-living':       { description: 'Patient-focused content for people living with GI conditions (IBD, IBS and related)', sources: ['links', 'paste'], wpCategorySlug: 'content-gastro-living', icon: '🫀' },
@@ -19171,7 +19171,7 @@ const STATUS_COLS = [
 const CATEGORY_LABELS = {
   'clinical-reviews': 'Clinical Review',
   'industry-news':    'Industry News',
-  'op-eds':           'Op-Ed',
+  'op-eds':           'Editorial',
   'white-papers':     'White Paper',
   'infographics':     'Infographic',
   'ibd-living':       'Gastro Living',
