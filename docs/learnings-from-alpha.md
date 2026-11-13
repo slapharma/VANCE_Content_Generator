@@ -670,3 +670,12 @@ The "Implication for Beta" field is the key one — it forces the entry to be us
 - **Finding**: Two things. (1) Image models take layout words literally. "All visual elements on the RIGHT 60%" plus "left 40% with no gradient and no objects" produced a hard vertical split with an empty grey panel. (2) Any fade or colour that the image paints doubles up with the page overlay, and goes stale when a category colour changes in the Customizer. The working split: the prompt asks for a scene that fills the frame edge to edge, subject weighted right, with "no fade, no gradient, no colour wash, no vignette, no empty area". The theme does all the fading and colouring. The `{neutralLeft}` token kept its name because saved KV templates already contain it; renaming it would leak the literal token into prompts.
 - **Implication for Beta**: per-tenant WordPress themes will each have their own overlay. Keep hero composition and colour out of the image prompt and in the tenant's theme, so a tenant can change brand colours without touching prompts. Do not rename template tokens once tenants have saved templates; add aliases.
 - **Tag**: #prompts #brand-identity
+
+---
+
+## 2026-11-13 - WP category renamed to "Editorials": the slug changed, and both slug maps had to follow
+
+- **Context**: The Health Hub WP term "Expert Opinions" (earlier "Op-Eds") was renamed "Editorials" and its slug changed from `content-expert-opinions` to `gastro-editorials` (term id 14 is unchanged). The app category id stays `op-eds`.
+- **Finding**: Publishing resolves the parent category by slug (`CATEGORY_SLUG_MAP` in `api/publish/index.js`, mirrored by `BUILTIN_CATEGORY_META` in `index.html`). A slug that is not on the site returns `[]`, the publish continues with no category, and WordPress then files the post under its default category. Nothing fails loudly. A WP rename that keeps the slug is safe; a slug change is the second occurrence of the `industry-news` drift. Not all live slugs use the `content-` prefix (`gastro-editorials`, `gastro-recipes`, `patient-handouts`), so do not derive a slug from a pattern: read `/wp-json/wp/v2/categories`.
+- **Implication for Beta**: per-tenant WP sites will rename terms freely. Store the WP term id beside the slug, or check every mapped slug against the tenant site on a schedule and alert when one returns `[]`.
+- **Tag**: #deploy #brand-identity

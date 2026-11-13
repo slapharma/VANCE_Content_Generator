@@ -68,6 +68,17 @@ test('the industry-news slug specifically points at the live WP term', () => {
   assert.equal(slugMap['industry-news'], 'content-health-news');
 });
 
+test('the op-eds slug specifically points at the live WP term', () => {
+  // The WP term was renamed "Expert Opinions" -> "Editorials" on 2026-11-13 and
+  // its slug changed from 'content-expert-opinions' to 'gastro-editorials'. The
+  // old slug returns [] from the REST API, so a post would publish with no
+  // category. The app category id stays 'op-eds'; only the WP slug moved.
+  const slugMap = parseCategorySlugMap();
+  const metaMap = parseBuiltinCategoryMeta();
+  assert.equal(slugMap['op-eds'], 'gastro-editorials');
+  assert.equal(metaMap['op-eds'], 'gastro-editorials');
+});
+
 // ── (b) Handler-level fallback behaviour ────────────────────────────────────
 //
 // Drives the real exported handler with a mocked KV store and mocked WP REST
