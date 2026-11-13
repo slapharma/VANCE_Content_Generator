@@ -11314,10 +11314,10 @@ async function saveStockProvider() {
 // Rotated per generation so heroes are not always people. Mirror of
 // HERO_VISUAL_APPROACHES in lib/social/media.js — keep the two lists in step.
 var HERO_VISUAL_APPROACHES = [
-  { id: 'human', weight: 2, text: 'Human scene: a candid documentary photograph of a person or people in a calm, real-life setting connected to the topic, shown as hands, figures seen from behind, or faces turned away or out of frame (no identifiable faces).' },
-  { id: 'abstract', weight: 1, text: 'Abstract photograph: NO people. A real close-up or macro photograph of natural textures and light (for example water, linen, leaves, stone, light through glass) that evokes the mood of the topic.' },
-  { id: 'symbolic', weight: 1, text: 'Symbolic: NO people. One real object or place, photographed on location, that stands for the topic (for example a path, a bridge, a key, a growing plant, a balanced stone stack, a calm horizon).' },
-  { id: 'still-life', weight: 1, text: 'Editorial still life: NO people. A real tabletop photograph of objects connected to the topic (food, natural elements, everyday or clinical items) in natural window light with soft shadows.' },
+  { id: 'human', weight: 2, text: 'Human scene: a candid documentary photograph of a person in a real-life moment that is specific to the article subject (for example the meal, test, treatment, symptom or daily task it discusses), shown as hands, a figure seen from behind, or a face turned away or out of frame (no identifiable faces).' },
+  { id: 'abstract', weight: 1, text: 'Close-up detail: NO people. A real close-up or macro photograph of one thing taken directly from the article subject (for example the food, ingredient, supplement, device, sample or clinical item it discusses).' },
+  { id: 'symbolic', weight: 1, text: 'Setting: NO people. The real place where the article subject happens (for example a clinic room for a clinical study, a hospital lab for a test, a kitchen table for a diet topic), with one object in it that a reader links at once to the article subject. Not a generic metaphor.' },
+  { id: 'still-life', weight: 1, text: 'Editorial still life: NO people. A real tabletop photograph of objects named in or directly related to the article subject (for example the foods, supplements, devices or clinical items it discusses) in natural window light with soft shadows.' },
 ];
 
 function pickHeroApproach() {
