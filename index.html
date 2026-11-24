@@ -11860,6 +11860,15 @@ function updateSourceFilesSelCount() {
   if (el) el.textContent = n + ' selected';
 }
 
+// A run that could not take the rule's lock did not look at the sources at all,
+// so it must not be reported as "no new items" or "no matching files". Returns
+// the message to show, or '' when the run was not skipped.
+function runLockSkipMessage(result) {
+  return result && result.skipped && result.skipped.length
+    ? 'Run skipped — an earlier run of this rule is still in progress. Wait about 5 minutes, then run it again.'
+    : '';
+}
+
 async function runRuleWithSelectedFiles(ruleId) {
   var checked = Array.prototype.slice.call(document.querySelectorAll('#sourcesFilesBody .src-file-cb:checked'));
   var names = checked.map(function(cb) { return cb.dataset.name; });
@@ -11870,7 +11879,7 @@ async function runRuleWithSelectedFiles(ruleId) {
     var result = await apiFetch('/api/automation/run', { method:'POST', body: JSON.stringify({ ruleId: ruleId, forceFiles: names }) });
     var msg = result && result.processed > 0
       ? 'Re-processed ' + result.processed + ' file(s).'
-      : 'No matching files were re-processed.';
+      : (runLockSkipMessage(result) || 'No matching files were re-processed.');
     showAutoMessage(msg, result && result.processed > 0 ? 'success' : 'warn');
     if (result && result.errors && result.errors.length) result.errors.slice(0, 5).forEach(function(e) { showAutoMessage(e, 'error'); });
     loadAutoRules();
@@ -11920,10 +11929,11 @@ async function confirmRunRuleNow(id) {
   showAutoMessage('Running rule…', 'info');
   try {
     var result = await apiFetch('/api/automation/run', { method: 'POST', body: JSON.stringify({ ruleId: id }) });
+    var skipMsg = runLockSkipMessage(result);
     var msg = result && result.processed > 0
       ? 'Rule triggered — ' + result.processed + ' job' + (result.processed !== 1 ? 's' : '') + ' created. Check Operations Logs.'
-      : 'Rule ran — no new items found in sources.';
-    showAutoMessage(msg, result && result.processed > 0 ? 'success' : 'info');
+      : (skipMsg || 'Rule ran — no new items found in sources.');
+    showAutoMessage(msg, result && result.processed > 0 ? 'success' : (skipMsg ? 'warn' : 'info'));
     if (result && result.errors && result.errors.length) {
       result.errors.slice(0, 5).forEach(function(e) { showAutoMessage(e, 'error'); });
     }
