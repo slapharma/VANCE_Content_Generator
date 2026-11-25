@@ -13318,7 +13318,7 @@ function bibAddFromSearch(idx) {
   var r = _bibSearchResults[idx];
   if (!r) return;
   if (_bibPapers.some(function(p) { return (p.doi && p.doi === r.doi) || p.title === r.title; })) return;
-  _bibPapers.push({ title: r.title, authors: r.authors || [], journal: r.journal || '', year: r.year, doi: r.doi || '', url: r.url || '', abstract: r.abstract || '', source: r.source || 'pubmed' });
+  _bibPapers.push({ title: r.title, authors: r.authors || [], journal: r.journal || '', year: r.year, doi: r.doi || '', url: r.url || '', abstract: r.abstract || '', pmid: r.pmid || '', volume: r.volume || '', issue: r.issue || '', pages: r.pages || '', source: r.source || 'pubmed' });
   _bibRenderPapersList();
   var resultsDiv = document.getElementById('bibSearchResults');
   if (resultsDiv && _bibSearchResults.length) resultsDiv.innerHTML = _bibRenderSearchResults();
