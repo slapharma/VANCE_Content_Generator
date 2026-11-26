@@ -11320,13 +11320,32 @@ var HERO_VISUAL_APPROACHES = [
   { id: 'still-life', weight: 1, text: 'Editorial still life: NO people. A real tabletop photograph of objects named in or directly related to the article subject (for example the supplements, devices, samples or clinical items it discusses) on a clean white or pale grey surface in bright, even clinical light.' },
 ];
 
-function pickHeroApproach() {
-  var total = HERO_VISUAL_APPROACHES.reduce(function(n, a) { return n + a.weight; }, 0);
+function pickHeroApproach(approaches) {
+  approaches = approaches || HERO_VISUAL_APPROACHES;
+  var total = approaches.reduce(function(n, a) { return n + a.weight; }, 0);
   var r = Math.random() * total;
-  for (var i = 0; i < HERO_VISUAL_APPROACHES.length; i++) {
-    if ((r -= HERO_VISUAL_APPROACHES[i].weight) < 0) return HERO_VISUAL_APPROACHES[i];
+  for (var i = 0; i < approaches.length; i++) {
+    if ((r -= approaches[i].weight) < 0) return approaches[i];
   }
-  return HERO_VISUAL_APPROACHES[HERO_VISUAL_APPROACHES.length - 1];
+  return approaches[approaches.length - 1];
+}
+
+// Mirror of the lifestyle profile in lib/social/media.js (heroStyleFor). Gastro Living keeps
+// warm real-life scenes; every other category gets the clinical look.
+var HERO_LIFESTYLE_APPROACHES = [
+  { id: 'human', weight: 2, text: 'Human scene: a candid documentary photograph of a person in a real-life moment that is specific to the article subject (for example the meal, test, treatment, symptom or daily task it discusses), shown as hands, a figure seen from behind, or a face turned away or out of frame (no identifiable faces).' },
+  { id: 'abstract', weight: 1, text: 'Close-up detail: NO people. A real close-up or macro photograph of one thing taken directly from the article subject (for example the food, ingredient, supplement, device, sample or clinical item it discusses).' },
+  { id: 'symbolic', weight: 1, text: 'Setting: NO people. The real place where the article subject happens (for example a clinic room for a clinical study, a hospital lab for a test, a kitchen table for a diet topic), with one object in it that a reader links at once to the article subject. Not a generic metaphor.' },
+  { id: 'still-life', weight: 1, text: 'Editorial still life: NO people. A real tabletop photograph of objects named in or directly related to the article subject (for example the foods, supplements, devices or clinical items it discusses) in natural window light with soft shadows.' },
+];
+var HERO_LIFESTYLE_PHOTO_STYLE =
+  'Real documentary photograph shot on a full-frame camera with a 50mm lens in natural light, ' +
+  'true-to-life colour and real textures. Not a 3D render, CGI or illustration; no plastic or ' +
+  'airbrushed look, no oversaturated colours, no glow or lens-flare effects.';
+function heroStyleFor(catId) {
+  return catId === 'ibd-living'
+    ? { approaches: HERO_LIFESTYLE_APPROACHES, photoStyle: HERO_LIFESTYLE_PHOTO_STYLE, clinicalRewrites: false }
+    : { approaches: HERO_VISUAL_APPROACHES, photoStyle: HERO_PHOTO_STYLE, clinicalRewrites: true };
 }
 
 // Every hero is full-bleed with no fade of its own: the Health Hub draws the fade and its own
@@ -11355,21 +11374,25 @@ function getResolvedHeroPrompt(catId, topic) {
   // Rewrite old default style words in the template only (mirror of LEGACY_STYLE_REWRITES).
   tmpl = tmpl.replace(/,?\s*\bor soft illustration\b(?!s)/gi, '')
     .replace(/\bbrand palette for the visual elements\b/gi, 'only as subtle accents on real objects')
-    .replace(/\b16:9 cinematic\b/gi, '16:9')
-    .replace(/\bwellness article about (?:the )?(?:living with|managing) a gastro condition article\b/gi, 'clinical medical article about')
-    .replace(/\bpatient[- ]friendly[,\s]+(?=clinical\b)/gi, '')
-    .replace(/\bpatient[- ]friendly\b/gi, 'clinical')
-    .replace(/\bhospitals,\s*doctors,\s*/gi, '')
-    .replace(/\blab-glassware close-ups\b/gi, 'laboratory glassware as the main subject');
+    .replace(/\b16:9 cinematic\b/gi, '16:9');
+  var style = heroStyleFor(catId);
+  // Clinical rewrites apply to every category except the lifestyle one (Gastro Living).
+  if (style.clinicalRewrites) {
+    tmpl = tmpl.replace(/\bwellness article about (?:the )?(?:living with|managing) a gastro condition article\b/gi, 'clinical medical article about')
+      .replace(/\bpatient[- ]friendly[,\s]+(?=clinical\b)/gi, '')
+      .replace(/\bpatient[- ]friendly\b/gi, 'clinical')
+      .replace(/\bhospitals,\s*doctors,\s*/gi, '')
+      .replace(/\blab-glassware close-ups\b/gi, 'laboratory glassware as the main subject');
+  }
   var t = (topic || '').trim() || 'healthcare clinical medicine';
-  var approach = pickHeroApproach().text;
+  var approach = pickHeroApproach(style.approaches).text;
   var hasToken = /\{topic\}|\{title\}/i.test(tmpl);
   var hasApproach = /\{approach\}/i.test(tmpl);
   var hasNeutral = /\{neutralLeft\}/i.test(tmpl);
   var hasPhoto = /\{photoStyle\}/i.test(tmpl);
   var filled = tmpl.replace(/\{topic\}/gi, t).replace(/\{title\}/gi, t).replace(/\{approach\}/gi, approach)
     .replace(/\{neutralLeft\}/gi, HERO_NEUTRAL_LEFT)
-    .replace(/\{photoStyle\}/gi, HERO_PHOTO_STYLE);
+    .replace(/\{photoStyle\}/gi, style.photoStyle);
   if (!hasNeutral) {
     // Clause match stops at ';' too, so the old default keeps its "RIGHT 60%" clause.
     var swapped = filled.replace(/[^.;]*navy-to-teal gradient[^.;]*[.;]?/gi, ' ' + HERO_NEUTRAL_LEFT).replace(/\s{2,}/g, ' ').trim();
@@ -11377,7 +11400,7 @@ function getResolvedHeroPrompt(catId, topic) {
   }
   if (!hasToken) filled += ' Subject: ' + t + '.';
   if (!hasApproach) filled += ' Visual approach: ' + approach;
-  if (!hasPhoto) filled += ' ' + HERO_PHOTO_STYLE;
+  if (!hasPhoto) filled += ' ' + style.photoStyle;
   return filled;
 }
 
