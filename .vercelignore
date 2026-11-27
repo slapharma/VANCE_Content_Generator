@@ -9,6 +9,11 @@ docs/superpowers/
 scripts/
 *-backup-*.json
 
+# Fact-check golden set: copies of article text (the wrong versions too),
+# source records and hero images. Test data only, and Vercel would serve it
+# by URL. No runtime code may read this folder.
+lib/factcheck/fixtures/
+
 # Individual automation handlers — excluded from Vercel function count.
 # They are imported by api/automation/[...slug].js at runtime (bundled together).
 api/automation/approve.js
