@@ -1,6 +1,6 @@
 import { kv } from '../../lib/kv.js';
 import { resolveOrCreateWpCategory, resolveOrCreateWpTags, parseTagList } from '../../lib/wp-taxonomy.js';
-import { uploadImageUrlToWp } from '../../lib/social/wp-media.js';
+import { uploadImageUrlToWp, altFromTitle } from '../../lib/social/wp-media.js';
 import { carouselOnPublish } from '../../lib/social/carousel-on-publish.js';
 
 // Map app category IDs → WordPress category slugs. Mirrors BUILTIN_CATEGORY_META in index.html.
@@ -47,6 +47,9 @@ async function uploadHeroImageToWp(imageUrl, postTitle, siteUrl, authHeader, cre
     title: postTitle || 'hero',
     siteUrl,
     authHeader,
+    // Every hero gets alt text. It used to come only from the stock-photo credit,
+    // so AI-generated and category-fallback heroes were published with none.
+    alt: altFromTitle(stripCategoryTitlePrefix(postTitle)),
     credit,
     suffix: 'hero',
     logPrefix: 'publish',
