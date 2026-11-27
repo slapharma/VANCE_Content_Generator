@@ -37,3 +37,8 @@ _harness.html
 # Any other env file, so a new variant can't be committed by accident.
 .env*
 !.env.example
+
+# Fact-check golden set data: local only, the repository is public.
+lib/factcheck/fixtures/articles/
+lib/factcheck/fixtures/sources/
+lib/factcheck/fixtures/heroes/

@@ -1,0 +1,331 @@
+{
+  "version": 1,
+  "builtAt": "2026-11-27",
+  "defectClasses": {
+    "1": "wrong paper cited",
+    "2": "finding contradicts the source",
+    "3": "claim not in the source",
+    "4": "empty body with no numbers",
+    "5": "wrong design wording",
+    "6": "number not in the source or unstated denominator",
+    "7": "source typo copied",
+    "8": "hero has readable text or a brand",
+    "9": "hero shows skin or instruments",
+    "10": "hero has the wrong style"
+  },
+  "articles": [
+    {
+      "file": "articles/34ae8847.bad.json",
+      "id8": "34ae8847",
+      "variant": "bad",
+      "sourcePmid": "40635319",
+      "sourcePmcid": "PMC12408980",
+      "defects": [
+        1,
+        3,
+        4
+      ]
+    },
+    {
+      "file": "articles/b7a43545.bad.json",
+      "id8": "b7a43545",
+      "variant": "bad",
+      "sourcePmid": "39797089",
+      "sourcePmcid": "PMC11720862",
+      "defects": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "file": "articles/5bfb8de7.bad.json",
+      "id8": "5bfb8de7",
+      "variant": "bad",
+      "sourcePmid": "22738315",
+      "sourcePmcid": null,
+      "defects": [
+        2,
+        3
+      ]
+    },
+    {
+      "file": "articles/e8f6f10e.bad.json",
+      "id8": "e8f6f10e",
+      "variant": "bad",
+      "sourcePmid": "12641543",
+      "sourcePmcid": null,
+      "defects": [
+        5
+      ]
+    },
+    {
+      "file": "articles/35e212ff.bad.json",
+      "id8": "35e212ff",
+      "variant": "bad",
+      "sourcePmid": "10795763",
+      "sourcePmcid": null,
+      "defects": [
+        3,
+        6
+      ]
+    },
+    {
+      "file": "articles/387bdbe6.bad.json",
+      "id8": "387bdbe6",
+      "variant": "bad",
+      "sourcePmid": "39683547",
+      "sourcePmcid": "PMC11644502",
+      "defects": [
+        5,
+        7
+      ]
+    },
+    {
+      "file": "articles/387bdbe6.good.json",
+      "id8": "387bdbe6",
+      "variant": "good",
+      "sourcePmid": "39683547",
+      "sourcePmcid": "PMC11644502",
+      "defects": []
+    },
+    {
+      "file": "articles/d326dfed.bad.json",
+      "id8": "d326dfed",
+      "variant": "bad",
+      "sourcePmid": "7654893",
+      "sourcePmcid": null,
+      "defects": [
+        3
+      ]
+    },
+    {
+      "file": "articles/d326dfed.good.json",
+      "id8": "d326dfed",
+      "variant": "good",
+      "sourcePmid": "7654893",
+      "sourcePmcid": null,
+      "defects": []
+    }
+  ],
+  "sources": [
+    {
+      "file": "sources/pubmed_40635319.xml",
+      "kind": "pubmed",
+      "id": "40635319",
+      "role": "correct"
+    },
+    {
+      "file": "sources/pubmed_39797089.xml",
+      "kind": "pubmed",
+      "id": "39797089",
+      "role": "correct"
+    },
+    {
+      "file": "sources/pubmed_36986206.xml",
+      "kind": "pubmed",
+      "id": "36986206",
+      "role": "wrongly-cited"
+    },
+    {
+      "file": "sources/pubmed_35371361.xml",
+      "kind": "pubmed",
+      "id": "35371361",
+      "role": "wrongly-cited"
+    },
+    {
+      "file": "sources/pubmed_22738315.xml",
+      "kind": "pubmed",
+      "id": "22738315",
+      "role": "correct"
+    },
+    {
+      "file": "sources/pubmed_12641543.xml",
+      "kind": "pubmed",
+      "id": "12641543",
+      "role": "correct"
+    },
+    {
+      "file": "sources/pubmed_39683547.xml",
+      "kind": "pubmed",
+      "id": "39683547",
+      "role": "correct"
+    },
+    {
+      "file": "sources/pubmed_7654893.xml",
+      "kind": "pubmed",
+      "id": "7654893",
+      "role": "correct"
+    },
+    {
+      "file": "sources/pubmed_10795763.xml",
+      "kind": "pubmed",
+      "id": "10795763",
+      "role": "correct"
+    },
+    {
+      "file": "sources/pmc_PMC12408980.xml",
+      "kind": "pmc",
+      "id": "PMC12408980",
+      "role": "correct"
+    },
+    {
+      "file": "sources/pmc_PMC11720862.xml",
+      "kind": "pmc",
+      "id": "PMC11720862",
+      "role": "correct"
+    },
+    {
+      "file": "sources/pmc_PMC11644502.xml",
+      "kind": "pmc",
+      "id": "PMC11644502",
+      "role": "correct"
+    }
+  ],
+  "heroes": [
+    {
+      "file": "heroes/bad_text_brand.jpg",
+      "category": "clinical-reviews",
+      "expected": "fail",
+      "defect": 8,
+      "note": "Scale label reads \"sarterius\" and bottle labels are readable but garbled. Copied from newhero_d326dfed.v1.jpg."
+    },
+    {
+      "file": "heroes/bad_skin_instrument.jpg",
+      "category": "clinical-reviews",
+      "expected": "fail",
+      "defect": 9,
+      "note": "Bare abdomen, a speculum and a person are shown. Copied from newhero_d326dfed.v2.jpg."
+    },
+    {
+      "file": "heroes/bad_home_kitchen.jpg",
+      "category": "clinical-reviews",
+      "expected": "fail",
+      "defect": 10,
+      "note": "Home kitchen lifestyle scene on a clinical-reviews article. Copied from hero_e8f6f10e.jpg."
+    },
+    {
+      "file": "heroes/good_tablets.jpg",
+      "category": "clinical-reviews",
+      "expected": "pass",
+      "defect": null,
+      "note": "Accepted by a human reviewer. Clinical style, no brand, no people. BORDERLINE for defect 8: a bottle label and a wall sign carry small text that is not a readable word. Copied from newhero_35e212ff.jpg."
+    },
+    {
+      "file": "heroes/good_capsules.jpg",
+      "category": "clinical-reviews",
+      "expected": "pass",
+      "defect": null,
+      "note": "Clinical style, no text, brand or skin. Copied from newhero_387bdbe6.jpg."
+    },
+    {
+      "file": "heroes/good_syringe.jpg",
+      "category": "clinical-reviews",
+      "expected": "pass",
+      "defect": null,
+      "note": "Accepted by a human reviewer. Clinical style, no text, no brand, no bare skin, no face. OPEN RULE QUESTION: it shows a clothed clinician (torso, gloved hands) and a syringe. A rule of 'no people and no instruments' fails this accepted image. Copied from newhero_d326dfed.jpg."
+    }
+  ],
+  "coverage": {
+    "1": {
+      "bad": [
+        "articles/34ae8847.bad.json",
+        "articles/b7a43545.bad.json"
+      ],
+      "good": [
+        "articles/387bdbe6.good.json",
+        "articles/d326dfed.good.json"
+      ]
+    },
+    "2": {
+      "bad": [
+        "articles/b7a43545.bad.json",
+        "articles/5bfb8de7.bad.json"
+      ],
+      "good": [
+        "articles/387bdbe6.good.json",
+        "articles/d326dfed.good.json"
+      ]
+    },
+    "3": {
+      "bad": [
+        "articles/34ae8847.bad.json",
+        "articles/b7a43545.bad.json",
+        "articles/5bfb8de7.bad.json",
+        "articles/35e212ff.bad.json",
+        "articles/d326dfed.bad.json"
+      ],
+      "good": [
+        "articles/387bdbe6.good.json",
+        "articles/d326dfed.good.json"
+      ]
+    },
+    "4": {
+      "bad": [
+        "articles/34ae8847.bad.json"
+      ],
+      "good": [
+        "articles/387bdbe6.good.json",
+        "articles/d326dfed.good.json"
+      ]
+    },
+    "5": {
+      "bad": [
+        "articles/e8f6f10e.bad.json",
+        "articles/387bdbe6.bad.json"
+      ],
+      "good": [
+        "articles/387bdbe6.good.json",
+        "articles/d326dfed.good.json"
+      ]
+    },
+    "6": {
+      "bad": [
+        "articles/35e212ff.bad.json"
+      ],
+      "good": [
+        "articles/387bdbe6.good.json",
+        "articles/d326dfed.good.json"
+      ]
+    },
+    "7": {
+      "bad": [
+        "articles/387bdbe6.bad.json"
+      ],
+      "good": [
+        "articles/387bdbe6.good.json",
+        "articles/d326dfed.good.json"
+      ]
+    },
+    "8": {
+      "bad": [
+        "heroes/bad_text_brand.jpg"
+      ],
+      "good": [
+        "heroes/good_tablets.jpg",
+        "heroes/good_capsules.jpg",
+        "heroes/good_syringe.jpg"
+      ]
+    },
+    "9": {
+      "bad": [
+        "heroes/bad_skin_instrument.jpg"
+      ],
+      "good": [
+        "heroes/good_tablets.jpg",
+        "heroes/good_capsules.jpg",
+        "heroes/good_syringe.jpg"
+      ]
+    },
+    "10": {
+      "bad": [
+        "heroes/bad_home_kitchen.jpg"
+      ],
+      "good": [
+        "heroes/good_tablets.jpg",
+        "heroes/good_capsules.jpg",
+        "heroes/good_syringe.jpg"
+      ]
+    }
+  }
+}
